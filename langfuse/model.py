@@ -286,9 +286,9 @@ class TextPromptClient(BasePromptClient):
         return False
 
     def get_langchain_prompt(self, **kwargs: Union[str, Any]) -> str:
-        """Convert Langfuse prompt into string compatible with Langchain PromptTemplate.
+        """Convert ElasticDash prompt into string compatible with Langchain PromptTemplate.
 
-        This method adapts the mustache-style double curly braces {{variable}} used in Langfuse
+        This method adapts the mustache-style double curly braces {{variable}} used in ElasticDash
         to the single curly brace {variable} format expected by Langchain.
 
         kwargs: Optional keyword arguments to precompile the template string. Variables that match
@@ -459,9 +459,9 @@ class ChatPromptClient(BasePromptClient):
     def get_langchain_prompt(
         self, **kwargs: Union[str, Any]
     ) -> List[Union[Tuple[str, str], Any]]:
-        """Convert Langfuse prompt into string compatible with Langchain ChatPromptTemplate.
+        """Convert ElasticDash prompt into string compatible with Langchain ChatPromptTemplate.
 
-        It specifically adapts the mustache-style double curly braces {{variable}} used in Langfuse
+        It specifically adapts the mustache-style double curly braces {{variable}} used in ElasticDash
         to the single curly brace {variable} format expected by Langchain.
         Placeholders are filled-in from kwargs and unresolved placeholders are returned as Langchain MessagesPlaceholder.
 

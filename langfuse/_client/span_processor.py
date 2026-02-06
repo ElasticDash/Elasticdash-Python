@@ -1,12 +1,12 @@
-"""Span processor for Langfuse OpenTelemetry integration.
+"""Span processor for ElasticDash OpenTelemetry integration.
 
-This module defines the LangfuseSpanProcessor class, which extends OpenTelemetry's
-BatchSpanProcessor with Langfuse-specific functionality. It handles exporting
-spans to the Langfuse API with proper authentication and filtering.
+This module defines the ElasticDashSpanProcessor class, which extends OpenTelemetry's
+BatchSpanProcessor with ElasticDash-specific functionality. It handles exporting
+spans to the ElasticDash API with proper authentication and filtering.
 
 Key features:
-- HTTP-based span export to Langfuse API
-- Basic authentication with Langfuse API keys
+- HTTP-based span export to ElasticDash API
+- Basic authentication with ElasticDash API keys
 - Configurable batch processing behavior
 - Project-scoped span filtering to prevent cross-project data leakage
 """
@@ -22,11 +22,11 @@ from opentelemetry.sdk.trace import ReadableSpan, Span
 from opentelemetry.sdk.trace.export import BatchSpanProcessor
 from opentelemetry.trace import format_span_id
 
-from langfuse._client.constants import LANGFUSE_TRACER_NAME
+from langfuse._client.constants import ELASTICDASH_TRACER_NAME
 from langfuse._client.environment_variables import (
-    LANGFUSE_FLUSH_AT,
-    LANGFUSE_FLUSH_INTERVAL,
-    LANGFUSE_OTEL_TRACES_EXPORT_PATH,
+    ELASTICDASH_FLUSH_AT,
+    ELASTICDASH_FLUSH_INTERVAL,
+    ELASTICDASH_OTEL_TRACES_EXPORT_PATH,
 )
 from langfuse._client.propagation import _get_propagated_attributes_from_context
 from langfuse._client.utils import span_formatter
@@ -34,20 +34,20 @@ from langfuse.logger import langfuse_logger
 from langfuse.version import __version__ as langfuse_version
 
 
-class LangfuseSpanProcessor(BatchSpanProcessor):
-    """OpenTelemetry span processor that exports spans to the Langfuse API.
+class ElasticDashSpanProcessor(BatchSpanProcessor):
+    """OpenTelemetry span processor that exports spans to the ElasticDash API.
 
-    This processor extends OpenTelemetry's BatchSpanProcessor with Langfuse-specific functionality:
+    This processor extends OpenTelemetry's BatchSpanProcessor with ElasticDash-specific functionality:
     1. Project-scoped span filtering to prevent cross-project data leakage
     2. Instrumentation scope filtering to block spans from specific libraries/frameworks
     3. Configurable batch processing parameters for optimal performance
-    4. HTTP-based span export to the Langfuse OTLP endpoint
+    4. HTTP-based span export to the ElasticDash OTLP endpoint
     5. Debug logging for span processing operations
-    6. Authentication with Langfuse API using Basic Auth
+    6. Authentication with ElasticDash API using Basic Auth
 
     The processor is designed to efficiently handle large volumes of spans with
     minimal overhead, while ensuring spans are only sent to the correct project.
-    It integrates with OpenTelemetry's standard span lifecycle, adding Langfuse-specific
+    It integrates with OpenTelemetry's standard span lifecycle, adding ElasticDash-specific
     filtering and export capabilities.
     """
 
@@ -70,10 +70,10 @@ class LangfuseSpanProcessor(BatchSpanProcessor):
             else []
         )
 
-        env_flush_at = os.environ.get(LANGFUSE_FLUSH_AT, None)
+        env_flush_at = os.environ.get(ELASTICDASH_FLUSH_AT, None)
         flush_at = flush_at or int(env_flush_at) if env_flush_at is not None else None
 
-        env_flush_interval = os.environ.get(LANGFUSE_FLUSH_INTERVAL, None)
+        env_flush_interval = os.environ.get(ELASTICDASH_FLUSH_INTERVAL, None)
         flush_interval = (
             flush_interval or float(env_flush_interval)
             if env_flush_interval is not None
@@ -95,7 +95,7 @@ class LangfuseSpanProcessor(BatchSpanProcessor):
         # Merge additional headers if provided
         headers = {**default_headers, **(additional_headers or {})}
 
-        traces_export_path = os.environ.get(LANGFUSE_OTEL_TRACES_EXPORT_PATH, None)
+        traces_export_path = os.environ.get(ELASTICDASH_OTEL_TRACES_EXPORT_PATH, None)
 
         endpoint = (
             f"{base_url}/{traces_export_path}"
@@ -155,7 +155,7 @@ class LangfuseSpanProcessor(BatchSpanProcessor):
     def _is_langfuse_span(span: ReadableSpan) -> bool:
         return (
             span.instrumentation_scope is not None
-            and span.instrumentation_scope.name == LANGFUSE_TRACER_NAME
+            and span.instrumentation_scope.name == ELASTICDASH_TRACER_NAME
         )
 
     def _is_blocked_instrumentation_scope(self, span: ReadableSpan) -> bool:
@@ -165,7 +165,7 @@ class LangfuseSpanProcessor(BatchSpanProcessor):
         )
 
     def _is_langfuse_project_span(self, span: ReadableSpan) -> bool:
-        if not LangfuseSpanProcessor._is_langfuse_span(span):
+        if not ElasticDashSpanProcessor._is_langfuse_span(span):
             return False
 
         if span.instrumentation_scope is not None:

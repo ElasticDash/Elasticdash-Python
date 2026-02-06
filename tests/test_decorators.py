@@ -11,11 +11,11 @@ from langchain_core.prompts import ChatPromptTemplate
 from langchain_openai import ChatOpenAI
 from opentelemetry import trace
 
-from langfuse import Langfuse, get_client, observe
-from langfuse._client.environment_variables import LANGFUSE_PUBLIC_KEY
-from langfuse._client.resource_manager import LangfuseResourceManager
+from langfuse import ElasticDash, get_client, observe
+from langfuse._client.environment_variables import ELASTICDASH_PUBLIC_KEY
+from langfuse._client.resource_manager import ElasticDashResourceManager
 from langfuse.langchain import CallbackHandler
-from langfuse.media import LangfuseMedia
+from langfuse.media import ElasticDashMedia
 from tests.utils import get_api
 
 mock_metadata = {"key": "metadata"}
@@ -26,10 +26,10 @@ mock_kwargs = {"a": 1, "b": 2, "c": 3}
 
 
 def removeMockResourceManagerInstances():
-    with LangfuseResourceManager._lock:
-        for public_key in list(LangfuseResourceManager._instances.keys()):
-            if public_key != os.getenv(LANGFUSE_PUBLIC_KEY):
-                LangfuseResourceManager._instances.pop(public_key)
+    with ElasticDashResourceManager._lock:
+        for public_key in list(ElasticDashResourceManager._instances.keys()):
+            if public_key != os.getenv(ELASTICDASH_PUBLIC_KEY):
+                ElasticDashResourceManager._instances.pop(public_key)
 
 
 def test_nested_observations():
@@ -1020,7 +1020,7 @@ def test_media():
     with open("static/bitcoin.pdf", "rb") as pdf_file:
         pdf_bytes = pdf_file.read()
 
-    media = LangfuseMedia(content_bytes=pdf_bytes, content_type="application/pdf")
+    media = ElasticDashMedia(content_bytes=pdf_bytes, content_type="application/pdf")
 
     @observe()
     def main():
@@ -1061,7 +1061,7 @@ def test_media():
         "@@@langfuseMedia:type=application/pdf|id="
         in trace_data.metadata["context"]["nested"]
     )
-    parsed_reference_string = LangfuseMedia.parse_reference_string(
+    parsed_reference_string = ElasticDashMedia.parse_reference_string(
         trace_data.metadata["context"]["nested"]
     )
     assert parsed_reference_string["content_type"] == "application/pdf"
@@ -1098,15 +1098,15 @@ def test_merge_metadata_and_tags():
 # Multi-project context propagation tests
 def test_multiproject_context_propagation_basic():
     """Test that nested decorated functions inherit langfuse_public_key from parent in multi-project setup"""
-    client1 = Langfuse()  # Reads from environment
-    Langfuse(public_key="pk-test-project2", secret_key="sk-test-project2")
+    client1 = ElasticDash()  # Reads from environment
+    ElasticDash(public_key="pk-test-project2", secret_key="sk-test-project2")
 
     # Verify both instances are registered
-    assert len(LangfuseResourceManager._instances) == 2
+    assert len(ElasticDashResourceManager._instances) == 2
 
     mock_name = "test_multiproject_context_propagation_basic"
     # Use known public key from environment
-    env_public_key = os.environ[LANGFUSE_PUBLIC_KEY]
+    env_public_key = os.environ[ELASTICDASH_PUBLIC_KEY]
     # In multi-project setup, must specify which client to use
     langfuse = get_client(public_key=env_public_key)
     mock_trace_id = langfuse.create_trace_id()
@@ -1158,14 +1158,14 @@ def test_multiproject_context_propagation_basic():
 
 
 def test_multiproject_context_propagation_deep_nesting():
-    client1 = Langfuse()  # Reads from environment
-    Langfuse(public_key="pk-test-project2", secret_key="sk-test-project2")
+    client1 = ElasticDash()  # Reads from environment
+    ElasticDash(public_key="pk-test-project2", secret_key="sk-test-project2")
 
     # Verify both instances are registered
-    assert len(LangfuseResourceManager._instances) == 2
+    assert len(ElasticDashResourceManager._instances) == 2
 
     mock_name = "test_multiproject_context_propagation_deep_nesting"
-    env_public_key = os.environ[LANGFUSE_PUBLIC_KEY]
+    env_public_key = os.environ[ELASTICDASH_PUBLIC_KEY]
     langfuse = get_client(public_key=env_public_key)
     mock_trace_id = langfuse.create_trace_id()
 
@@ -1221,15 +1221,15 @@ def test_multiproject_context_propagation_deep_nesting():
 
 
 def test_multiproject_context_propagation_override():
-    # Initialize two separate Langfuse instances
-    client1 = Langfuse()  # Reads from environment
-    client2 = Langfuse(public_key="pk-test-project2", secret_key="sk-test-project2")
+    # Initialize two separate ElasticDash instances
+    client1 = ElasticDash()  # Reads from environment
+    client2 = ElasticDash(public_key="pk-test-project2", secret_key="sk-test-project2")
 
     # Verify both instances are registered
-    assert len(LangfuseResourceManager._instances) == 2
+    assert len(ElasticDashResourceManager._instances) == 2
 
     mock_name = "test_multiproject_context_propagation_override"
-    env_public_key = os.environ[LANGFUSE_PUBLIC_KEY]
+    env_public_key = os.environ[ELASTICDASH_PUBLIC_KEY]
     langfuse = get_client(public_key=env_public_key)
     mock_trace_id = langfuse.create_trace_id()
 
@@ -1275,15 +1275,15 @@ def test_multiproject_context_propagation_override():
 
 
 def test_multiproject_context_propagation_no_public_key():
-    # Initialize two separate Langfuse instances
-    client1 = Langfuse()  # Reads from environment
-    Langfuse(public_key="pk-test-project2", secret_key="sk-test-project2")
+    # Initialize two separate ElasticDash instances
+    client1 = ElasticDash()  # Reads from environment
+    ElasticDash(public_key="pk-test-project2", secret_key="sk-test-project2")
 
     # Verify both instances are registered
-    assert len(LangfuseResourceManager._instances) == 2
+    assert len(ElasticDashResourceManager._instances) == 2
 
     mock_name = "test_multiproject_context_propagation_no_public_key"
-    env_public_key = os.environ[LANGFUSE_PUBLIC_KEY]
+    env_public_key = os.environ[ELASTICDASH_PUBLIC_KEY]
     langfuse = get_client(public_key=env_public_key)
     mock_trace_id = langfuse.create_trace_id()
 
@@ -1332,14 +1332,14 @@ def test_multiproject_context_propagation_no_public_key():
 @pytest.mark.asyncio
 async def test_multiproject_async_context_propagation_basic():
     """Test that nested async decorated functions inherit langfuse_public_key from parent in multi-project setup"""
-    client1 = Langfuse()  # Reads from environment
-    Langfuse(public_key="pk-test-project2", secret_key="sk-test-project2")
+    client1 = ElasticDash()  # Reads from environment
+    ElasticDash(public_key="pk-test-project2", secret_key="sk-test-project2")
 
     # Verify both instances are registered
-    assert len(LangfuseResourceManager._instances) == 2
+    assert len(ElasticDashResourceManager._instances) == 2
 
     mock_name = "test_multiproject_async_context_propagation_basic"
-    env_public_key = os.environ[LANGFUSE_PUBLIC_KEY]
+    env_public_key = os.environ[ELASTICDASH_PUBLIC_KEY]
     langfuse = get_client(public_key=env_public_key)
     mock_trace_id = langfuse.create_trace_id()
 
@@ -1401,14 +1401,14 @@ async def test_multiproject_async_context_propagation_basic():
 @pytest.mark.asyncio
 async def test_multiproject_mixed_sync_async_context_propagation():
     """Test context propagation between sync and async decorated functions in multi-project setup"""
-    client1 = Langfuse()  # Reads from environment
-    Langfuse(public_key="pk-test-project2", secret_key="sk-test-project2")
+    client1 = ElasticDash()  # Reads from environment
+    ElasticDash(public_key="pk-test-project2", secret_key="sk-test-project2")
 
     # Verify both instances are registered
-    assert len(LangfuseResourceManager._instances) == 2
+    assert len(ElasticDashResourceManager._instances) == 2
 
     mock_name = "test_multiproject_mixed_sync_async_context_propagation"
-    env_public_key = os.environ[LANGFUSE_PUBLIC_KEY]
+    env_public_key = os.environ[ELASTICDASH_PUBLIC_KEY]
     langfuse = get_client(public_key=env_public_key)
     mock_trace_id = langfuse.create_trace_id()
 
@@ -1472,14 +1472,14 @@ async def test_multiproject_mixed_sync_async_context_propagation():
 @pytest.mark.asyncio
 async def test_multiproject_concurrent_async_context_isolation():
     """Test that concurrent async executions don't interfere with each other's context in multi-project setup"""
-    client1 = Langfuse()  # Reads from environment
-    Langfuse(public_key="pk-test-project2", secret_key="sk-test-project2")
+    client1 = ElasticDash()  # Reads from environment
+    ElasticDash(public_key="pk-test-project2", secret_key="sk-test-project2")
 
     # Verify both instances are registered
-    assert len(LangfuseResourceManager._instances) == 2
+    assert len(ElasticDashResourceManager._instances) == 2
 
     mock_name = "test_multiproject_concurrent_async_context_isolation"
-    env_public_key = os.environ[LANGFUSE_PUBLIC_KEY]
+    env_public_key = os.environ[ELASTICDASH_PUBLIC_KEY]
     langfuse = get_client(public_key=env_public_key)
 
     trace_id_1 = langfuse.create_trace_id()
@@ -1562,14 +1562,14 @@ async def test_multiproject_concurrent_async_context_isolation():
 @pytest.mark.asyncio
 async def test_multiproject_async_generator_context_propagation():
     """Test context propagation with async generators in multi-project setup"""
-    client1 = Langfuse()  # Reads from environment
-    Langfuse(public_key="pk-test-project2", secret_key="sk-test-project2")
+    client1 = ElasticDash()  # Reads from environment
+    ElasticDash(public_key="pk-test-project2", secret_key="sk-test-project2")
 
     # Verify both instances are registered
-    assert len(LangfuseResourceManager._instances) == 2
+    assert len(ElasticDashResourceManager._instances) == 2
 
     mock_name = "test_multiproject_async_generator_context_propagation"
-    env_public_key = os.environ[LANGFUSE_PUBLIC_KEY]
+    env_public_key = os.environ[ELASTICDASH_PUBLIC_KEY]
     langfuse = get_client(public_key=env_public_key)
     mock_trace_id = langfuse.create_trace_id()
 
@@ -1626,14 +1626,14 @@ async def test_multiproject_async_generator_context_propagation():
 @pytest.mark.asyncio
 async def test_multiproject_async_context_exception_handling():
     """Test that async context is properly restored even when exceptions occur in multi-project setup"""
-    client1 = Langfuse()  # Reads from environment
-    Langfuse(public_key="pk-test-project2", secret_key="sk-test-project2")
+    client1 = ElasticDash()  # Reads from environment
+    ElasticDash(public_key="pk-test-project2", secret_key="sk-test-project2")
 
     # Verify both instances are registered
-    assert len(LangfuseResourceManager._instances) == 2
+    assert len(ElasticDashResourceManager._instances) == 2
 
     mock_name = "test_multiproject_async_context_exception_handling"
-    env_public_key = os.environ[LANGFUSE_PUBLIC_KEY]
+    env_public_key = os.environ[ELASTICDASH_PUBLIC_KEY]
     langfuse = get_client(public_key=env_public_key)
     mock_trace_id = langfuse.create_trace_id()
 

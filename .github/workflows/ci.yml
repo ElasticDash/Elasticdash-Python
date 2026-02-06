@@ -58,9 +58,9 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     env:
-      LANGFUSE_BASE_URL: "http://localhost:3000"
-      LANGFUSE_PUBLIC_KEY: "pk-lf-1234567890"
-      LANGFUSE_SECRET_KEY: "sk-lf-1234567890"
+      ELASTICDASH_BASE_URL: "http://localhost:3000"
+      ELASTICDASH_PUBLIC_KEY: "pk-lf-1234567890"
+      ELASTICDASH_SECRET_KEY: "sk-lf-1234567890"
       OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
       # SERPAPI_API_KEY: ${{ secrets.SERPAPI_API_KEY }}
       HUGGINGFACEHUB_API_TOKEN: ${{ secrets.HUGGINGFACEHUB_API_TOKEN }}
@@ -124,9 +124,9 @@ jobs:
           echo "::group::Run server"
 
           TELEMETRY_ENABLED=false \
-          LANGFUSE_S3_MEDIA_UPLOAD_ENDPOINT=http://localhost:9090 \
-          LANGFUSE_INGESTION_QUEUE_DELAY_MS=10 \
-          LANGFUSE_INGESTION_CLICKHOUSE_WRITE_INTERVAL_MS=10 \
+          ELASTICDASH_S3_MEDIA_UPLOAD_ENDPOINT=http://localhost:9090 \
+          ELASTICDASH_INGESTION_QUEUE_DELAY_MS=10 \
+          ELASTICDASH_INGESTION_CLICKHOUSE_WRITE_INTERVAL_MS=10 \
           docker compose up -d
 
           echo "::endgroup::"
@@ -142,14 +142,14 @@ jobs:
             retry_count=`expr $retry_count + 1`
             echo "Attempt $retry_count of $max_retries..."
             if [ $retry_count -ge $max_retries ]; then
-              echo "Langfuse server did not respond in time. Printing logs..."
+              echo "ElasticDash server did not respond in time. Printing logs..."
               docker logs langfuse-server-langfuse-web-1
               echo "Failing the step..."
               exit 1
             fi
             sleep 5
           done
-          echo "Langfuse server is up and running!"
+          echo "ElasticDash server is up and running!"
 
       - name: Install Python
         uses: actions/setup-python@v4

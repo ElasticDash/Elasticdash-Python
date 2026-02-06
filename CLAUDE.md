@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-This is the Langfuse Python SDK, a client library for accessing the Langfuse observability platform. The SDK provides integration with OpenTelemetry (OTel) for tracing, automatic instrumentation for popular LLM frameworks (OpenAI, Langchain, etc.), and direct API access to Langfuse's features.
+This is the ElasticDash Python SDK, a client library for accessing the ElasticDash observability platform. The SDK provides integration with OpenTelemetry (OTel) for tracing, automatic instrumentation for popular LLM frameworks (OpenAI, Langchain, etc.), and direct API access to ElasticDash's features.
 
 ## Development Commands
 
@@ -69,8 +69,8 @@ The workflow handles versioning, building, PyPI publishing (via OIDC), and GitHu
 ### Core Components
 
 - **`langfuse/_client/`**: Main SDK implementation built on OpenTelemetry
-  - `client.py`: Core Langfuse client with OTel integration
-  - `span.py`: LangfuseSpan, LangfuseGeneration, LangfuseEvent classes
+  - `client.py`: Core ElasticDash client with OTel integration
+  - `span.py`: ElasticDashSpan, ElasticDashGeneration, ElasticDashEvent classes
   - `observe.py`: Decorator for automatic instrumentation
   - `datasets.py`: Dataset management functionality
 
@@ -90,19 +90,19 @@ The workflow handles versioning, building, PyPI publishing (via OIDC), and GitHu
 
 The SDK is built on OpenTelemetry for observability, using:
 - Spans for tracing LLM operations
-- Attributes for metadata (see `LangfuseOtelSpanAttributes`)
+- Attributes for metadata (see `ElasticDashOtelSpanAttributes`)
 - Resource management for efficient batching and flushing
 
-The client follows an async-first design with automatic batching of events and background flushing to the Langfuse API.
+The client follows an async-first design with automatic batching of events and background flushing to the ElasticDash API.
 
 ## Configuration
 
 Environment variables (defined in `_client/environment_variables.py`):
-- `LANGFUSE_PUBLIC_KEY` / `LANGFUSE_SECRET_KEY`: API credentials
-- `LANGFUSE_HOST`: API endpoint (defaults to https://cloud.langfuse.com)
-- `LANGFUSE_DEBUG`: Enable debug logging
-- `LANGFUSE_TRACING_ENABLED`: Enable/disable tracing
-- `LANGFUSE_SAMPLE_RATE`: Sampling rate for traces
+- `ELASTICDASH_PUBLIC_KEY` / `ELASTICDASH_SECRET_KEY`: API credentials
+- `ELASTICDASH_HOST`: API endpoint (defaults to https://cloud.langfuse.com)
+- `ELASTICDASH_DEBUG`: Enable debug logging
+- `ELASTICDASH_TRACING_ENABLED`: Enable/disable tracing
+- `ELASTICDASH_SAMPLE_RATE`: Sampling rate for traces
 
 ## Testing Notes
 
@@ -120,9 +120,9 @@ Environment variables (defined in `_client/environment_variables.py`):
 
 ## API Generation
 
-The `langfuse/api/` directory is auto-generated from the Langfuse OpenAPI specification using Fern. To update:
+The `langfuse/api/` directory is auto-generated from the ElasticDash OpenAPI specification using Fern. To update:
 
-1. Generate new SDK in main Langfuse repo
+1. Generate new SDK in main ElasticDash repo
 2. Copy generated files from `generated/python` to `langfuse/api/`
 3. Run `poetry run ruff format .` to format the generated code
 

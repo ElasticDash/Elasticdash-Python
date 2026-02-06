@@ -4,8 +4,8 @@ from uuid import uuid4
 
 import pytest
 
-from langfuse._client.client import Langfuse
-from langfuse.media import LangfuseMedia
+from langfuse._client.client import ElasticDash
+from langfuse.media import ElasticDashMedia
 from tests.utils import get_api
 
 # Test data
@@ -16,51 +16,51 @@ SAMPLE_BASE64_DATA_URI = (
 
 
 def test_init_with_base64_data_uri():
-    media = LangfuseMedia(base64_data_uri=SAMPLE_BASE64_DATA_URI)
+    media = ElasticDashMedia(base64_data_uri=SAMPLE_BASE64_DATA_URI)
     assert media._source == "base64_data_uri"
     assert media._content_type == "image/jpeg"
     assert media._content_bytes is not None
 
 
 def test_init_with_content_bytes():
-    media = LangfuseMedia(content_bytes=SAMPLE_JPEG_BYTES, content_type="image/jpeg")
+    media = ElasticDashMedia(content_bytes=SAMPLE_JPEG_BYTES, content_type="image/jpeg")
     assert media._source == "bytes"
     assert media._content_type == "image/jpeg"
     assert media._content_bytes == SAMPLE_JPEG_BYTES
 
 
 def test_init_with_invalid_input():
-    # LangfuseMedia logs error but doesn't raise ValueError when initialized without required params
-    media = LangfuseMedia()
+    # ElasticDashMedia logs error but doesn't raise ValueError when initialized without required params
+    media = ElasticDashMedia()
     assert media._source is None
     assert media._content_type is None
     assert media._content_bytes is None
 
-    media = LangfuseMedia(content_bytes=SAMPLE_JPEG_BYTES)  # Missing content_type
+    media = ElasticDashMedia(content_bytes=SAMPLE_JPEG_BYTES)  # Missing content_type
     assert media._source is None
     assert media._content_type is None
     assert media._content_bytes is None
 
-    media = LangfuseMedia(content_type="image/jpeg")  # Missing content_bytes
+    media = ElasticDashMedia(content_type="image/jpeg")  # Missing content_bytes
     assert media._source is None
     assert media._content_type is None
     assert media._content_bytes is None
 
 
 def test_content_length():
-    media = LangfuseMedia(content_bytes=SAMPLE_JPEG_BYTES, content_type="image/jpeg")
+    media = ElasticDashMedia(content_bytes=SAMPLE_JPEG_BYTES, content_type="image/jpeg")
     assert media._content_length == len(SAMPLE_JPEG_BYTES)
 
 
 def test_content_sha256_hash():
-    media = LangfuseMedia(content_bytes=SAMPLE_JPEG_BYTES, content_type="image/jpeg")
+    media = ElasticDashMedia(content_bytes=SAMPLE_JPEG_BYTES, content_type="image/jpeg")
     assert media._content_sha256_hash is not None
     # Hash should be base64 encoded
     assert base64.b64decode(media._content_sha256_hash)
 
 
 def test_reference_string():
-    media = LangfuseMedia(content_bytes=SAMPLE_JPEG_BYTES, content_type="image/jpeg")
+    media = ElasticDashMedia(content_bytes=SAMPLE_JPEG_BYTES, content_type="image/jpeg")
 
     media._media_id = "MwoGlsMS6lW8ijWeRyZKfD"
     reference = media._reference_string
@@ -72,7 +72,7 @@ def test_reference_string():
 
 def test_parse_reference_string():
     valid_ref = "@@@langfuseMedia:type=image/jpeg|id=test-id|source=base64_data_uri@@@"
-    result = LangfuseMedia.parse_reference_string(valid_ref)
+    result = ElasticDashMedia.parse_reference_string(valid_ref)
 
     assert result["media_id"] == "test-id"
     assert result["content_type"] == "image/jpeg"
@@ -81,13 +81,13 @@ def test_parse_reference_string():
 
 def test_parse_invalid_reference_string():
     with pytest.raises(ValueError):
-        LangfuseMedia.parse_reference_string("")
+        ElasticDashMedia.parse_reference_string("")
 
     with pytest.raises(ValueError):
-        LangfuseMedia.parse_reference_string("invalid")
+        ElasticDashMedia.parse_reference_string("invalid")
 
     with pytest.raises(ValueError):
-        LangfuseMedia.parse_reference_string(
+        ElasticDashMedia.parse_reference_string(
             "@@@langfuseMedia:type=image/jpeg@@@"
         )  # Missing fields
 
@@ -95,14 +95,14 @@ def test_parse_invalid_reference_string():
 def test_file_handling():
     file_path = "static/puton.jpg"
 
-    media = LangfuseMedia(file_path=file_path, content_type="image/jpeg")
+    media = ElasticDashMedia(file_path=file_path, content_type="image/jpeg")
     assert media._source == "file"
     assert media._content_bytes is not None
     assert media._content_type == "image/jpeg"
 
 
 def test_nonexistent_file():
-    media = LangfuseMedia(file_path="nonexistent.jpg")
+    media = ElasticDashMedia(file_path="nonexistent.jpg")
 
     assert media._source is None
     assert media._content_bytes is None
@@ -115,8 +115,8 @@ def test_replace_media_reference_string_in_object():
     with open(audio_file, "rb") as f:
         mock_audio_bytes = f.read()
 
-    # Create Langfuse client and trace with media
-    langfuse = Langfuse()
+    # Create ElasticDash client and trace with media
+    langfuse = ElasticDash()
 
     mock_trace_name = f"test-trace-with-audio-{uuid4()}"
     base64_audio = base64.b64encode(mock_audio_bytes).decode()
@@ -125,7 +125,7 @@ def test_replace_media_reference_string_in_object():
         name=mock_trace_name,
         metadata={
             "context": {
-                "nested": LangfuseMedia(
+                "nested": ElasticDashMedia(
                     base64_data_uri=f"data:audio/wav;base64,{base64_audio}"
                 )
             }

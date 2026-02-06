@@ -1,11 +1,11 @@
-"""If you use the OpenAI Python SDK, you can use the Langfuse drop-in replacement to get full logging by changing only the import.
+"""If you use the OpenAI Python SDK, you can use the ElasticDash drop-in replacement to get full logging by changing only the import.
 
 ```diff
 - import openai
 + from langfuse.openai import openai
 ```
 
-Langfuse automatically tracks:
+ElasticDash automatically tracks:
 
 - All prompts/completions with support for streaming, async and functions
 - Latencies
@@ -31,9 +31,9 @@ from pydantic import BaseModel
 from wrapt import wrap_function_wrapper
 
 from langfuse._client.get_client import get_client
-from langfuse._client.span import LangfuseGeneration
+from langfuse._client.span import ElasticDashGeneration
 from langfuse._utils import _get_timestamp
-from langfuse.media import LangfuseMedia
+from langfuse.media import ElasticDashMedia
 
 try:
     import openai
@@ -307,7 +307,7 @@ def _process_message(message: Any) -> Any:
                     {
                         "type": "input_audio",
                         "input_audio": {
-                            "data": LangfuseMedia(base64_data_uri=base64_data_uri),
+                            "data": ElasticDashMedia(base64_data_uri=base64_data_uri),
                             "format": format,
                         },
                     }
@@ -339,7 +339,7 @@ def _extract_chat_response(kwargs: Any) -> Any:
 
         if "data" in audio and audio["data"] is not None:
             base64_data_uri = f"data:audio/{audio.get('format', 'wav')};base64,{audio.get('data', None)}"
-            audio["data"] = LangfuseMedia(base64_data_uri=base64_data_uri)
+            audio["data"] = ElasticDashMedia(base64_data_uri=base64_data_uri)
 
     response.update(
         {
@@ -516,7 +516,7 @@ def _get_langfuse_data_from_kwargs(resource: OpenAiDefinition, kwargs: Any) -> A
 
 def _create_langfuse_update(
     completion: Any,
-    generation: LangfuseGeneration,
+    generation: ElasticDashGeneration,
     completion_start_time: Any,
     model: Optional[str] = None,
     usage: Optional[Any] = None,
@@ -843,7 +843,7 @@ def _wrap(
         openai_response = wrapped(**arg_extractor.get_openai_args())
 
         if _is_streaming_response(openai_response):
-            return LangfuseResponseGeneratorSync(
+            return ElasticDashResponseGeneratorSync(
                 resource=open_ai_resource,
                 response=openai_response,
                 generation=generation,
@@ -914,7 +914,7 @@ async def _wrap_async(
         openai_response = await wrapped(**arg_extractor.get_openai_args())
 
         if _is_streaming_response(openai_response):
-            return LangfuseResponseGeneratorAsync(
+            return ElasticDashResponseGeneratorAsync(
                 resource=open_ai_resource,
                 response=openai_response,
                 generation=generation,
@@ -975,7 +975,7 @@ def register_tracing() -> None:
 register_tracing()
 
 
-class LangfuseResponseGeneratorSync:
+class ElasticDashResponseGeneratorSync:
     def __init__(
         self,
         *,
@@ -1046,7 +1046,7 @@ class LangfuseResponseGeneratorSync:
             self.generation.end()
 
 
-class LangfuseResponseGeneratorAsync:
+class ElasticDashResponseGeneratorAsync:
     def __init__(
         self,
         *,

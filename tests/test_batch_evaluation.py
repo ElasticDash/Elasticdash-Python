@@ -1,7 +1,7 @@
 """Comprehensive tests for batch evaluation functionality.
 
 This test suite covers the run_batched_evaluation method which allows evaluating
-traces, observations, and sessions fetched from Langfuse with mappers, evaluators,
+traces, observations, and sessions fetched from ElasticDash with mappers, evaluators,
 and composite evaluators.
 """
 
@@ -30,7 +30,7 @@ from tests.utils import create_uuid
 
 @pytest.fixture
 def langfuse_client():
-    """Get a Langfuse client for testing."""
+    """Get a ElasticDash client for testing."""
     return get_client()
 
 

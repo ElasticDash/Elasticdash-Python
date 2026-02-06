@@ -1,7 +1,7 @@
-"""Public API for all Langfuse types.
+"""Public API for all ElasticDash types.
 
 This module provides a centralized location for importing commonly used types
-from the Langfuse SDK, making them easily accessible without requiring nested imports.
+from the ElasticDash SDK, making them easily accessible without requiring nested imports.
 
 Example:
     ```python

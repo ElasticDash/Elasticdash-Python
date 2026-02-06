@@ -1,6 +1,6 @@
-"""Langfuse experiment functionality for running and evaluating tasks on datasets.
+"""ElasticDash experiment functionality for running and evaluating tasks on datasets.
 
-This module provides the core experiment functionality for the Langfuse Python SDK,
+This module provides the core experiment functionality for the ElasticDash Python SDK,
 allowing users to run experiments on datasets with automatic tracing, evaluation,
 and result formatting.
 """
@@ -26,10 +26,10 @@ if TYPE_CHECKING:
 
 
 class LocalExperimentItem(TypedDict, total=False):
-    """Structure for local experiment data items (not from Langfuse datasets).
+    """Structure for local experiment data items (not from ElasticDash datasets).
 
     This TypedDict defines the structure for experiment items when using local data
-    rather than Langfuse-hosted datasets. All fields are optional to provide
+    rather than ElasticDash-hosted datasets. All fields are optional to provide
     flexibility in data structure.
 
     Attributes:
@@ -81,7 +81,7 @@ ExperimentItem = Union[LocalExperimentItem, "DatasetItemClient"]
 
 Can be either:
 - LocalExperimentItem: Dict-like items with 'input', 'expected_output', 'metadata' keys
-- DatasetItemClient: Items from Langfuse datasets with .input, .expected_output, .metadata attributes
+- DatasetItemClient: Items from ElasticDash datasets with .input, .expected_output, .metadata attributes
 """
 
 ExperimentData = Union[List[LocalExperimentItem], List["DatasetItemClient"]]
@@ -89,7 +89,7 @@ ExperimentData = Union[List[LocalExperimentItem], List["DatasetItemClient"]]
 
 Represents the collection of items to process in an experiment. Can be either:
 - List[LocalExperimentItem]: Local data items as dictionaries
-- List[DatasetItemClient]: Items from a Langfuse dataset (typically from dataset.items)
+- List[DatasetItemClient]: Items from a ElasticDash dataset (typically from dataset.items)
 """
 
 
@@ -109,13 +109,13 @@ class Evaluation:
             - Boolean: For binary assessments like "passes_safety_check"
         comment: Optional human-readable explanation of the evaluation result.
             Useful for providing context, explaining scoring rationale, or noting
-            special conditions. Displayed in Langfuse UI for interpretability.
+            special conditions. Displayed in ElasticDash UI for interpretability.
         metadata: Optional structured metadata about the evaluation process.
             Can include confidence scores, intermediate calculations, model versions,
             or any other relevant technical details.
         data_type: Optional score data type. Required if value is not NUMERIC.
             One of NUMERIC, CATEGORICAL, or BOOLEAN. Defaults to NUMERIC.
-        config_id: Optional Langfuse score config ID.
+        config_id: Optional ElasticDash score config ID.
 
     Examples:
         Basic accuracy evaluation:
@@ -199,7 +199,7 @@ class Evaluation:
             comment: Optional human-readable explanation of the result.
             metadata: Optional structured metadata about the evaluation process.
             data_type: Optional score data type (NUMERIC, CATEGORICAL, or BOOLEAN).
-            config_id: Optional Langfuse score config ID.
+            config_id: Optional ElasticDash score config ID.
 
         Note:
             All arguments must be provided as keywords. Positional arguments will raise a TypeError.
@@ -222,15 +222,15 @@ class ExperimentItemResult:
     Attributes:
         item: The original experiment item that was processed. Can be either
             a dictionary with 'input', 'expected_output', and 'metadata' keys,
-            or a DatasetItemClient from Langfuse datasets.
+            or a DatasetItemClient from ElasticDash datasets.
         output: The actual output produced by the task function for this item.
             Can be any type depending on what your task function returns.
         evaluations: List of evaluation results for this item. Each evaluation
             contains a name, value, optional comment, and optional metadata.
-        trace_id: Optional Langfuse trace ID for this item's execution. Used
-            to link the experiment result with the detailed trace in Langfuse UI.
+        trace_id: Optional ElasticDash trace ID for this item's execution. Used
+            to link the experiment result with the detailed trace in ElasticDash UI.
         dataset_run_id: Optional dataset run ID if this item was part of a
-            Langfuse dataset. None for local experiments.
+            ElasticDash dataset. None for local experiments.
 
     Examples:
         Accessing item result data:
@@ -253,7 +253,7 @@ class ExperimentItemResult:
             input_data = item_result.item["input"]
             expected = item_result.item.get("expected_output")
 
-        # Langfuse dataset item (object with attributes)
+        # ElasticDash dataset item (object with attributes)
         else:
             input_data = item_result.item.input
             expected = item_result.item.expected_output
@@ -279,8 +279,8 @@ class ExperimentItemResult:
             item: The original experiment item that was processed.
             output: The actual output produced by the task function for this item.
             evaluations: List of evaluation results for this item.
-            trace_id: Optional Langfuse trace ID for this item's execution.
-            dataset_run_id: Optional dataset run ID if this item was part of a Langfuse dataset.
+            trace_id: Optional ElasticDash trace ID for this item's execution.
+            dataset_run_id: Optional dataset run ID if this item was part of a ElasticDash dataset.
 
         Note:
             All arguments must be provided as keywords. Positional arguments will raise a TypeError.
@@ -307,8 +307,8 @@ class ExperimentResult:
             containing the original item, task output, evaluations, and trace information.
         run_evaluations: List of aggregate evaluation results computed across all items,
             such as average scores, statistical summaries, or cross-item analyses.
-        dataset_run_id: Optional ID of the dataset run in Langfuse (when using Langfuse datasets).
-        dataset_run_url: Optional direct URL to view the experiment results in Langfuse UI.
+        dataset_run_id: Optional ID of the dataset run in ElasticDash (when using ElasticDash datasets).
+        dataset_run_url: Optional direct URL to view the experiment results in ElasticDash UI.
 
     Examples:
         Basic usage with local dataset:
@@ -330,7 +330,7 @@ class ExperimentResult:
             print(f"Scores: {item_result.evaluations}")
         ```
 
-        Usage with Langfuse datasets:
+        Usage with ElasticDash datasets:
         ```python
         dataset = langfuse.get_dataset("qa-eval-set")
         result = dataset.run_experiment(
@@ -339,7 +339,7 @@ class ExperimentResult:
             evaluators=[relevance_check, accuracy_check]
         )
 
-        # View in Langfuse UI
+        # View in ElasticDash UI
         if result.dataset_run_url:
             print(f"View detailed results: {result.dataset_run_url}")
         ```
@@ -376,8 +376,8 @@ class ExperimentResult:
             description: Optional description of the experiment.
             item_results: List of results from processing individual dataset items.
             run_evaluations: List of aggregate evaluation results for the entire run.
-            dataset_run_id: Optional ID of the dataset run (for Langfuse datasets).
-            dataset_run_url: Optional URL to view results in Langfuse UI.
+            dataset_run_id: Optional ID of the dataset run (for ElasticDash datasets).
+            dataset_run_url: Optional URL to view results in ElasticDash UI.
         """
         self.name = name
         self.run_name = run_name
@@ -399,7 +399,7 @@ class ExperimentResult:
         - List of evaluation metrics used across items
         - Average scores computed across all processed items
         - Run-level evaluation results (aggregate metrics)
-        - Links to view detailed results in Langfuse UI (when available)
+        - Links to view detailed results in ElasticDash UI (when available)
         - Individual item details (when requested)
 
         Args:
@@ -416,7 +416,7 @@ class ExperimentResult:
             - List of all evaluation metrics that were applied
             - Average scores across all items for each numeric metric
             - Run-level evaluation results with comments
-            - Dataset run URL for viewing in Langfuse UI (if applicable)
+            - Dataset run URL for viewing in ElasticDash UI (if applicable)
             - Individual item details including inputs, outputs, and scores (if requested)
 
         Examples:
@@ -614,14 +614,14 @@ class TaskFunction(Protocol):
         Args:
             item: The experiment item to process. Can be either:
                 - Dict with keys like 'input', 'expected_output', 'metadata'
-                - Langfuse DatasetItem object with .input, .expected_output attributes
+                - ElasticDash DatasetItem object with .input, .expected_output attributes
             **kwargs: Additional keyword arguments that may be passed by the framework
 
         Returns:
             Any: The output of processing the item. This output will be:
             - Stored in the experiment results
             - Passed to all item-level evaluators for assessment
-            - Traced automatically in Langfuse for observability
+            - Traced automatically in ElasticDash for observability
 
             Can return either a direct value or an awaitable (async) result.
 
@@ -834,8 +834,8 @@ class RunEvaluatorFunction(Protocol):
                 - item: The original experiment item
                 - output: The task function's output for this item
                 - evaluations: List of item-level evaluation results
-                - trace_id: Langfuse trace ID for this execution
-                - dataset_run_id: Dataset run ID (if using Langfuse datasets)
+                - trace_id: ElasticDash trace ID for this execution
+                - dataset_run_id: Dataset run ID (if using ElasticDash datasets)
 
                 Note: This list only includes items that were successfully processed.
                 Failed items are excluded but logged separately.
@@ -1016,14 +1016,14 @@ async def _run_task(task: TaskFunction, item: ExperimentItem) -> Any:
 def create_evaluator_from_autoevals(
     autoevals_evaluator: Any, **kwargs: Optional[Dict[str, Any]]
 ) -> EvaluatorFunction:
-    """Create a Langfuse evaluator from an autoevals evaluator.
+    """Create a ElasticDash evaluator from an autoevals evaluator.
 
     Args:
         autoevals_evaluator: An autoevals evaluator instance
         **kwargs: Additional arguments passed to the evaluator
 
     Returns:
-        A Langfuse-compatible evaluator function
+        A ElasticDash-compatible evaluator function
     """
 
     def langfuse_evaluator(

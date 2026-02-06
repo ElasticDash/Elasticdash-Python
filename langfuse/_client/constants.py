@@ -1,15 +1,15 @@
-"""Constants used by the Langfuse OpenTelemetry integration.
+"""Constants used by the ElasticDash OpenTelemetry integration.
 
-This module defines constants used throughout the Langfuse OpenTelemetry integration.
+This module defines constants used throughout the ElasticDash OpenTelemetry integration.
 """
 
 from typing import Any, List, Literal, Union, get_args
 
 from typing_extensions import TypeAlias
 
-LANGFUSE_TRACER_NAME = "langfuse-sdk"
+ELASTICDASH_TRACER_NAME = "langfuse-sdk"
 
-LANGFUSE_SDK_EXPERIMENT_ENVIRONMENT = "sdk-experiment"
+ELASTICDASH_SDK_EXPERIMENT_ENVIRONMENT = "sdk-experiment"
 
 """Note: this type is used with .__args__ / get_args in some cases and therefore must remain flat"""
 ObservationTypeGenerationLike: TypeAlias = Literal[
@@ -32,10 +32,10 @@ ObservationTypeLiteralNoEvent: TypeAlias = Union[
     ObservationTypeSpanLike,
 ]
 
-"""Enumeration of valid observation types for Langfuse tracing.
+"""Enumeration of valid observation types for ElasticDash tracing.
 
 This Literal defines all available observation types that can be used with the @observe
-decorator and other Langfuse SDK methods.
+decorator and other ElasticDash SDK methods.
 """
 ObservationTypeLiteral: TypeAlias = Union[
     ObservationTypeLiteralNoEvent, Literal["event"]

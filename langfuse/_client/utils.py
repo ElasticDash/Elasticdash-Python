@@ -1,4 +1,4 @@
-"""Utility functions for Langfuse OpenTelemetry integration.
+"""Utility functions for ElasticDash OpenTelemetry integration.
 
 This module provides utility functions for working with OpenTelemetry spans,
 including formatting and serialization of span data, and async execution helpers.

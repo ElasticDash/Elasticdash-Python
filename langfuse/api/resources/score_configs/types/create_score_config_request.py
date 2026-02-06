@@ -35,7 +35,7 @@ class CreateScoreConfigRequest(pydantic_v1.BaseModel):
 
     description: typing.Optional[str] = pydantic_v1.Field(default=None)
     """
-    Description is shown across the Langfuse UI and can be used to e.g. explain the config categories in detail, why a numeric range was set, or provide additional context on config name or usage
+    Description is shown across the ElasticDash UI and can be used to e.g. explain the config categories in detail, why a numeric range was set, or provide additional context on config name or usage
     """
 
     def json(self, **kwargs: typing.Any) -> str:

@@ -31,7 +31,7 @@ class IngestionClient:
         request_options: typing.Optional[RequestOptions] = None,
     ) -> IngestionResponse:
         """
-        **Legacy endpoint for batch ingestion for Langfuse Observability.**
+        **Legacy endpoint for batch ingestion for ElasticDash Observability.**
 
         -> Please use the OpenTelemetry endpoint (`/api/public/otel/v1/traces`). Learn more: https://langfuse.com/integrations/native/opentelemetry
 
@@ -39,7 +39,7 @@ class IngestionClient:
         Each event has a type, an id, a timestamp, metadata and a body.
         Internally, we refer to this as the "event envelope" as it tells us something about the event but not the trace.
         We use the event id within this envelope to deduplicate messages to avoid processing the same event twice, i.e. the event id should be unique per request.
-        The event.body.id is the ID of the actual trace and will be used for updates and will be visible within the Langfuse App.
+        The event.body.id is the ID of the actual trace and will be used for updates and will be visible within the ElasticDash App.
         I.e. if you want to update a trace, you'd use the same body id, but separate event IDs.
 
         Notes:
@@ -53,7 +53,7 @@ class IngestionClient:
             Batch of tracing events to be ingested. Discriminated by attribute `type`.
 
         metadata : typing.Optional[typing.Any]
-            Optional. Metadata field used by the Langfuse SDKs for debugging.
+            Optional. Metadata field used by the ElasticDash SDKs for debugging.
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -67,12 +67,12 @@ class IngestionClient:
         import datetime
 
         from langfuse import IngestionEvent_TraceCreate, TraceBody
-        from langfuse.client import FernLangfuse
+        from langfuse.client import FernElasticDash
 
-        client = FernLangfuse(
-            x_langfuse_sdk_name="YOUR_X_LANGFUSE_SDK_NAME",
-            x_langfuse_sdk_version="YOUR_X_LANGFUSE_SDK_VERSION",
-            x_langfuse_public_key="YOUR_X_LANGFUSE_PUBLIC_KEY",
+        client = FernElasticDash(
+            x_langfuse_sdk_name="YOUR_X_ELASTICDASH_SDK_NAME",
+            x_langfuse_sdk_version="YOUR_X_ELASTICDASH_SDK_VERSION",
+            x_langfuse_public_key="YOUR_X_ELASTICDASH_PUBLIC_KEY",
             username="YOUR_USERNAME",
             password="YOUR_PASSWORD",
             base_url="https://yourhost.com/path/to/api",
@@ -149,7 +149,7 @@ class AsyncIngestionClient:
         request_options: typing.Optional[RequestOptions] = None,
     ) -> IngestionResponse:
         """
-        **Legacy endpoint for batch ingestion for Langfuse Observability.**
+        **Legacy endpoint for batch ingestion for ElasticDash Observability.**
 
         -> Please use the OpenTelemetry endpoint (`/api/public/otel/v1/traces`). Learn more: https://langfuse.com/integrations/native/opentelemetry
 
@@ -157,7 +157,7 @@ class AsyncIngestionClient:
         Each event has a type, an id, a timestamp, metadata and a body.
         Internally, we refer to this as the "event envelope" as it tells us something about the event but not the trace.
         We use the event id within this envelope to deduplicate messages to avoid processing the same event twice, i.e. the event id should be unique per request.
-        The event.body.id is the ID of the actual trace and will be used for updates and will be visible within the Langfuse App.
+        The event.body.id is the ID of the actual trace and will be used for updates and will be visible within the ElasticDash App.
         I.e. if you want to update a trace, you'd use the same body id, but separate event IDs.
 
         Notes:
@@ -171,7 +171,7 @@ class AsyncIngestionClient:
             Batch of tracing events to be ingested. Discriminated by attribute `type`.
 
         metadata : typing.Optional[typing.Any]
-            Optional. Metadata field used by the Langfuse SDKs for debugging.
+            Optional. Metadata field used by the ElasticDash SDKs for debugging.
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -186,12 +186,12 @@ class AsyncIngestionClient:
         import datetime
 
         from langfuse import IngestionEvent_TraceCreate, TraceBody
-        from langfuse.client import AsyncFernLangfuse
+        from langfuse.client import AsyncFernElasticDash
 
-        client = AsyncFernLangfuse(
-            x_langfuse_sdk_name="YOUR_X_LANGFUSE_SDK_NAME",
-            x_langfuse_sdk_version="YOUR_X_LANGFUSE_SDK_VERSION",
-            x_langfuse_public_key="YOUR_X_LANGFUSE_PUBLIC_KEY",
+        client = AsyncFernElasticDash(
+            x_langfuse_sdk_name="YOUR_X_ELASTICDASH_SDK_NAME",
+            x_langfuse_sdk_version="YOUR_X_ELASTICDASH_SDK_VERSION",
+            x_langfuse_public_key="YOUR_X_ELASTICDASH_PUBLIC_KEY",
             username="YOUR_USERNAME",
             password="YOUR_PASSWORD",
             base_url="https://yourhost.com/path/to/api",

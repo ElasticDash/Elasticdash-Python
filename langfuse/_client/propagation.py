@@ -1,4 +1,4 @@
-"""Attribute propagation utilities for Langfuse OpenTelemetry integration.
+"""Attribute propagation utilities for ElasticDash OpenTelemetry integration.
 
 This module provides the `propagate_attributes` context manager for setting trace-level
 attributes (user_id, session_id, metadata) that automatically propagate to all child spans
@@ -22,8 +22,8 @@ from opentelemetry.util._decorator import (
     _agnosticcontextmanager,
 )
 
-from langfuse._client.attributes import LangfuseOtelSpanAttributes
-from langfuse._client.constants import LANGFUSE_SDK_EXPERIMENT_ENVIRONMENT
+from langfuse._client.attributes import ElasticDashOtelSpanAttributes
+from langfuse._client.constants import ELASTICDASH_SDK_EXPERIMENT_ENVIRONMENT
 from langfuse.logger import langfuse_logger
 
 PropagatedKeys = Literal[
@@ -93,7 +93,7 @@ def propagate_attributes(
     currently active span and spans created after entering this context will have these
     attributes. Pre-existing spans will NOT be retroactively updated.
 
-    **Why this matters**: Langfuse aggregation queries (e.g., total cost by user_id,
+    **Why this matters**: ElasticDash aggregation queries (e.g., total cost by user_id,
     filtering by session_id) only include observations that have the attribute set.
     If you call `propagate_attributes` late in your workflow, earlier spans won't be
     included in aggregations for that attribute.
@@ -127,9 +127,9 @@ def propagate_attributes(
         Basic usage with user and session tracking:
 
         ```python
-        from langfuse import Langfuse
+        from langfuse import ElasticDash
 
-        langfuse = Langfuse()
+        langfuse = ElasticDash()
 
         # Set attributes early in the trace
         with langfuse.start_as_current_span(name="user_workflow") as span:
@@ -283,7 +283,7 @@ def _get_propagated_attributes_from_context(
     # Handle baggage
     baggage_entries = baggage.get_all(context=context)
     for baggage_key, baggage_value in baggage_entries.items():
-        if baggage_key.startswith(LANGFUSE_BAGGAGE_PREFIX):
+        if baggage_key.startswith(ELASTICDASH_BAGGAGE_PREFIX):
             span_key = _get_span_key_from_baggage_key(baggage_key)
 
             if span_key:
@@ -304,7 +304,7 @@ def _get_propagated_attributes_from_context(
         if isinstance(value, dict):
             # Handle metadata
             for k, v in value.items():
-                span_key = f"{LangfuseOtelSpanAttributes.TRACE_METADATA}.{k}"
+                span_key = f"{ElasticDashOtelSpanAttributes.TRACE_METADATA}.{k}"
                 propagated_attributes[span_key] = v
 
         else:
@@ -315,11 +315,11 @@ def _get_propagated_attributes_from_context(
             )
 
     if (
-        LangfuseOtelSpanAttributes.EXPERIMENT_ITEM_ROOT_OBSERVATION_ID
+        ElasticDashOtelSpanAttributes.EXPERIMENT_ITEM_ROOT_OBSERVATION_ID
         in propagated_attributes
     ):
-        propagated_attributes[LangfuseOtelSpanAttributes.ENVIRONMENT] = (
-            LANGFUSE_SDK_EXPERIMENT_ENVIRONMENT
+        propagated_attributes[ElasticDashOtelSpanAttributes.ENVIRONMENT] = (
+            ELASTICDASH_SDK_EXPERIMENT_ENVIRONMENT
         )
 
     return propagated_attributes
@@ -368,7 +368,7 @@ def _set_propagated_attribute(
             # Handle metadata
             for k, v in value.items():
                 span.set_attribute(
-                    key=f"{LangfuseOtelSpanAttributes.TRACE_METADATA}.{k}",
+                    key=f"{ElasticDashOtelSpanAttributes.TRACE_METADATA}.{k}",
                     value=v,
                 )
 
@@ -436,19 +436,19 @@ def _get_propagated_context_key(key: str) -> str:
     return f"langfuse.propagated.{key}"
 
 
-LANGFUSE_BAGGAGE_PREFIX = "langfuse_"
+ELASTICDASH_BAGGAGE_PREFIX = "langfuse_"
 
 
 def _get_propagated_baggage_key(key: str) -> str:
-    return f"{LANGFUSE_BAGGAGE_PREFIX}{key}"
+    return f"{ELASTICDASH_BAGGAGE_PREFIX}{key}"
 
 
 def _get_span_key_from_baggage_key(key: str) -> Optional[str]:
-    if not key.startswith(LANGFUSE_BAGGAGE_PREFIX):
+    if not key.startswith(ELASTICDASH_BAGGAGE_PREFIX):
         return None
 
     # Remove prefix to get the actual key name
-    suffix = key[len(LANGFUSE_BAGGAGE_PREFIX) :]
+    suffix = key[len(ELASTICDASH_BAGGAGE_PREFIX) :]
 
     if suffix.startswith("metadata_"):
         metadata_key = suffix[len("metadata_") :]
@@ -460,16 +460,16 @@ def _get_span_key_from_baggage_key(key: str) -> Optional[str]:
 
 def _get_propagated_span_key(key: str) -> str:
     return {
-        "session_id": LangfuseOtelSpanAttributes.TRACE_SESSION_ID,
-        "user_id": LangfuseOtelSpanAttributes.TRACE_USER_ID,
-        "version": LangfuseOtelSpanAttributes.VERSION,
-        "tags": LangfuseOtelSpanAttributes.TRACE_TAGS,
-        "trace_name": LangfuseOtelSpanAttributes.TRACE_NAME,
-        "experiment_id": LangfuseOtelSpanAttributes.EXPERIMENT_ID,
-        "experiment_name": LangfuseOtelSpanAttributes.EXPERIMENT_NAME,
-        "experiment_metadata": LangfuseOtelSpanAttributes.EXPERIMENT_METADATA,
-        "experiment_dataset_id": LangfuseOtelSpanAttributes.EXPERIMENT_DATASET_ID,
-        "experiment_item_id": LangfuseOtelSpanAttributes.EXPERIMENT_ITEM_ID,
-        "experiment_item_metadata": LangfuseOtelSpanAttributes.EXPERIMENT_ITEM_METADATA,
-        "experiment_item_root_observation_id": LangfuseOtelSpanAttributes.EXPERIMENT_ITEM_ROOT_OBSERVATION_ID,
-    }.get(key) or f"{LangfuseOtelSpanAttributes.TRACE_METADATA}.{key}"
+        "session_id": ElasticDashOtelSpanAttributes.TRACE_SESSION_ID,
+        "user_id": ElasticDashOtelSpanAttributes.TRACE_USER_ID,
+        "version": ElasticDashOtelSpanAttributes.VERSION,
+        "tags": ElasticDashOtelSpanAttributes.TRACE_TAGS,
+        "trace_name": ElasticDashOtelSpanAttributes.TRACE_NAME,
+        "experiment_id": ElasticDashOtelSpanAttributes.EXPERIMENT_ID,
+        "experiment_name": ElasticDashOtelSpanAttributes.EXPERIMENT_NAME,
+        "experiment_metadata": ElasticDashOtelSpanAttributes.EXPERIMENT_METADATA,
+        "experiment_dataset_id": ElasticDashOtelSpanAttributes.EXPERIMENT_DATASET_ID,
+        "experiment_item_id": ElasticDashOtelSpanAttributes.EXPERIMENT_ITEM_ID,
+        "experiment_item_metadata": ElasticDashOtelSpanAttributes.EXPERIMENT_ITEM_METADATA,
+        "experiment_item_root_observation_id": ElasticDashOtelSpanAttributes.EXPERIMENT_ITEM_ROOT_OBSERVATION_ID,
+    }.get(key) or f"{ElasticDashOtelSpanAttributes.TRACE_METADATA}.{key}"

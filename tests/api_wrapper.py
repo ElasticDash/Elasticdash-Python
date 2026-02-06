@@ -4,12 +4,12 @@ from time import sleep
 import httpx
 
 
-class LangfuseAPI:
+class ElasticDashAPI:
     def __init__(self, username=None, password=None, base_url=None):
-        username = username if username else os.environ["LANGFUSE_PUBLIC_KEY"]
-        password = password if password else os.environ["LANGFUSE_SECRET_KEY"]
+        username = username if username else os.environ["ELASTICDASH_PUBLIC_KEY"]
+        password = password if password else os.environ["ELASTICDASH_SECRET_KEY"]
         self.auth = (username, password)
-        self.BASE_URL = base_url if base_url else os.environ["LANGFUSE_BASE_URL"]
+        self.BASE_URL = base_url if base_url else os.environ["ELASTICDASH_BASE_URL"]
 
     def get_observation(self, observation_id):
         sleep(1)

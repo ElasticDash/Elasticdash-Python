@@ -16,13 +16,13 @@ from langgraph.graph import END, START, MessagesState, StateGraph
 from langgraph.prebuilt import ToolNode
 from pydantic.v1 import BaseModel, Field
 
-from langfuse._client.client import Langfuse
+from langfuse._client.client import ElasticDash
 from langfuse.langchain import CallbackHandler
 from tests.utils import create_uuid, encode_file_to_base64, get_api
 
 
 def test_callback_generated_from_trace_chat():
-    langfuse = Langfuse()
+    langfuse = ElasticDash()
 
     trace_id = create_uuid()
 
@@ -70,7 +70,7 @@ def test_callback_generated_from_trace_chat():
 
 
 def test_callback_generated_from_lcel_chain():
-    langfuse = Langfuse()
+    langfuse = ElasticDash()
 
     with langfuse.start_as_current_span(name="parent") as span:
         trace_id = span.trace_id
@@ -157,7 +157,7 @@ def test_basic_chat_openai():
 
 
 def test_callback_simple_openai():
-    langfuse = Langfuse()
+    langfuse = ElasticDash()
 
     with langfuse.start_as_current_span(name="simple_openai_test") as span:
         trace_id = span.trace_id
@@ -197,7 +197,7 @@ def test_callback_simple_openai():
 
 
 def test_callback_multiple_invocations_on_different_traces():
-    langfuse = Langfuse()
+    langfuse = ElasticDash()
 
     with langfuse.start_as_current_span(name="multiple_invocations_test") as span:
         trace_id = span.trace_id
@@ -243,7 +243,7 @@ def test_callback_multiple_invocations_on_different_traces():
 
 
 def test_openai_instruct_usage():
-    langfuse = Langfuse()
+    langfuse = ElasticDash()
 
     with langfuse.start_as_current_span(name="openai_instruct_usage_test") as span:
         trace_id = span.trace_id
@@ -297,7 +297,7 @@ def test_openai_instruct_usage():
 
 
 def test_get_langchain_prompt_with_jinja2():
-    langfuse = Langfuse()
+    langfuse = ElasticDash()
 
     prompt = 'this is a {{ template }} template that should remain unchanged: {{ handle_text(payload["Name"], "Name is") }}'
     langfuse.create_prompt(
@@ -317,7 +317,7 @@ def test_get_langchain_prompt_with_jinja2():
 
 
 def test_get_langchain_prompt():
-    langfuse = Langfuse()
+    langfuse = ElasticDash()
 
     test_prompts = ["This is a {{test}}", "This is a {{test}}. And this is a {{test2}}"]
 
@@ -348,7 +348,7 @@ def test_get_langchain_prompt():
 
 
 def test_get_langchain_chat_prompt():
-    langfuse = Langfuse()
+    langfuse = ElasticDash()
 
     test_prompts = [
         [{"role": "system", "content": "This is a {{test}} with a {{test}}"}],
@@ -388,7 +388,7 @@ def test_get_langchain_chat_prompt():
 
 
 def test_link_langfuse_prompts_invoke():
-    langfuse = Langfuse()
+    langfuse = ElasticDash()
     trace_name = "test_link_langfuse_prompts_invoke"
 
     # Create prompts
@@ -471,7 +471,7 @@ def test_link_langfuse_prompts_invoke():
 
 
 def test_link_langfuse_prompts_stream():
-    langfuse = Langfuse()
+    langfuse = ElasticDash()
     trace_name = "test_link_langfuse_prompts_stream"
 
     # Create prompts
@@ -561,7 +561,7 @@ def test_link_langfuse_prompts_stream():
 
 
 def test_link_langfuse_prompts_batch():
-    langfuse = Langfuse()
+    langfuse = ElasticDash()
     trace_name = "test_link_langfuse_prompts_batch_" + create_uuid()[:8]
 
     # Create prompts
@@ -653,7 +653,7 @@ def test_link_langfuse_prompts_batch():
 
 
 def test_get_langchain_text_prompt_with_precompiled_prompt():
-    langfuse = Langfuse()
+    langfuse = ElasticDash()
 
     prompt_name = "test_precompiled_langchain_prompt"
     test_prompt = (
@@ -678,7 +678,7 @@ def test_get_langchain_text_prompt_with_precompiled_prompt():
 
 
 def test_get_langchain_chat_prompt_with_precompiled_prompt():
-    langfuse = Langfuse()
+    langfuse = ElasticDash()
 
     prompt_name = "test_precompiled_langchain_chat_prompt"
     test_prompt = [
@@ -804,7 +804,7 @@ def test_langfuse_overhead():
 
     start = time.monotonic()
     handler = CallbackHandler()
-    langfuse = Langfuse()
+    langfuse = ElasticDash()
 
     with langfuse.start_as_current_span(name="test_langfuse_overhead"):
         test_chain.invoke(inputs, config={"callbacks": [handler]})
@@ -812,10 +812,10 @@ def test_langfuse_overhead():
     duration_with_langfuse = (time.monotonic() - start) * 1000
 
     overhead = duration_with_langfuse - duration_without_langfuse
-    print(f"Langfuse overhead: {overhead}ms")
+    print(f"ElasticDash overhead: {overhead}ms")
 
     assert overhead < 100, (
-        f"Langfuse tracing overhead of {overhead}ms exceeds threshold"
+        f"ElasticDash tracing overhead of {overhead}ms exceeds threshold"
     )
 
     langfuse.flush()

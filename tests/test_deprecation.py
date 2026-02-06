@@ -5,7 +5,7 @@ from unittest.mock import patch
 
 import pytest
 
-from langfuse import Langfuse
+from langfuse import ElasticDash
 
 
 class TestDeprecationWarnings:
@@ -49,16 +49,16 @@ class TestDeprecationWarnings:
 
     @pytest.fixture
     def langfuse_client(self):
-        """Create a Langfuse client for testing."""
+        """Create a ElasticDash client for testing."""
         with patch.dict(
             "os.environ",
             {
-                "LANGFUSE_PUBLIC_KEY": "test_key",
-                "LANGFUSE_SECRET_KEY": "test_secret",
-                "LANGFUSE_BASE_URL": "http://localhost:3000",
+                "ELASTICDASH_PUBLIC_KEY": "test_key",
+                "ELASTICDASH_SECRET_KEY": "test_secret",
+                "ELASTICDASH_BASE_URL": "http://localhost:3000",
             },
         ):
-            return Langfuse()
+            return ElasticDash()
 
     @pytest.mark.parametrize("func_info", DEPRECATED_FUNCTIONS)
     def test_deprecated_function_warnings(self, langfuse_client, func_info):

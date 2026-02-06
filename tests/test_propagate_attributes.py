@@ -12,8 +12,8 @@ import pytest
 from opentelemetry.instrumentation.threading import ThreadingInstrumentor
 
 from langfuse import propagate_attributes
-from langfuse._client.attributes import LangfuseOtelSpanAttributes, _serialize
-from langfuse._client.constants import LANGFUSE_SDK_EXPERIMENT_ENVIRONMENT
+from langfuse._client.attributes import ElasticDashOtelSpanAttributes, _serialize
+from langfuse._client.constants import ELASTICDASH_SDK_EXPERIMENT_ENVIRONMENT
 from tests.test_otel import TestOTelBase
 
 
@@ -22,15 +22,15 @@ class TestPropagateAttributesBase(TestOTelBase):
 
     @pytest.fixture
     def langfuse_client(self, monkeypatch, tracer_provider, mock_processor_init):
-        """Create a mocked Langfuse client with explicit tracer_provider for testing."""
-        from langfuse import Langfuse
+        """Create a mocked ElasticDash client with explicit tracer_provider for testing."""
+        from langfuse import ElasticDash
 
         # Set environment variables
-        monkeypatch.setenv("LANGFUSE_PUBLIC_KEY", "test-public-key")
-        monkeypatch.setenv("LANGFUSE_SECRET_KEY", "test-secret-key")
+        monkeypatch.setenv("ELASTICDASH_PUBLIC_KEY", "test-public-key")
+        monkeypatch.setenv("ELASTICDASH_SECRET_KEY", "test-secret-key")
 
         # Create test client with explicit tracer_provider
-        client = Langfuse(
+        client = ElasticDash(
             public_key="test-public-key",
             secret_key="test-secret-key",
             host="http://test-host",
@@ -90,14 +90,14 @@ class TestPropagateAttributesBasic(TestPropagateAttributesBase):
         child1_span = self.get_span_by_name(memory_exporter, "child-span-1")
         self.verify_span_attribute(
             child1_span,
-            LangfuseOtelSpanAttributes.TRACE_USER_ID,
+            ElasticDashOtelSpanAttributes.TRACE_USER_ID,
             "test_user_123",
         )
 
         child2_span = self.get_span_by_name(memory_exporter, "child-span-2")
         self.verify_span_attribute(
             child2_span,
-            LangfuseOtelSpanAttributes.TRACE_USER_ID,
+            ElasticDashOtelSpanAttributes.TRACE_USER_ID,
             "test_user_123",
         )
 
@@ -117,14 +117,14 @@ class TestPropagateAttributesBasic(TestPropagateAttributesBase):
         child1_span = self.get_span_by_name(memory_exporter, "child-span-1")
         self.verify_span_attribute(
             child1_span,
-            LangfuseOtelSpanAttributes.TRACE_SESSION_ID,
+            ElasticDashOtelSpanAttributes.TRACE_SESSION_ID,
             "session_abc",
         )
 
         child2_span = self.get_span_by_name(memory_exporter, "child-span-2")
         self.verify_span_attribute(
             child2_span,
-            LangfuseOtelSpanAttributes.TRACE_SESSION_ID,
+            ElasticDashOtelSpanAttributes.TRACE_SESSION_ID,
             "session_abc",
         )
 
@@ -144,24 +144,24 @@ class TestPropagateAttributesBasic(TestPropagateAttributesBase):
         child1_span = self.get_span_by_name(memory_exporter, "child-span-1")
         self.verify_span_attribute(
             child1_span,
-            f"{LangfuseOtelSpanAttributes.TRACE_METADATA}.experiment",
+            f"{ElasticDashOtelSpanAttributes.TRACE_METADATA}.experiment",
             "variant_a",
         )
         self.verify_span_attribute(
             child1_span,
-            f"{LangfuseOtelSpanAttributes.TRACE_METADATA}.version",
+            f"{ElasticDashOtelSpanAttributes.TRACE_METADATA}.version",
             "1.0",
         )
 
         child2_span = self.get_span_by_name(memory_exporter, "child-span-2")
         self.verify_span_attribute(
             child2_span,
-            f"{LangfuseOtelSpanAttributes.TRACE_METADATA}.experiment",
+            f"{ElasticDashOtelSpanAttributes.TRACE_METADATA}.experiment",
             "variant_a",
         )
         self.verify_span_attribute(
             child2_span,
-            f"{LangfuseOtelSpanAttributes.TRACE_METADATA}.version",
+            f"{ElasticDashOtelSpanAttributes.TRACE_METADATA}.version",
             "1.0",
         )
 
@@ -179,19 +179,19 @@ class TestPropagateAttributesBasic(TestPropagateAttributesBase):
         # Verify child has all attributes
         child_span = self.get_span_by_name(memory_exporter, "child-span")
         self.verify_span_attribute(
-            child_span, LangfuseOtelSpanAttributes.TRACE_USER_ID, "user_123"
+            child_span, ElasticDashOtelSpanAttributes.TRACE_USER_ID, "user_123"
         )
         self.verify_span_attribute(
-            child_span, LangfuseOtelSpanAttributes.TRACE_SESSION_ID, "session_abc"
+            child_span, ElasticDashOtelSpanAttributes.TRACE_SESSION_ID, "session_abc"
         )
         self.verify_span_attribute(
             child_span,
-            f"{LangfuseOtelSpanAttributes.TRACE_METADATA}.experiment",
+            f"{ElasticDashOtelSpanAttributes.TRACE_METADATA}.experiment",
             "test",
         )
         self.verify_span_attribute(
             child_span,
-            f"{LangfuseOtelSpanAttributes.TRACE_METADATA}.env",
+            f"{ElasticDashOtelSpanAttributes.TRACE_METADATA}.env",
             "prod",
         )
 
@@ -216,7 +216,7 @@ class TestPropagateAttributesHierarchy(TestPropagateAttributesBase):
         for i in range(1, 4):
             child_span = self.get_span_by_name(memory_exporter, f"child-{i}")
             self.verify_span_attribute(
-                child_span, LangfuseOtelSpanAttributes.TRACE_USER_ID, "user_123"
+                child_span, ElasticDashOtelSpanAttributes.TRACE_USER_ID, "user_123"
             )
 
     def test_propagation_to_grandchildren(self, langfuse_client, memory_exporter):
@@ -234,10 +234,10 @@ class TestPropagateAttributesHierarchy(TestPropagateAttributesBase):
 
         for span in [parent_span, child_span, grandchild_span]:
             self.verify_span_attribute(
-                span, LangfuseOtelSpanAttributes.TRACE_USER_ID, "user_123"
+                span, ElasticDashOtelSpanAttributes.TRACE_USER_ID, "user_123"
             )
             self.verify_span_attribute(
-                span, LangfuseOtelSpanAttributes.TRACE_SESSION_ID, "session_abc"
+                span, ElasticDashOtelSpanAttributes.TRACE_SESSION_ID, "session_abc"
             )
 
     def test_propagation_across_observation_types(
@@ -259,12 +259,12 @@ class TestPropagateAttributesHierarchy(TestPropagateAttributesBase):
         # Verify both observation types have user_id
         span_data = self.get_span_by_name(memory_exporter, "test-span")
         self.verify_span_attribute(
-            span_data, LangfuseOtelSpanAttributes.TRACE_USER_ID, "user_123"
+            span_data, ElasticDashOtelSpanAttributes.TRACE_USER_ID, "user_123"
         )
 
         generation_data = self.get_span_by_name(memory_exporter, "test-generation")
         self.verify_span_attribute(
-            generation_data, LangfuseOtelSpanAttributes.TRACE_USER_ID, "user_123"
+            generation_data, ElasticDashOtelSpanAttributes.TRACE_USER_ID, "user_123"
         )
 
 
@@ -291,7 +291,7 @@ class TestPropagateAttributesTiming(TestPropagateAttributesBase):
         for i in range(1, 4):
             child_span = self.get_span_by_name(memory_exporter, f"child-{i}")
             self.verify_span_attribute(
-                child_span, LangfuseOtelSpanAttributes.TRACE_USER_ID, "user_123"
+                child_span, ElasticDashOtelSpanAttributes.TRACE_USER_ID, "user_123"
             )
 
     def test_late_propagation_only_future_spans_covered(
@@ -312,12 +312,12 @@ class TestPropagateAttributesTiming(TestPropagateAttributesBase):
         # Verify: child1 does NOT have user_id, child2 DOES
         child1_span = self.get_span_by_name(memory_exporter, "child-1")
         self.verify_missing_attribute(
-            child1_span, LangfuseOtelSpanAttributes.TRACE_USER_ID
+            child1_span, ElasticDashOtelSpanAttributes.TRACE_USER_ID
         )
 
         child2_span = self.get_span_by_name(memory_exporter, "child-2")
         self.verify_span_attribute(
-            child2_span, LangfuseOtelSpanAttributes.TRACE_USER_ID, "user_123"
+            child2_span, ElasticDashOtelSpanAttributes.TRACE_USER_ID, "user_123"
         )
 
     def test_current_span_gets_attributes(self, langfuse_client, memory_exporter):
@@ -330,7 +330,7 @@ class TestPropagateAttributesTiming(TestPropagateAttributesBase):
         # Verify parent span itself has the attribute
         parent_span = self.get_span_by_name(memory_exporter, "parent-span")
         self.verify_span_attribute(
-            parent_span, LangfuseOtelSpanAttributes.TRACE_USER_ID, "user_123"
+            parent_span, ElasticDashOtelSpanAttributes.TRACE_USER_ID, "user_123"
         )
 
     def test_spans_outside_context_unaffected(self, langfuse_client, memory_exporter):
@@ -352,17 +352,17 @@ class TestPropagateAttributesTiming(TestPropagateAttributesBase):
         # Verify: only span2 has user_id
         span1_data = self.get_span_by_name(memory_exporter, "span-1")
         self.verify_missing_attribute(
-            span1_data, LangfuseOtelSpanAttributes.TRACE_USER_ID
+            span1_data, ElasticDashOtelSpanAttributes.TRACE_USER_ID
         )
 
         span2_data = self.get_span_by_name(memory_exporter, "span-2")
         self.verify_span_attribute(
-            span2_data, LangfuseOtelSpanAttributes.TRACE_USER_ID, "user_123"
+            span2_data, ElasticDashOtelSpanAttributes.TRACE_USER_ID, "user_123"
         )
 
         span3_data = self.get_span_by_name(memory_exporter, "span-3")
         self.verify_missing_attribute(
-            span3_data, LangfuseOtelSpanAttributes.TRACE_USER_ID
+            span3_data, ElasticDashOtelSpanAttributes.TRACE_USER_ID
         )
 
 
@@ -381,7 +381,7 @@ class TestPropagateAttributesValidation(TestPropagateAttributesBase):
         # Verify child does NOT have user_id
         child_span = self.get_span_by_name(memory_exporter, "child-span")
         self.verify_missing_attribute(
-            child_span, LangfuseOtelSpanAttributes.TRACE_USER_ID
+            child_span, ElasticDashOtelSpanAttributes.TRACE_USER_ID
         )
 
     def test_session_id_over_200_chars_dropped(self, langfuse_client, memory_exporter):
@@ -396,7 +396,7 @@ class TestPropagateAttributesValidation(TestPropagateAttributesBase):
         # Verify child does NOT have session_id
         child_span = self.get_span_by_name(memory_exporter, "child-span")
         self.verify_missing_attribute(
-            child_span, LangfuseOtelSpanAttributes.TRACE_SESSION_ID
+            child_span, ElasticDashOtelSpanAttributes.TRACE_SESSION_ID
         )
 
     def test_metadata_value_over_200_chars_dropped(
@@ -411,7 +411,7 @@ class TestPropagateAttributesValidation(TestPropagateAttributesBase):
         # Verify child does NOT have metadata.key
         child_span = self.get_span_by_name(memory_exporter, "child-span")
         self.verify_missing_attribute(
-            child_span, f"{LangfuseOtelSpanAttributes.TRACE_METADATA}.key"
+            child_span, f"{ElasticDashOtelSpanAttributes.TRACE_METADATA}.key"
         )
 
     def test_exactly_200_chars_accepted(self, langfuse_client, memory_exporter):
@@ -426,7 +426,7 @@ class TestPropagateAttributesValidation(TestPropagateAttributesBase):
         # Verify child HAS user_id
         child_span = self.get_span_by_name(memory_exporter, "child-span")
         self.verify_span_attribute(
-            child_span, LangfuseOtelSpanAttributes.TRACE_USER_ID, user_id_200
+            child_span, ElasticDashOtelSpanAttributes.TRACE_USER_ID, user_id_200
         )
 
     def test_201_chars_rejected(self, langfuse_client, memory_exporter):
@@ -441,7 +441,7 @@ class TestPropagateAttributesValidation(TestPropagateAttributesBase):
         # Verify child does NOT have user_id
         child_span = self.get_span_by_name(memory_exporter, "child-span")
         self.verify_missing_attribute(
-            child_span, LangfuseOtelSpanAttributes.TRACE_USER_ID
+            child_span, ElasticDashOtelSpanAttributes.TRACE_USER_ID
         )
 
     def test_non_string_user_id_dropped(self, langfuse_client, memory_exporter):
@@ -454,7 +454,7 @@ class TestPropagateAttributesValidation(TestPropagateAttributesBase):
         # Verify child does NOT have user_id
         child_span = self.get_span_by_name(memory_exporter, "child-span")
         self.verify_missing_attribute(
-            child_span, LangfuseOtelSpanAttributes.TRACE_USER_ID
+            child_span, ElasticDashOtelSpanAttributes.TRACE_USER_ID
         )
 
     def test_mixed_valid_invalid_metadata(self, langfuse_client, memory_exporter):
@@ -474,16 +474,16 @@ class TestPropagateAttributesValidation(TestPropagateAttributesBase):
         child_span = self.get_span_by_name(memory_exporter, "child-span")
         self.verify_span_attribute(
             child_span,
-            f"{LangfuseOtelSpanAttributes.TRACE_METADATA}.valid_key",
+            f"{ElasticDashOtelSpanAttributes.TRACE_METADATA}.valid_key",
             "valid_value",
         )
         self.verify_span_attribute(
             child_span,
-            f"{LangfuseOtelSpanAttributes.TRACE_METADATA}.another_valid",
+            f"{ElasticDashOtelSpanAttributes.TRACE_METADATA}.another_valid",
             "ok",
         )
         self.verify_missing_attribute(
-            child_span, f"{LangfuseOtelSpanAttributes.TRACE_METADATA}.invalid_key"
+            child_span, f"{ElasticDashOtelSpanAttributes.TRACE_METADATA}.invalid_key"
         )
 
 
@@ -506,12 +506,12 @@ class TestPropagateAttributesNesting(TestPropagateAttributesBase):
         # Verify: span1 has user1, span2 has user2
         span1_data = self.get_span_by_name(memory_exporter, "span-1")
         self.verify_span_attribute(
-            span1_data, LangfuseOtelSpanAttributes.TRACE_USER_ID, "user1"
+            span1_data, ElasticDashOtelSpanAttributes.TRACE_USER_ID, "user1"
         )
 
         span2_data = self.get_span_by_name(memory_exporter, "span-2")
         self.verify_span_attribute(
-            span2_data, LangfuseOtelSpanAttributes.TRACE_USER_ID, "user2"
+            span2_data, ElasticDashOtelSpanAttributes.TRACE_USER_ID, "user2"
         )
 
     def test_after_inner_context_outer_restored(self, langfuse_client, memory_exporter):
@@ -534,17 +534,17 @@ class TestPropagateAttributesNesting(TestPropagateAttributesBase):
         # Verify: span1 and span3 have user1, span2 has user2
         span1_data = self.get_span_by_name(memory_exporter, "span-1")
         self.verify_span_attribute(
-            span1_data, LangfuseOtelSpanAttributes.TRACE_USER_ID, "user1"
+            span1_data, ElasticDashOtelSpanAttributes.TRACE_USER_ID, "user1"
         )
 
         span2_data = self.get_span_by_name(memory_exporter, "span-2")
         self.verify_span_attribute(
-            span2_data, LangfuseOtelSpanAttributes.TRACE_USER_ID, "user2"
+            span2_data, ElasticDashOtelSpanAttributes.TRACE_USER_ID, "user2"
         )
 
         span3_data = self.get_span_by_name(memory_exporter, "span-3")
         self.verify_span_attribute(
-            span3_data, LangfuseOtelSpanAttributes.TRACE_USER_ID, "user1"
+            span3_data, ElasticDashOtelSpanAttributes.TRACE_USER_ID, "user1"
         )
 
     def test_nested_different_attributes(self, langfuse_client, memory_exporter):
@@ -559,10 +559,10 @@ class TestPropagateAttributesNesting(TestPropagateAttributesBase):
         # Verify: span has BOTH user_id and session_id
         span_data = self.get_span_by_name(memory_exporter, "span-1")
         self.verify_span_attribute(
-            span_data, LangfuseOtelSpanAttributes.TRACE_USER_ID, "user1"
+            span_data, ElasticDashOtelSpanAttributes.TRACE_USER_ID, "user1"
         )
         self.verify_span_attribute(
-            span_data, LangfuseOtelSpanAttributes.TRACE_SESSION_ID, "session1"
+            span_data, ElasticDashOtelSpanAttributes.TRACE_SESSION_ID, "session1"
         )
 
     def test_nested_metadata_merges_additively(self, langfuse_client, memory_exporter):
@@ -588,38 +588,38 @@ class TestPropagateAttributesNesting(TestPropagateAttributesBase):
         outer_span_data = self.get_span_by_name(memory_exporter, "outer-span")
         self.verify_span_attribute(
             outer_span_data,
-            f"{LangfuseOtelSpanAttributes.TRACE_METADATA}.env",
+            f"{ElasticDashOtelSpanAttributes.TRACE_METADATA}.env",
             "prod",
         )
         self.verify_span_attribute(
             outer_span_data,
-            f"{LangfuseOtelSpanAttributes.TRACE_METADATA}.region",
+            f"{ElasticDashOtelSpanAttributes.TRACE_METADATA}.region",
             "us-east",
         )
         self.verify_missing_attribute(
-            outer_span_data, f"{LangfuseOtelSpanAttributes.TRACE_METADATA}.experiment"
+            outer_span_data, f"{ElasticDashOtelSpanAttributes.TRACE_METADATA}.experiment"
         )
 
         # Verify: inner span has ALL metadata (merged)
         inner_span_data = self.get_span_by_name(memory_exporter, "inner-span")
         self.verify_span_attribute(
             inner_span_data,
-            f"{LangfuseOtelSpanAttributes.TRACE_METADATA}.env",
+            f"{ElasticDashOtelSpanAttributes.TRACE_METADATA}.env",
             "prod",
         )
         self.verify_span_attribute(
             inner_span_data,
-            f"{LangfuseOtelSpanAttributes.TRACE_METADATA}.region",
+            f"{ElasticDashOtelSpanAttributes.TRACE_METADATA}.region",
             "us-east",
         )
         self.verify_span_attribute(
             inner_span_data,
-            f"{LangfuseOtelSpanAttributes.TRACE_METADATA}.experiment",
+            f"{ElasticDashOtelSpanAttributes.TRACE_METADATA}.experiment",
             "A",
         )
         self.verify_span_attribute(
             inner_span_data,
-            f"{LangfuseOtelSpanAttributes.TRACE_METADATA}.version",
+            f"{ElasticDashOtelSpanAttributes.TRACE_METADATA}.version",
             "2.0",
         )
 
@@ -627,16 +627,16 @@ class TestPropagateAttributesNesting(TestPropagateAttributesBase):
         after_span_data = self.get_span_by_name(memory_exporter, "after-span")
         self.verify_span_attribute(
             after_span_data,
-            f"{LangfuseOtelSpanAttributes.TRACE_METADATA}.env",
+            f"{ElasticDashOtelSpanAttributes.TRACE_METADATA}.env",
             "prod",
         )
         self.verify_span_attribute(
             after_span_data,
-            f"{LangfuseOtelSpanAttributes.TRACE_METADATA}.region",
+            f"{ElasticDashOtelSpanAttributes.TRACE_METADATA}.region",
             "us-east",
         )
         self.verify_missing_attribute(
-            after_span_data, f"{LangfuseOtelSpanAttributes.TRACE_METADATA}.experiment"
+            after_span_data, f"{ElasticDashOtelSpanAttributes.TRACE_METADATA}.experiment"
         )
 
     def test_nested_metadata_inner_overwrites_conflicting_keys(
@@ -660,26 +660,26 @@ class TestPropagateAttributesNesting(TestPropagateAttributesBase):
         # Overwritten key
         self.verify_span_attribute(
             span_data,
-            f"{LangfuseOtelSpanAttributes.TRACE_METADATA}.env",
+            f"{ElasticDashOtelSpanAttributes.TRACE_METADATA}.env",
             "production",  # Inner value wins
         )
 
         # Preserved keys from outer
         self.verify_span_attribute(
             span_data,
-            f"{LangfuseOtelSpanAttributes.TRACE_METADATA}.version",
+            f"{ElasticDashOtelSpanAttributes.TRACE_METADATA}.version",
             "1.0",  # From outer
         )
         self.verify_span_attribute(
             span_data,
-            f"{LangfuseOtelSpanAttributes.TRACE_METADATA}.region",
+            f"{ElasticDashOtelSpanAttributes.TRACE_METADATA}.region",
             "us-west",  # From outer
         )
 
         # New key from inner
         self.verify_span_attribute(
             span_data,
-            f"{LangfuseOtelSpanAttributes.TRACE_METADATA}.experiment",
+            f"{ElasticDashOtelSpanAttributes.TRACE_METADATA}.experiment",
             "B",  # From inner
         )
 
@@ -698,24 +698,24 @@ class TestPropagateAttributesNesting(TestPropagateAttributesBase):
         # Conflicting key: innermost wins
         self.verify_span_attribute(
             span_data,
-            f"{LangfuseOtelSpanAttributes.TRACE_METADATA}.level",
+            f"{ElasticDashOtelSpanAttributes.TRACE_METADATA}.level",
             "3",
         )
 
         # Unique keys from each level
         self.verify_span_attribute(
             span_data,
-            f"{LangfuseOtelSpanAttributes.TRACE_METADATA}.a",
+            f"{ElasticDashOtelSpanAttributes.TRACE_METADATA}.a",
             "outer",
         )
         self.verify_span_attribute(
             span_data,
-            f"{LangfuseOtelSpanAttributes.TRACE_METADATA}.b",
+            f"{ElasticDashOtelSpanAttributes.TRACE_METADATA}.b",
             "middle",
         )
         self.verify_span_attribute(
             span_data,
-            f"{LangfuseOtelSpanAttributes.TRACE_METADATA}.c",
+            f"{ElasticDashOtelSpanAttributes.TRACE_METADATA}.c",
             "inner",
         )
 
@@ -732,12 +732,12 @@ class TestPropagateAttributesNesting(TestPropagateAttributesBase):
         span_data = self.get_span_by_name(memory_exporter, "span-1")
         self.verify_span_attribute(
             span_data,
-            f"{LangfuseOtelSpanAttributes.TRACE_METADATA}.key1",
+            f"{ElasticDashOtelSpanAttributes.TRACE_METADATA}.key1",
             "value1",
         )
         self.verify_span_attribute(
             span_data,
-            f"{LangfuseOtelSpanAttributes.TRACE_METADATA}.key2",
+            f"{ElasticDashOtelSpanAttributes.TRACE_METADATA}.key2",
             "value2",
         )
 
@@ -758,19 +758,19 @@ class TestPropagateAttributesNesting(TestPropagateAttributesBase):
         # Verify: user_id and session_id are preserved, metadata merged
         span_data = self.get_span_by_name(memory_exporter, "span-1")
         self.verify_span_attribute(
-            span_data, LangfuseOtelSpanAttributes.TRACE_USER_ID, "user1"
+            span_data, ElasticDashOtelSpanAttributes.TRACE_USER_ID, "user1"
         )
         self.verify_span_attribute(
-            span_data, LangfuseOtelSpanAttributes.TRACE_SESSION_ID, "session1"
+            span_data, ElasticDashOtelSpanAttributes.TRACE_SESSION_ID, "session1"
         )
         self.verify_span_attribute(
             span_data,
-            f"{LangfuseOtelSpanAttributes.TRACE_METADATA}.outer",
+            f"{ElasticDashOtelSpanAttributes.TRACE_METADATA}.outer",
             "value",
         )
         self.verify_span_attribute(
             span_data,
-            f"{LangfuseOtelSpanAttributes.TRACE_METADATA}.inner",
+            f"{ElasticDashOtelSpanAttributes.TRACE_METADATA}.inner",
             "value",
         )
 
@@ -799,10 +799,10 @@ class TestPropagateAttributesEdgeCases(TestPropagateAttributesBase):
         # Should not crash, no attributes set
         child_span = self.get_span_by_name(memory_exporter, "child-span")
         self.verify_missing_attribute(
-            child_span, LangfuseOtelSpanAttributes.TRACE_USER_ID
+            child_span, ElasticDashOtelSpanAttributes.TRACE_USER_ID
         )
         self.verify_missing_attribute(
-            child_span, LangfuseOtelSpanAttributes.TRACE_SESSION_ID
+            child_span, ElasticDashOtelSpanAttributes.TRACE_SESSION_ID
         )
 
     def test_empty_metadata_dict(self, langfuse_client, memory_exporter):
@@ -831,10 +831,10 @@ class TestPropagateAttributesEdgeCases(TestPropagateAttributesBase):
         # No metadata attributes should be set
         child_span = self.get_span_by_name(memory_exporter, "child-span")
         self.verify_missing_attribute(
-            child_span, f"{LangfuseOtelSpanAttributes.TRACE_METADATA}.key1"
+            child_span, f"{ElasticDashOtelSpanAttributes.TRACE_METADATA}.key1"
         )
         self.verify_missing_attribute(
-            child_span, f"{LangfuseOtelSpanAttributes.TRACE_METADATA}.key2"
+            child_span, f"{ElasticDashOtelSpanAttributes.TRACE_METADATA}.key2"
         )
 
     def test_propagate_with_no_active_span(self, langfuse_client, memory_exporter):
@@ -848,7 +848,7 @@ class TestPropagateAttributesEdgeCases(TestPropagateAttributesBase):
         # Should not crash, span should have user_id
         span_data = self.get_span_by_name(memory_exporter, "span-1")
         self.verify_span_attribute(
-            span_data, LangfuseOtelSpanAttributes.TRACE_USER_ID, "user_123"
+            span_data, ElasticDashOtelSpanAttributes.TRACE_USER_ID, "user_123"
         )
 
 
@@ -866,9 +866,9 @@ class TestPropagateAttributesFormat(TestPropagateAttributesBase):
 
         child_span = self.get_span_by_name(memory_exporter, "child-span")
         # Verify the exact attribute key is used
-        assert LangfuseOtelSpanAttributes.TRACE_USER_ID in child_span["attributes"]
+        assert ElasticDashOtelSpanAttributes.TRACE_USER_ID in child_span["attributes"]
         assert (
-            child_span["attributes"][LangfuseOtelSpanAttributes.TRACE_USER_ID]
+            child_span["attributes"][ElasticDashOtelSpanAttributes.TRACE_USER_ID]
             == "user_123"
         )
 
@@ -883,9 +883,9 @@ class TestPropagateAttributesFormat(TestPropagateAttributesBase):
 
         child_span = self.get_span_by_name(memory_exporter, "child-span")
         # Verify the exact attribute key is used
-        assert LangfuseOtelSpanAttributes.TRACE_SESSION_ID in child_span["attributes"]
+        assert ElasticDashOtelSpanAttributes.TRACE_SESSION_ID in child_span["attributes"]
         assert (
-            child_span["attributes"][LangfuseOtelSpanAttributes.TRACE_SESSION_ID]
+            child_span["attributes"][ElasticDashOtelSpanAttributes.TRACE_SESSION_ID]
             == "session_abc"
         )
 
@@ -903,9 +903,9 @@ class TestPropagateAttributesFormat(TestPropagateAttributesBase):
 
         # Verify each metadata key is properly prefixed
         expected_keys = [
-            f"{LangfuseOtelSpanAttributes.TRACE_METADATA}.experiment",
-            f"{LangfuseOtelSpanAttributes.TRACE_METADATA}.version",
-            f"{LangfuseOtelSpanAttributes.TRACE_METADATA}.env",
+            f"{ElasticDashOtelSpanAttributes.TRACE_METADATA}.experiment",
+            f"{ElasticDashOtelSpanAttributes.TRACE_METADATA}.version",
+            f"{ElasticDashOtelSpanAttributes.TRACE_METADATA}.env",
         ]
 
         for key in expected_keys:
@@ -922,9 +922,9 @@ class TestPropagateAttributesFormat(TestPropagateAttributesBase):
         attributes = child_span["attributes"]
 
         # Verify all three are separate attributes with correct values
-        assert attributes[f"{LangfuseOtelSpanAttributes.TRACE_METADATA}.k1"] == "v1"
-        assert attributes[f"{LangfuseOtelSpanAttributes.TRACE_METADATA}.k2"] == "v2"
-        assert attributes[f"{LangfuseOtelSpanAttributes.TRACE_METADATA}.k3"] == "v3"
+        assert attributes[f"{ElasticDashOtelSpanAttributes.TRACE_METADATA}.k1"] == "v1"
+        assert attributes[f"{ElasticDashOtelSpanAttributes.TRACE_METADATA}.k2"] == "v2"
+        assert attributes[f"{ElasticDashOtelSpanAttributes.TRACE_METADATA}.k3"] == "v3"
 
 
 class TestPropagateAttributesThreading(TestPropagateAttributesBase):
@@ -964,12 +964,12 @@ class TestPropagateAttributesThreading(TestPropagateAttributesBase):
             worker_span = self.get_span_by_name(memory_exporter, f"worker-span-{i}")
             self.verify_span_attribute(
                 worker_span,
-                LangfuseOtelSpanAttributes.TRACE_USER_ID,
+                ElasticDashOtelSpanAttributes.TRACE_USER_ID,
                 "main_user",
             )
             self.verify_span_attribute(
                 worker_span,
-                LangfuseOtelSpanAttributes.TRACE_SESSION_ID,
+                ElasticDashOtelSpanAttributes.TRACE_SESSION_ID,
                 "main_session",
             )
 
@@ -994,12 +994,12 @@ class TestPropagateAttributesThreading(TestPropagateAttributesBase):
         # Verify each trace has the correct user_id (no mixing)
         span1 = self.get_span_by_name(memory_exporter, "span-user1")
         self.verify_span_attribute(
-            span1, LangfuseOtelSpanAttributes.TRACE_USER_ID, "user1"
+            span1, ElasticDashOtelSpanAttributes.TRACE_USER_ID, "user1"
         )
 
         span2 = self.get_span_by_name(memory_exporter, "span-user2")
         self.verify_span_attribute(
-            span2, LangfuseOtelSpanAttributes.TRACE_USER_ID, "user2"
+            span2, ElasticDashOtelSpanAttributes.TRACE_USER_ID, "user2"
         )
 
     def test_nested_propagation_across_thread_boundary(
@@ -1026,12 +1026,12 @@ class TestPropagateAttributesThreading(TestPropagateAttributesBase):
         # Verify both spans (main and worker) have user_id
         main_child_span = self.get_span_by_name(memory_exporter, "main-child-span")
         self.verify_span_attribute(
-            main_child_span, LangfuseOtelSpanAttributes.TRACE_USER_ID, "main_user"
+            main_child_span, ElasticDashOtelSpanAttributes.TRACE_USER_ID, "main_user"
         )
 
         worker_child_span = self.get_span_by_name(memory_exporter, "worker-child-span")
         self.verify_span_attribute(
-            worker_child_span, LangfuseOtelSpanAttributes.TRACE_USER_ID, "main_user"
+            worker_child_span, ElasticDashOtelSpanAttributes.TRACE_USER_ID, "main_user"
         )
 
     def test_worker_thread_can_override_propagated_attrs(
@@ -1059,12 +1059,12 @@ class TestPropagateAttributesThreading(TestPropagateAttributesBase):
         # Verify: main span has main_user, worker span has worker_user
         main_child = self.get_span_by_name(memory_exporter, "main-child-span")
         self.verify_span_attribute(
-            main_child, LangfuseOtelSpanAttributes.TRACE_USER_ID, "main_user"
+            main_child, ElasticDashOtelSpanAttributes.TRACE_USER_ID, "main_user"
         )
 
         worker_span = self.get_span_by_name(memory_exporter, "worker-span")
         self.verify_span_attribute(
-            worker_span, LangfuseOtelSpanAttributes.TRACE_USER_ID, "worker_user"
+            worker_span, ElasticDashOtelSpanAttributes.TRACE_USER_ID, "worker_user"
         )
 
     def test_multiple_workers_with_same_propagated_context(
@@ -1089,7 +1089,7 @@ class TestPropagateAttributesThreading(TestPropagateAttributesBase):
             worker_span = self.get_span_by_name(memory_exporter, f"worker-{i}")
             self.verify_span_attribute(
                 worker_span,
-                LangfuseOtelSpanAttributes.TRACE_SESSION_ID,
+                ElasticDashOtelSpanAttributes.TRACE_SESSION_ID,
                 "shared_session",
             )
 
@@ -1114,7 +1114,7 @@ class TestPropagateAttributesThreading(TestPropagateAttributesBase):
         for i in range(10):
             span = self.get_span_by_name(memory_exporter, f"span-{i}")
             self.verify_span_attribute(
-                span, LangfuseOtelSpanAttributes.TRACE_USER_ID, f"user_{i}"
+                span, ElasticDashOtelSpanAttributes.TRACE_USER_ID, f"user_{i}"
             )
 
     def test_exception_in_worker_preserves_context(
@@ -1149,12 +1149,12 @@ class TestPropagateAttributesThreading(TestPropagateAttributesBase):
         # Verify both main thread spans still have correct user_id
         span_before = self.get_span_by_name(memory_exporter, "span-before")
         self.verify_span_attribute(
-            span_before, LangfuseOtelSpanAttributes.TRACE_USER_ID, "main_user"
+            span_before, ElasticDashOtelSpanAttributes.TRACE_USER_ID, "main_user"
         )
 
         span_after = self.get_span_by_name(memory_exporter, "span-after")
         self.verify_span_attribute(
-            span_after, LangfuseOtelSpanAttributes.TRACE_USER_ID, "main_user"
+            span_after, ElasticDashOtelSpanAttributes.TRACE_USER_ID, "main_user"
         )
 
 
@@ -1165,12 +1165,12 @@ class TestPropagateAttributesCrossTracer(TestPropagateAttributesBase):
         self, langfuse_client, memory_exporter, tracer_provider
     ):
         """Verify spans from different tracers get propagated attributes."""
-        # Get a different tracer (not the Langfuse tracer)
+        # Get a different tracer (not the ElasticDash tracer)
         other_tracer = tracer_provider.get_tracer("other-library", "1.0.0")
 
         with langfuse_client.start_as_current_span(name="langfuse-parent"):
             with propagate_attributes(user_id="user_123", session_id="session_abc"):
-                # Create span with Langfuse tracer
+                # Create span with ElasticDash tracer
                 langfuse_span = langfuse_client.start_span(name="langfuse-child")
                 langfuse_span.end()
 
@@ -1182,24 +1182,24 @@ class TestPropagateAttributesCrossTracer(TestPropagateAttributesBase):
         langfuse_span_data = self.get_span_by_name(memory_exporter, "langfuse-child")
         self.verify_span_attribute(
             langfuse_span_data,
-            LangfuseOtelSpanAttributes.TRACE_USER_ID,
+            ElasticDashOtelSpanAttributes.TRACE_USER_ID,
             "user_123",
         )
         self.verify_span_attribute(
             langfuse_span_data,
-            LangfuseOtelSpanAttributes.TRACE_SESSION_ID,
+            ElasticDashOtelSpanAttributes.TRACE_SESSION_ID,
             "session_abc",
         )
 
         other_span_data = self.get_span_by_name(memory_exporter, "other-library-span")
         self.verify_span_attribute(
             other_span_data,
-            LangfuseOtelSpanAttributes.TRACE_USER_ID,
+            ElasticDashOtelSpanAttributes.TRACE_USER_ID,
             "user_123",
         )
         self.verify_span_attribute(
             other_span_data,
-            LangfuseOtelSpanAttributes.TRACE_SESSION_ID,
+            ElasticDashOtelSpanAttributes.TRACE_SESSION_ID,
             "session_abc",
         )
 
@@ -1225,12 +1225,12 @@ class TestPropagateAttributesCrossTracer(TestPropagateAttributesBase):
             span_data = self.get_span_by_name(memory_exporter, span_name)
             self.verify_span_attribute(
                 span_data,
-                LangfuseOtelSpanAttributes.TRACE_USER_ID,
+                ElasticDashOtelSpanAttributes.TRACE_USER_ID,
                 "user_123",
             )
             self.verify_span_attribute(
                 span_data,
-                f"{LangfuseOtelSpanAttributes.TRACE_METADATA}.experiment",
+                f"{ElasticDashOtelSpanAttributes.TRACE_METADATA}.experiment",
                 "cross_tracer",
             )
 
@@ -1254,12 +1254,12 @@ class TestPropagateAttributesCrossTracer(TestPropagateAttributesBase):
         # Verify: span-before does NOT have user_id, span-after DOES
         span_before = self.get_span_by_name(memory_exporter, "span-before")
         self.verify_missing_attribute(
-            span_before, LangfuseOtelSpanAttributes.TRACE_USER_ID
+            span_before, ElasticDashOtelSpanAttributes.TRACE_USER_ID
         )
 
         span_after = self.get_span_by_name(memory_exporter, "span-after")
         self.verify_span_attribute(
-            span_after, LangfuseOtelSpanAttributes.TRACE_USER_ID, "user_123"
+            span_after, ElasticDashOtelSpanAttributes.TRACE_USER_ID, "user_123"
         )
 
     def test_mixed_tracers_with_metadata(
@@ -1288,17 +1288,17 @@ class TestPropagateAttributesCrossTracer(TestPropagateAttributesBase):
             span_data = self.get_span_by_name(memory_exporter, span_name)
             self.verify_span_attribute(
                 span_data,
-                f"{LangfuseOtelSpanAttributes.TRACE_METADATA}.env",
+                f"{ElasticDashOtelSpanAttributes.TRACE_METADATA}.env",
                 "production",
             )
             self.verify_span_attribute(
                 span_data,
-                f"{LangfuseOtelSpanAttributes.TRACE_METADATA}.version",
+                f"{ElasticDashOtelSpanAttributes.TRACE_METADATA}.version",
                 "2.0",
             )
             self.verify_span_attribute(
                 span_data,
-                f"{LangfuseOtelSpanAttributes.TRACE_METADATA}.feature_flag",
+                f"{ElasticDashOtelSpanAttributes.TRACE_METADATA}.feature_flag",
                 "enabled",
             )
 
@@ -1318,17 +1318,17 @@ class TestPropagateAttributesCrossTracer(TestPropagateAttributesBase):
                 langfuse_child = langfuse_client.start_span(name="langfuse-child")
                 langfuse_child.end()
 
-        # Verify all spans have attributes (including non-Langfuse parent)
+        # Verify all spans have attributes (including non-ElasticDash parent)
         for span_name in ["other-parent", "other-child", "langfuse-child"]:
             span_data = self.get_span_by_name(memory_exporter, span_name)
             self.verify_span_attribute(
                 span_data,
-                LangfuseOtelSpanAttributes.TRACE_USER_ID,
+                ElasticDashOtelSpanAttributes.TRACE_USER_ID,
                 "user_123",
             )
             self.verify_span_attribute(
                 span_data,
-                LangfuseOtelSpanAttributes.TRACE_SESSION_ID,
+                ElasticDashOtelSpanAttributes.TRACE_SESSION_ID,
                 "session_xyz",
             )
 
@@ -1358,7 +1358,7 @@ class TestPropagateAttributesCrossTracer(TestPropagateAttributesBase):
             span_data = self.get_span_by_name(memory_exporter, step_name)
             self.verify_span_attribute(
                 span_data,
-                LangfuseOtelSpanAttributes.TRACE_USER_ID,
+                ElasticDashOtelSpanAttributes.TRACE_USER_ID,
                 "persistent_user",
             )
 
@@ -1382,10 +1382,10 @@ class TestPropagateAttributesAsync(TestPropagateAttributesBase):
         # Verify async span has attributes
         async_span = self.get_span_by_name(memory_exporter, "async-span")
         self.verify_span_attribute(
-            async_span, LangfuseOtelSpanAttributes.TRACE_USER_ID, "async_user"
+            async_span, ElasticDashOtelSpanAttributes.TRACE_USER_ID, "async_user"
         )
         self.verify_span_attribute(
-            async_span, LangfuseOtelSpanAttributes.TRACE_SESSION_ID, "async_session"
+            async_span, ElasticDashOtelSpanAttributes.TRACE_SESSION_ID, "async_session"
         )
 
     @pytest.mark.asyncio
@@ -1416,11 +1416,11 @@ class TestPropagateAttributesAsync(TestPropagateAttributesBase):
         for span_name in ["level-1-span", "level-2-span", "level-3-span"]:
             span_data = self.get_span_by_name(memory_exporter, span_name)
             self.verify_span_attribute(
-                span_data, LangfuseOtelSpanAttributes.TRACE_USER_ID, "nested_user"
+                span_data, ElasticDashOtelSpanAttributes.TRACE_USER_ID, "nested_user"
             )
             self.verify_span_attribute(
                 span_data,
-                f"{LangfuseOtelSpanAttributes.TRACE_METADATA}.level",
+                f"{ElasticDashOtelSpanAttributes.TRACE_METADATA}.level",
                 "nested",
             )
 
@@ -1435,7 +1435,7 @@ class TestPropagateAttributesAsync(TestPropagateAttributesBase):
 
         span_data = self.get_span_by_name(memory_exporter, "inside-async-ctx")
         self.verify_span_attribute(
-            span_data, LangfuseOtelSpanAttributes.TRACE_USER_ID, "async_ctx_user"
+            span_data, ElasticDashOtelSpanAttributes.TRACE_USER_ID, "async_ctx_user"
         )
 
     @pytest.mark.asyncio
@@ -1464,7 +1464,7 @@ class TestPropagateAttributesAsync(TestPropagateAttributesBase):
         for user_id in ["user1", "user2", "user3"]:
             span_data = self.get_span_by_name(memory_exporter, f"span-{user_id}")
             self.verify_span_attribute(
-                span_data, LangfuseOtelSpanAttributes.TRACE_USER_ID, user_id
+                span_data, ElasticDashOtelSpanAttributes.TRACE_USER_ID, user_id
             )
 
     @pytest.mark.asyncio
@@ -1489,12 +1489,12 @@ class TestPropagateAttributesAsync(TestPropagateAttributesBase):
         # Verify both spans have attributes
         async_span = self.get_span_by_name(memory_exporter, "async-span")
         self.verify_span_attribute(
-            async_span, LangfuseOtelSpanAttributes.TRACE_USER_ID, "mixed_user"
+            async_span, ElasticDashOtelSpanAttributes.TRACE_USER_ID, "mixed_user"
         )
 
         sync_span = self.get_span_by_name(memory_exporter, "sync-in-async")
         self.verify_span_attribute(
-            sync_span, LangfuseOtelSpanAttributes.TRACE_USER_ID, "mixed_user"
+            sync_span, ElasticDashOtelSpanAttributes.TRACE_USER_ID, "mixed_user"
         )
 
     @pytest.mark.asyncio
@@ -1526,7 +1526,7 @@ class TestPropagateAttributesAsync(TestPropagateAttributesBase):
         for span_name in ["span-before-async", "span-before-error", "span-after-error"]:
             span_data = self.get_span_by_name(memory_exporter, span_name)
             self.verify_span_attribute(
-                span_data, LangfuseOtelSpanAttributes.TRACE_USER_ID, "error_user"
+                span_data, ElasticDashOtelSpanAttributes.TRACE_USER_ID, "error_user"
             )
 
     @pytest.mark.asyncio
@@ -1546,16 +1546,16 @@ class TestPropagateAttributesAsync(TestPropagateAttributesBase):
 
         span_data = self.get_span_by_name(memory_exporter, "async-metadata-span")
         self.verify_span_attribute(
-            span_data, LangfuseOtelSpanAttributes.TRACE_USER_ID, "metadata_user"
+            span_data, ElasticDashOtelSpanAttributes.TRACE_USER_ID, "metadata_user"
         )
         self.verify_span_attribute(
             span_data,
-            f"{LangfuseOtelSpanAttributes.TRACE_METADATA}.async",
+            f"{ElasticDashOtelSpanAttributes.TRACE_METADATA}.async",
             "true",
         )
         self.verify_span_attribute(
             span_data,
-            f"{LangfuseOtelSpanAttributes.TRACE_METADATA}.operation",
+            f"{ElasticDashOtelSpanAttributes.TRACE_METADATA}.operation",
             "test",
         )
 
@@ -1610,16 +1610,16 @@ class TestPropagateAttributesBaggage(TestPropagateAttributesBase):
         # Verify child span has all attributes
         child_span = self.get_span_by_name(memory_exporter, "child-span")
         self.verify_span_attribute(
-            child_span, LangfuseOtelSpanAttributes.TRACE_USER_ID, "baggage_user"
+            child_span, ElasticDashOtelSpanAttributes.TRACE_USER_ID, "baggage_user"
         )
         self.verify_span_attribute(
             child_span,
-            LangfuseOtelSpanAttributes.TRACE_SESSION_ID,
+            ElasticDashOtelSpanAttributes.TRACE_SESSION_ID,
             "baggage_session",
         )
         self.verify_span_attribute(
             child_span,
-            f"{LangfuseOtelSpanAttributes.TRACE_METADATA}.source",
+            f"{ElasticDashOtelSpanAttributes.TRACE_METADATA}.source",
             "baggage",
         )
 
@@ -1654,18 +1654,18 @@ class TestPropagateAttributesBaggage(TestPropagateAttributesBase):
 
         # Should NOT have TRACE_USER_ID attribute
         self.verify_missing_attribute(
-            child_span, LangfuseOtelSpanAttributes.TRACE_USER_ID
+            child_span, ElasticDashOtelSpanAttributes.TRACE_USER_ID
         )
 
         # Should have metadata attributes with correct keys
         self.verify_span_attribute(
             child_span,
-            f"{LangfuseOtelSpanAttributes.TRACE_METADATA}.user_info",
+            f"{ElasticDashOtelSpanAttributes.TRACE_METADATA}.user_info",
             "some_data",
         )
         self.verify_span_attribute(
             child_span,
-            f"{LangfuseOtelSpanAttributes.TRACE_METADATA}.user_id_copy",
+            f"{ElasticDashOtelSpanAttributes.TRACE_METADATA}.user_id_copy",
             "another",
         )
 
@@ -1685,18 +1685,18 @@ class TestPropagateAttributesBaggage(TestPropagateAttributesBase):
 
         # Should NOT have TRACE_SESSION_ID attribute
         self.verify_missing_attribute(
-            child_span, LangfuseOtelSpanAttributes.TRACE_SESSION_ID
+            child_span, ElasticDashOtelSpanAttributes.TRACE_SESSION_ID
         )
 
         # Should have metadata attributes with correct keys
         self.verify_span_attribute(
             child_span,
-            f"{LangfuseOtelSpanAttributes.TRACE_METADATA}.session_data",
+            f"{ElasticDashOtelSpanAttributes.TRACE_METADATA}.session_data",
             "value1",
         )
         self.verify_span_attribute(
             child_span,
-            f"{LangfuseOtelSpanAttributes.TRACE_METADATA}.session_id_backup",
+            f"{ElasticDashOtelSpanAttributes.TRACE_METADATA}.session_id_backup",
             "value2",
         )
 
@@ -1721,17 +1721,17 @@ class TestPropagateAttributesBaggage(TestPropagateAttributesBase):
         # All metadata should be under TRACE_METADATA prefix
         self.verify_span_attribute(
             child_span,
-            f"{LangfuseOtelSpanAttributes.TRACE_METADATA}.env",
+            f"{ElasticDashOtelSpanAttributes.TRACE_METADATA}.env",
             "production",
         )
         self.verify_span_attribute(
             child_span,
-            f"{LangfuseOtelSpanAttributes.TRACE_METADATA}.region",
+            f"{ElasticDashOtelSpanAttributes.TRACE_METADATA}.region",
             "us-west",
         )
         self.verify_span_attribute(
             child_span,
-            f"{LangfuseOtelSpanAttributes.TRACE_METADATA}.experiment_id",
+            f"{ElasticDashOtelSpanAttributes.TRACE_METADATA}.experiment_id",
             "exp_123",
         )
 
@@ -1754,14 +1754,14 @@ class TestPropagateAttributesBaggage(TestPropagateAttributesBase):
         for span_name in ["parent", "middle", "leaf"]:
             span_data = self.get_span_by_name(memory_exporter, span_name)
             self.verify_span_attribute(
-                span_data, LangfuseOtelSpanAttributes.TRACE_USER_ID, "user_both"
+                span_data, ElasticDashOtelSpanAttributes.TRACE_USER_ID, "user_both"
             )
             self.verify_span_attribute(
-                span_data, LangfuseOtelSpanAttributes.TRACE_SESSION_ID, "session_both"
+                span_data, ElasticDashOtelSpanAttributes.TRACE_SESSION_ID, "session_both"
             )
             self.verify_span_attribute(
                 span_data,
-                f"{LangfuseOtelSpanAttributes.TRACE_METADATA}.source",
+                f"{ElasticDashOtelSpanAttributes.TRACE_METADATA}.source",
                 "both",
             )
 
@@ -1793,12 +1793,12 @@ class TestPropagateAttributesBaggage(TestPropagateAttributesBase):
         remote_child = self.get_span_by_name(memory_exporter, "remote-child")
         self.verify_span_attribute(
             remote_child,
-            LangfuseOtelSpanAttributes.TRACE_USER_ID,
+            ElasticDashOtelSpanAttributes.TRACE_USER_ID,
             "cross_process_user",
         )
         self.verify_span_attribute(
             remote_child,
-            LangfuseOtelSpanAttributes.TRACE_SESSION_ID,
+            ElasticDashOtelSpanAttributes.TRACE_SESSION_ID,
             "cross_process_session",
         )
 
@@ -1820,14 +1820,14 @@ class TestPropagateAttributesVersion(TestPropagateAttributesBase):
         child1_span = self.get_span_by_name(memory_exporter, "child-span-1")
         self.verify_span_attribute(
             child1_span,
-            LangfuseOtelSpanAttributes.VERSION,
+            ElasticDashOtelSpanAttributes.VERSION,
             "v1.2.3",
         )
 
         child2_span = self.get_span_by_name(memory_exporter, "child-span-2")
         self.verify_span_attribute(
             child2_span,
-            LangfuseOtelSpanAttributes.VERSION,
+            ElasticDashOtelSpanAttributes.VERSION,
             "v1.2.3",
         )
 
@@ -1845,13 +1845,13 @@ class TestPropagateAttributesVersion(TestPropagateAttributesBase):
         # Verify child has all attributes
         child_span = self.get_span_by_name(memory_exporter, "child-span")
         self.verify_span_attribute(
-            child_span, LangfuseOtelSpanAttributes.TRACE_USER_ID, "user_123"
+            child_span, ElasticDashOtelSpanAttributes.TRACE_USER_ID, "user_123"
         )
         self.verify_span_attribute(
-            child_span, LangfuseOtelSpanAttributes.TRACE_SESSION_ID, "session_abc"
+            child_span, ElasticDashOtelSpanAttributes.TRACE_SESSION_ID, "session_abc"
         )
         self.verify_span_attribute(
-            child_span, LangfuseOtelSpanAttributes.VERSION, "2.0.0"
+            child_span, ElasticDashOtelSpanAttributes.VERSION, "2.0.0"
         )
 
     def test_version_with_metadata(self, langfuse_client, memory_exporter):
@@ -1866,16 +1866,16 @@ class TestPropagateAttributesVersion(TestPropagateAttributesBase):
 
         child_span = self.get_span_by_name(memory_exporter, "child-span")
         self.verify_span_attribute(
-            child_span, LangfuseOtelSpanAttributes.VERSION, "1.0.0"
+            child_span, ElasticDashOtelSpanAttributes.VERSION, "1.0.0"
         )
         self.verify_span_attribute(
             child_span,
-            f"{LangfuseOtelSpanAttributes.TRACE_METADATA}.env",
+            f"{ElasticDashOtelSpanAttributes.TRACE_METADATA}.env",
             "production",
         )
         self.verify_span_attribute(
             child_span,
-            f"{LangfuseOtelSpanAttributes.TRACE_METADATA}.region",
+            f"{ElasticDashOtelSpanAttributes.TRACE_METADATA}.region",
             "us-east",
         )
 
@@ -1890,7 +1890,7 @@ class TestPropagateAttributesVersion(TestPropagateAttributesBase):
 
         # Verify child does NOT have version
         child_span = self.get_span_by_name(memory_exporter, "child-span")
-        self.verify_missing_attribute(child_span, LangfuseOtelSpanAttributes.VERSION)
+        self.verify_missing_attribute(child_span, ElasticDashOtelSpanAttributes.VERSION)
 
     def test_version_exactly_200_chars(self, langfuse_client, memory_exporter):
         """Verify exactly 200 character version is accepted."""
@@ -1904,7 +1904,7 @@ class TestPropagateAttributesVersion(TestPropagateAttributesBase):
         # Verify child HAS version
         child_span = self.get_span_by_name(memory_exporter, "child-span")
         self.verify_span_attribute(
-            child_span, LangfuseOtelSpanAttributes.VERSION, version_200
+            child_span, ElasticDashOtelSpanAttributes.VERSION, version_200
         )
 
     def test_version_nested_contexts_inner_overwrites(
@@ -1929,17 +1929,17 @@ class TestPropagateAttributesVersion(TestPropagateAttributesBase):
         # Verify: span1 and span3 have version 1.0.0, span2 has 2.0.0
         span1_data = self.get_span_by_name(memory_exporter, "span-1")
         self.verify_span_attribute(
-            span1_data, LangfuseOtelSpanAttributes.VERSION, "1.0.0"
+            span1_data, ElasticDashOtelSpanAttributes.VERSION, "1.0.0"
         )
 
         span2_data = self.get_span_by_name(memory_exporter, "span-2")
         self.verify_span_attribute(
-            span2_data, LangfuseOtelSpanAttributes.VERSION, "2.0.0"
+            span2_data, ElasticDashOtelSpanAttributes.VERSION, "2.0.0"
         )
 
         span3_data = self.get_span_by_name(memory_exporter, "span-3")
         self.verify_span_attribute(
-            span3_data, LangfuseOtelSpanAttributes.VERSION, "1.0.0"
+            span3_data, ElasticDashOtelSpanAttributes.VERSION, "1.0.0"
         )
 
     def test_version_with_baggage(self, langfuse_client, memory_exporter):
@@ -1956,10 +1956,10 @@ class TestPropagateAttributesVersion(TestPropagateAttributesBase):
         # Verify child has version
         child_span = self.get_span_by_name(memory_exporter, "child-span")
         self.verify_span_attribute(
-            child_span, LangfuseOtelSpanAttributes.VERSION, "baggage_version"
+            child_span, ElasticDashOtelSpanAttributes.VERSION, "baggage_version"
         )
         self.verify_span_attribute(
-            child_span, LangfuseOtelSpanAttributes.TRACE_USER_ID, "user_123"
+            child_span, ElasticDashOtelSpanAttributes.TRACE_USER_ID, "user_123"
         )
 
     def test_version_semantic_versioning_formats(
@@ -1985,7 +1985,7 @@ class TestPropagateAttributesVersion(TestPropagateAttributesBase):
         for idx, expected_version in enumerate(test_versions):
             span_data = self.get_span_by_name(memory_exporter, f"span-{idx}")
             self.verify_span_attribute(
-                span_data, LangfuseOtelSpanAttributes.VERSION, expected_version
+                span_data, ElasticDashOtelSpanAttributes.VERSION, expected_version
             )
 
     def test_version_non_string_dropped(self, langfuse_client, memory_exporter):
@@ -1997,7 +1997,7 @@ class TestPropagateAttributesVersion(TestPropagateAttributesBase):
 
         # Verify child does NOT have version
         child_span = self.get_span_by_name(memory_exporter, "child-span")
-        self.verify_missing_attribute(child_span, LangfuseOtelSpanAttributes.VERSION)
+        self.verify_missing_attribute(child_span, ElasticDashOtelSpanAttributes.VERSION)
 
     def test_version_propagates_to_grandchildren(
         self, langfuse_client, memory_exporter
@@ -2016,7 +2016,7 @@ class TestPropagateAttributesVersion(TestPropagateAttributesBase):
 
         for span in [parent_span, child_span, grandchild_span]:
             self.verify_span_attribute(
-                span, LangfuseOtelSpanAttributes.VERSION, "nested_v1"
+                span, ElasticDashOtelSpanAttributes.VERSION, "nested_v1"
             )
 
     @pytest.mark.asyncio
@@ -2033,7 +2033,7 @@ class TestPropagateAttributesVersion(TestPropagateAttributesBase):
 
         async_span = self.get_span_by_name(memory_exporter, "async-span")
         self.verify_span_attribute(
-            async_span, LangfuseOtelSpanAttributes.VERSION, "async_v1.0"
+            async_span, ElasticDashOtelSpanAttributes.VERSION, "async_v1.0"
         )
 
     def test_version_attribute_key_format(self, langfuse_client, memory_exporter):
@@ -2047,8 +2047,8 @@ class TestPropagateAttributesVersion(TestPropagateAttributesBase):
         attributes = child_span["attributes"]
 
         # Verify exact attribute key
-        assert LangfuseOtelSpanAttributes.VERSION in attributes
-        assert attributes[LangfuseOtelSpanAttributes.VERSION] == "key_test_v1"
+        assert ElasticDashOtelSpanAttributes.VERSION in attributes
+        assert attributes[ElasticDashOtelSpanAttributes.VERSION] == "key_test_v1"
 
 
 class TestPropagateAttributesTags(TestPropagateAttributesBase):
@@ -2068,14 +2068,14 @@ class TestPropagateAttributesTags(TestPropagateAttributesBase):
         child1_span = self.get_span_by_name(memory_exporter, "child-span-1")
         self.verify_span_attribute(
             child1_span,
-            LangfuseOtelSpanAttributes.TRACE_TAGS,
+            ElasticDashOtelSpanAttributes.TRACE_TAGS,
             tuple(["production", "api-v2", "critical"]),
         )
 
         child2_span = self.get_span_by_name(memory_exporter, "child-span-2")
         self.verify_span_attribute(
             child2_span,
-            LangfuseOtelSpanAttributes.TRACE_TAGS,
+            ElasticDashOtelSpanAttributes.TRACE_TAGS,
             tuple(["production", "api-v2", "critical"]),
         )
 
@@ -2089,7 +2089,7 @@ class TestPropagateAttributesTags(TestPropagateAttributesBase):
         child_span = self.get_span_by_name(memory_exporter, "child-span")
         self.verify_span_attribute(
             child_span,
-            LangfuseOtelSpanAttributes.TRACE_TAGS,
+            ElasticDashOtelSpanAttributes.TRACE_TAGS,
             tuple(["experiment"]),
         )
 
@@ -2102,7 +2102,7 @@ class TestPropagateAttributesTags(TestPropagateAttributesBase):
 
         # With empty list, tags should not be set
         child_span = self.get_span_by_name(memory_exporter, "child-span")
-        self.verify_missing_attribute(child_span, LangfuseOtelSpanAttributes.TRACE_TAGS)
+        self.verify_missing_attribute(child_span, ElasticDashOtelSpanAttributes.TRACE_TAGS)
 
     def test_tags_with_user_and_session(self, langfuse_client, memory_exporter):
         """Verify tags work together with user_id and session_id."""
@@ -2118,14 +2118,14 @@ class TestPropagateAttributesTags(TestPropagateAttributesBase):
         # Verify child has all attributes
         child_span = self.get_span_by_name(memory_exporter, "child-span")
         self.verify_span_attribute(
-            child_span, LangfuseOtelSpanAttributes.TRACE_USER_ID, "user_123"
+            child_span, ElasticDashOtelSpanAttributes.TRACE_USER_ID, "user_123"
         )
         self.verify_span_attribute(
-            child_span, LangfuseOtelSpanAttributes.TRACE_SESSION_ID, "session_abc"
+            child_span, ElasticDashOtelSpanAttributes.TRACE_SESSION_ID, "session_abc"
         )
         self.verify_span_attribute(
             child_span,
-            LangfuseOtelSpanAttributes.TRACE_TAGS,
+            ElasticDashOtelSpanAttributes.TRACE_TAGS,
             tuple(["test", "debug"]),
         )
 
@@ -2142,12 +2142,12 @@ class TestPropagateAttributesTags(TestPropagateAttributesBase):
         child_span = self.get_span_by_name(memory_exporter, "child-span")
         self.verify_span_attribute(
             child_span,
-            LangfuseOtelSpanAttributes.TRACE_TAGS,
+            ElasticDashOtelSpanAttributes.TRACE_TAGS,
             tuple(["experiment-a", "variant-1"]),
         )
         self.verify_span_attribute(
             child_span,
-            f"{LangfuseOtelSpanAttributes.TRACE_METADATA}.env",
+            f"{ElasticDashOtelSpanAttributes.TRACE_METADATA}.env",
             "staging",
         )
 
@@ -2162,7 +2162,7 @@ class TestPropagateAttributesTags(TestPropagateAttributesBase):
 
         child_span = self.get_span_by_name(memory_exporter, "child-span")
         self.verify_span_attribute(
-            child_span, LangfuseOtelSpanAttributes.TRACE_TAGS, tuple(["valid_tag"])
+            child_span, ElasticDashOtelSpanAttributes.TRACE_TAGS, tuple(["valid_tag"])
         )
 
     def test_tags_nested_contexts_inner_appends(self, langfuse_client, memory_exporter):
@@ -2185,13 +2185,13 @@ class TestPropagateAttributesTags(TestPropagateAttributesBase):
         # Verify: span1 and span3 have outer tags, span2 has inner tags
         span1_data = self.get_span_by_name(memory_exporter, "span-1")
         self.verify_span_attribute(
-            span1_data, LangfuseOtelSpanAttributes.TRACE_TAGS, tuple(["outer", "tag1"])
+            span1_data, ElasticDashOtelSpanAttributes.TRACE_TAGS, tuple(["outer", "tag1"])
         )
 
         span2_data = self.get_span_by_name(memory_exporter, "span-2")
         self.verify_span_attribute(
             span2_data,
-            LangfuseOtelSpanAttributes.TRACE_TAGS,
+            ElasticDashOtelSpanAttributes.TRACE_TAGS,
             tuple(
                 [
                     "outer",
@@ -2204,7 +2204,7 @@ class TestPropagateAttributesTags(TestPropagateAttributesBase):
 
         span3_data = self.get_span_by_name(memory_exporter, "span-3")
         self.verify_span_attribute(
-            span3_data, LangfuseOtelSpanAttributes.TRACE_TAGS, tuple(["outer", "tag1"])
+            span3_data, ElasticDashOtelSpanAttributes.TRACE_TAGS, tuple(["outer", "tag1"])
         )
 
     def test_tags_with_baggage(self, langfuse_client, memory_exporter):
@@ -2221,7 +2221,7 @@ class TestPropagateAttributesTags(TestPropagateAttributesBase):
         child_span = self.get_span_by_name(memory_exporter, "child-span")
         self.verify_span_attribute(
             child_span,
-            LangfuseOtelSpanAttributes.TRACE_TAGS,
+            ElasticDashOtelSpanAttributes.TRACE_TAGS,
             tuple(["baggage_tag1", "baggage_tag2"]),
         )
 
@@ -2241,7 +2241,7 @@ class TestPropagateAttributesTags(TestPropagateAttributesBase):
         for span in [parent_span, child_span, grandchild_span]:
             self.verify_span_attribute(
                 span,
-                LangfuseOtelSpanAttributes.TRACE_TAGS,
+                ElasticDashOtelSpanAttributes.TRACE_TAGS,
                 tuple(["level1", "level2", "level3"]),
             )
 
@@ -2259,7 +2259,7 @@ class TestPropagateAttributesTags(TestPropagateAttributesBase):
 
         async_span = self.get_span_by_name(memory_exporter, "async-span")
         self.verify_span_attribute(
-            async_span, LangfuseOtelSpanAttributes.TRACE_TAGS, tuple(["async", "test"])
+            async_span, ElasticDashOtelSpanAttributes.TRACE_TAGS, tuple(["async", "test"])
         )
 
     def test_tags_attribute_key_format(self, langfuse_client, memory_exporter):
@@ -2273,8 +2273,8 @@ class TestPropagateAttributesTags(TestPropagateAttributesBase):
         attributes = child_span["attributes"]
 
         # Verify exact attribute key
-        assert LangfuseOtelSpanAttributes.TRACE_TAGS in attributes
-        assert attributes[LangfuseOtelSpanAttributes.TRACE_TAGS] == tuple(["key_test"])
+        assert ElasticDashOtelSpanAttributes.TRACE_TAGS in attributes
+        assert attributes[ElasticDashOtelSpanAttributes.TRACE_TAGS] == tuple(["key_test"])
 
 
 class TestPropagateAttributesExperiment(TestPropagateAttributesBase):
@@ -2283,7 +2283,7 @@ class TestPropagateAttributesExperiment(TestPropagateAttributesBase):
     def test_experiment_attributes_propagate_without_dataset(
         self, langfuse_client, memory_exporter
     ):
-        """Test experiment attribute propagation with local data (no Langfuse dataset)."""
+        """Test experiment attribute propagation with local data (no ElasticDash dataset)."""
         # Create local dataset with metadata
         local_data = [
             {
@@ -2326,53 +2326,53 @@ class TestPropagateAttributesExperiment(TestPropagateAttributesBase):
         # Root-only attributes should be on root
         self.verify_span_attribute(
             first_root,
-            LangfuseOtelSpanAttributes.EXPERIMENT_DESCRIPTION,
+            ElasticDashOtelSpanAttributes.EXPERIMENT_DESCRIPTION,
             "Test experiment description",
         )
         self.verify_span_attribute(
             first_root,
-            LangfuseOtelSpanAttributes.EXPERIMENT_ITEM_EXPECTED_OUTPUT,
+            ElasticDashOtelSpanAttributes.EXPERIMENT_ITEM_EXPECTED_OUTPUT,
             _serialize("expected result 1"),
         )
 
         # Propagated attributes should also be on root
         experiment_id = first_root["attributes"][
-            LangfuseOtelSpanAttributes.EXPERIMENT_ID
+            ElasticDashOtelSpanAttributes.EXPERIMENT_ID
         ]
         experiment_item_id = first_root["attributes"][
-            LangfuseOtelSpanAttributes.EXPERIMENT_ITEM_ID
+            ElasticDashOtelSpanAttributes.EXPERIMENT_ITEM_ID
         ]
         root_observation_id = first_root["attributes"][
-            LangfuseOtelSpanAttributes.EXPERIMENT_ITEM_ROOT_OBSERVATION_ID
+            ElasticDashOtelSpanAttributes.EXPERIMENT_ITEM_ROOT_OBSERVATION_ID
         ]
 
         self.verify_span_attribute(
             first_root,
-            LangfuseOtelSpanAttributes.EXPERIMENT_NAME,
+            ElasticDashOtelSpanAttributes.EXPERIMENT_NAME,
             result.run_name,
         )
         self.verify_span_attribute(
             first_root,
-            LangfuseOtelSpanAttributes.EXPERIMENT_METADATA,
+            ElasticDashOtelSpanAttributes.EXPERIMENT_METADATA,
             _serialize(experiment_metadata),
         )
         self.verify_span_attribute(
             first_root,
-            LangfuseOtelSpanAttributes.EXPERIMENT_ITEM_METADATA,
+            ElasticDashOtelSpanAttributes.EXPERIMENT_ITEM_METADATA,
             _serialize({"item_type": "test", "priority": "high"}),
         )
 
         # Environment should be set to sdk-experiment
         self.verify_span_attribute(
             first_root,
-            LangfuseOtelSpanAttributes.ENVIRONMENT,
-            LANGFUSE_SDK_EXPERIMENT_ENVIRONMENT,
+            ElasticDashOtelSpanAttributes.ENVIRONMENT,
+            ELASTICDASH_SDK_EXPERIMENT_ENVIRONMENT,
         )
 
         # Dataset ID should not be set for local data
         self.verify_missing_attribute(
             first_root,
-            LangfuseOtelSpanAttributes.EXPERIMENT_DATASET_ID,
+            ElasticDashOtelSpanAttributes.EXPERIMENT_DATASET_ID,
         )
 
         # Verify child spans have propagated attributes but NOT root-only attributes
@@ -2386,57 +2386,57 @@ class TestPropagateAttributesExperiment(TestPropagateAttributesBase):
             # Propagated attributes should be present
             self.verify_span_attribute(
                 child_span,
-                LangfuseOtelSpanAttributes.EXPERIMENT_ID,
+                ElasticDashOtelSpanAttributes.EXPERIMENT_ID,
                 experiment_id,
             )
             self.verify_span_attribute(
                 child_span,
-                LangfuseOtelSpanAttributes.EXPERIMENT_NAME,
+                ElasticDashOtelSpanAttributes.EXPERIMENT_NAME,
                 result.run_name,
             )
             self.verify_span_attribute(
                 child_span,
-                LangfuseOtelSpanAttributes.EXPERIMENT_METADATA,
+                ElasticDashOtelSpanAttributes.EXPERIMENT_METADATA,
                 _serialize(experiment_metadata),
             )
             self.verify_span_attribute(
                 child_span,
-                LangfuseOtelSpanAttributes.EXPERIMENT_ITEM_ID,
+                ElasticDashOtelSpanAttributes.EXPERIMENT_ITEM_ID,
                 experiment_item_id,
             )
             self.verify_span_attribute(
                 child_span,
-                LangfuseOtelSpanAttributes.EXPERIMENT_ITEM_ROOT_OBSERVATION_ID,
+                ElasticDashOtelSpanAttributes.EXPERIMENT_ITEM_ROOT_OBSERVATION_ID,
                 root_observation_id,
             )
 
             # Environment should be propagated to children
             self.verify_span_attribute(
                 child_span,
-                LangfuseOtelSpanAttributes.ENVIRONMENT,
-                LANGFUSE_SDK_EXPERIMENT_ENVIRONMENT,
+                ElasticDashOtelSpanAttributes.ENVIRONMENT,
+                ELASTICDASH_SDK_EXPERIMENT_ENVIRONMENT,
             )
 
             # Root-only attributes should NOT be present on children
             self.verify_missing_attribute(
                 child_span,
-                LangfuseOtelSpanAttributes.EXPERIMENT_DESCRIPTION,
+                ElasticDashOtelSpanAttributes.EXPERIMENT_DESCRIPTION,
             )
             self.verify_missing_attribute(
                 child_span,
-                LangfuseOtelSpanAttributes.EXPERIMENT_ITEM_EXPECTED_OUTPUT,
+                ElasticDashOtelSpanAttributes.EXPERIMENT_ITEM_EXPECTED_OUTPUT,
             )
 
             # Dataset ID should not be set for local data
             self.verify_missing_attribute(
                 child_span,
-                LangfuseOtelSpanAttributes.EXPERIMENT_DATASET_ID,
+                ElasticDashOtelSpanAttributes.EXPERIMENT_DATASET_ID,
             )
 
     def test_experiment_attributes_propagate_with_dataset(
         self, langfuse_client, memory_exporter, monkeypatch
     ):
-        """Test experiment attribute propagation with Langfuse dataset."""
+        """Test experiment attribute propagation with ElasticDash dataset."""
         import time
         from datetime import datetime
 
@@ -2524,41 +2524,41 @@ class TestPropagateAttributesExperiment(TestPropagateAttributesBase):
         # Root-only attributes should be on root
         self.verify_span_attribute(
             first_root,
-            LangfuseOtelSpanAttributes.EXPERIMENT_DESCRIPTION,
+            ElasticDashOtelSpanAttributes.EXPERIMENT_DESCRIPTION,
             "Dataset experiment description",
         )
         self.verify_span_attribute(
             first_root,
-            LangfuseOtelSpanAttributes.EXPERIMENT_ITEM_EXPECTED_OUTPUT,
+            ElasticDashOtelSpanAttributes.EXPERIMENT_ITEM_EXPECTED_OUTPUT,
             _serialize("Berlin"),
         )
 
         # Should have dataset ID (this is the key difference from local data)
         self.verify_span_attribute(
             first_root,
-            LangfuseOtelSpanAttributes.EXPERIMENT_DATASET_ID,
+            ElasticDashOtelSpanAttributes.EXPERIMENT_DATASET_ID,
             dataset_id,
         )
 
         # Should have the dataset item ID
         self.verify_span_attribute(
             first_root,
-            LangfuseOtelSpanAttributes.EXPERIMENT_ITEM_ID,
+            ElasticDashOtelSpanAttributes.EXPERIMENT_ITEM_ID,
             dataset_item_id,
         )
 
         # Should have experiment metadata
         self.verify_span_attribute(
             first_root,
-            LangfuseOtelSpanAttributes.EXPERIMENT_METADATA,
+            ElasticDashOtelSpanAttributes.EXPERIMENT_METADATA,
             _serialize(experiment_metadata),
         )
 
         # Environment should be set to sdk-experiment
         self.verify_span_attribute(
             first_root,
-            LangfuseOtelSpanAttributes.ENVIRONMENT,
-            LANGFUSE_SDK_EXPERIMENT_ENVIRONMENT,
+            ElasticDashOtelSpanAttributes.ENVIRONMENT,
+            ELASTICDASH_SDK_EXPERIMENT_ENVIRONMENT,
         )
 
         # Verify child spans have dataset-specific propagated attributes
@@ -2572,46 +2572,46 @@ class TestPropagateAttributesExperiment(TestPropagateAttributesBase):
             # Dataset ID should be propagated to children
             self.verify_span_attribute(
                 child_span,
-                LangfuseOtelSpanAttributes.EXPERIMENT_DATASET_ID,
+                ElasticDashOtelSpanAttributes.EXPERIMENT_DATASET_ID,
                 dataset_id,
             )
 
             # Dataset item ID should be propagated
             self.verify_span_attribute(
                 child_span,
-                LangfuseOtelSpanAttributes.EXPERIMENT_ITEM_ID,
+                ElasticDashOtelSpanAttributes.EXPERIMENT_ITEM_ID,
                 dataset_item_id,
             )
 
             # Experiment metadata should be propagated
             self.verify_span_attribute(
                 child_span,
-                LangfuseOtelSpanAttributes.EXPERIMENT_METADATA,
+                ElasticDashOtelSpanAttributes.EXPERIMENT_METADATA,
                 _serialize(experiment_metadata),
             )
 
             # Item metadata should be propagated
             self.verify_span_attribute(
                 child_span,
-                LangfuseOtelSpanAttributes.EXPERIMENT_ITEM_METADATA,
+                ElasticDashOtelSpanAttributes.EXPERIMENT_ITEM_METADATA,
                 _serialize({"source": "dataset", "index": 0}),
             )
 
             # Environment should be propagated to children
             self.verify_span_attribute(
                 child_span,
-                LangfuseOtelSpanAttributes.ENVIRONMENT,
-                LANGFUSE_SDK_EXPERIMENT_ENVIRONMENT,
+                ElasticDashOtelSpanAttributes.ENVIRONMENT,
+                ELASTICDASH_SDK_EXPERIMENT_ENVIRONMENT,
             )
 
             # Root-only attributes should NOT be present on children
             self.verify_missing_attribute(
                 child_span,
-                LangfuseOtelSpanAttributes.EXPERIMENT_DESCRIPTION,
+                ElasticDashOtelSpanAttributes.EXPERIMENT_DESCRIPTION,
             )
             self.verify_missing_attribute(
                 child_span,
-                LangfuseOtelSpanAttributes.EXPERIMENT_ITEM_EXPECTED_OUTPUT,
+                ElasticDashOtelSpanAttributes.EXPERIMENT_ITEM_EXPECTED_OUTPUT,
             )
 
     def test_experiment_attributes_propagate_to_nested_children(
@@ -2645,17 +2645,17 @@ class TestPropagateAttributesExperiment(TestPropagateAttributesBase):
         root_spans = self.get_spans_by_name(memory_exporter, "experiment-item-run")
         first_root = root_spans[0]
         experiment_id = first_root["attributes"][
-            LangfuseOtelSpanAttributes.EXPERIMENT_ID
+            ElasticDashOtelSpanAttributes.EXPERIMENT_ID
         ]
         root_observation_id = first_root["attributes"][
-            LangfuseOtelSpanAttributes.EXPERIMENT_ITEM_ROOT_OBSERVATION_ID
+            ElasticDashOtelSpanAttributes.EXPERIMENT_ITEM_ROOT_OBSERVATION_ID
         ]
 
         # Verify root has environment set
         self.verify_span_attribute(
             first_root,
-            LangfuseOtelSpanAttributes.ENVIRONMENT,
-            LANGFUSE_SDK_EXPERIMENT_ENVIRONMENT,
+            ElasticDashOtelSpanAttributes.ENVIRONMENT,
+            ELASTICDASH_SDK_EXPERIMENT_ENVIRONMENT,
         )
 
         # Verify all nested children have propagated attributes
@@ -2665,35 +2665,35 @@ class TestPropagateAttributesExperiment(TestPropagateAttributesBase):
             # Propagated attributes should be present
             self.verify_span_attribute(
                 span_data,
-                LangfuseOtelSpanAttributes.EXPERIMENT_ID,
+                ElasticDashOtelSpanAttributes.EXPERIMENT_ID,
                 experiment_id,
             )
             self.verify_span_attribute(
                 span_data,
-                LangfuseOtelSpanAttributes.EXPERIMENT_NAME,
+                ElasticDashOtelSpanAttributes.EXPERIMENT_NAME,
                 result.run_name,
             )
             self.verify_span_attribute(
                 span_data,
-                LangfuseOtelSpanAttributes.EXPERIMENT_ITEM_ROOT_OBSERVATION_ID,
+                ElasticDashOtelSpanAttributes.EXPERIMENT_ITEM_ROOT_OBSERVATION_ID,
                 root_observation_id,
             )
 
             # Environment should be propagated to all nested children
             self.verify_span_attribute(
                 span_data,
-                LangfuseOtelSpanAttributes.ENVIRONMENT,
-                LANGFUSE_SDK_EXPERIMENT_ENVIRONMENT,
+                ElasticDashOtelSpanAttributes.ENVIRONMENT,
+                ELASTICDASH_SDK_EXPERIMENT_ENVIRONMENT,
             )
 
             # Root-only attributes should NOT be present
             self.verify_missing_attribute(
                 span_data,
-                LangfuseOtelSpanAttributes.EXPERIMENT_DESCRIPTION,
+                ElasticDashOtelSpanAttributes.EXPERIMENT_DESCRIPTION,
             )
             self.verify_missing_attribute(
                 span_data,
-                LangfuseOtelSpanAttributes.EXPERIMENT_ITEM_EXPECTED_OUTPUT,
+                ElasticDashOtelSpanAttributes.EXPERIMENT_ITEM_EXPECTED_OUTPUT,
             )
 
     def test_experiment_metadata_merging(self, langfuse_client, memory_exporter):
@@ -2742,8 +2742,8 @@ class TestPropagateAttributesExperiment(TestPropagateAttributesBase):
         root_span = self.get_span_by_name(memory_exporter, "experiment-item-run")
         self.verify_span_attribute(
             root_span,
-            LangfuseOtelSpanAttributes.ENVIRONMENT,
-            LANGFUSE_SDK_EXPERIMENT_ENVIRONMENT,
+            ElasticDashOtelSpanAttributes.ENVIRONMENT,
+            ELASTICDASH_SDK_EXPERIMENT_ENVIRONMENT,
         )
 
         # Verify child span has both experiment and item metadata propagated
@@ -2752,22 +2752,22 @@ class TestPropagateAttributesExperiment(TestPropagateAttributesBase):
         # Verify experiment metadata is serialized and propagated
         self.verify_span_attribute(
             child_span,
-            LangfuseOtelSpanAttributes.EXPERIMENT_METADATA,
+            ElasticDashOtelSpanAttributes.EXPERIMENT_METADATA,
             _serialize(experiment_metadata),
         )
 
         # Verify item metadata is serialized and propagated
         self.verify_span_attribute(
             child_span,
-            LangfuseOtelSpanAttributes.EXPERIMENT_ITEM_METADATA,
+            ElasticDashOtelSpanAttributes.EXPERIMENT_ITEM_METADATA,
             _serialize(item_metadata),
         )
 
         # Verify environment is propagated to child
         self.verify_span_attribute(
             child_span,
-            LangfuseOtelSpanAttributes.ENVIRONMENT,
-            LANGFUSE_SDK_EXPERIMENT_ENVIRONMENT,
+            ElasticDashOtelSpanAttributes.ENVIRONMENT,
+            ELASTICDASH_SDK_EXPERIMENT_ENVIRONMENT,
         )
 
 
@@ -2790,14 +2790,14 @@ class TestPropagateAttributesTraceName(TestPropagateAttributesBase):
         child1_span = self.get_span_by_name(memory_exporter, "child-span-1")
         self.verify_span_attribute(
             child1_span,
-            LangfuseOtelSpanAttributes.TRACE_NAME,
+            ElasticDashOtelSpanAttributes.TRACE_NAME,
             "my-trace-name",
         )
 
         child2_span = self.get_span_by_name(memory_exporter, "child-span-2")
         self.verify_span_attribute(
             child2_span,
-            LangfuseOtelSpanAttributes.TRACE_NAME,
+            ElasticDashOtelSpanAttributes.TRACE_NAME,
             "my-trace-name",
         )
 
@@ -2818,7 +2818,7 @@ class TestPropagateAttributesTraceName(TestPropagateAttributesBase):
 
         for span in [parent_span, child_span, grandchild_span]:
             self.verify_span_attribute(
-                span, LangfuseOtelSpanAttributes.TRACE_NAME, "nested-trace"
+                span, ElasticDashOtelSpanAttributes.TRACE_NAME, "nested-trace"
             )
 
     def test_trace_name_with_user_and_session(self, langfuse_client, memory_exporter):
@@ -2835,13 +2835,13 @@ class TestPropagateAttributesTraceName(TestPropagateAttributesBase):
         # Verify child has all attributes
         child_span = self.get_span_by_name(memory_exporter, "child-span")
         self.verify_span_attribute(
-            child_span, LangfuseOtelSpanAttributes.TRACE_USER_ID, "user_123"
+            child_span, ElasticDashOtelSpanAttributes.TRACE_USER_ID, "user_123"
         )
         self.verify_span_attribute(
-            child_span, LangfuseOtelSpanAttributes.TRACE_SESSION_ID, "session_abc"
+            child_span, ElasticDashOtelSpanAttributes.TRACE_SESSION_ID, "session_abc"
         )
         self.verify_span_attribute(
-            child_span, LangfuseOtelSpanAttributes.TRACE_NAME, "combined-trace"
+            child_span, ElasticDashOtelSpanAttributes.TRACE_NAME, "combined-trace"
         )
 
     def test_trace_name_with_version(self, langfuse_client, memory_exporter):
@@ -2856,10 +2856,10 @@ class TestPropagateAttributesTraceName(TestPropagateAttributesBase):
 
         child_span = self.get_span_by_name(memory_exporter, "child-span")
         self.verify_span_attribute(
-            child_span, LangfuseOtelSpanAttributes.TRACE_NAME, "versioned-trace"
+            child_span, ElasticDashOtelSpanAttributes.TRACE_NAME, "versioned-trace"
         )
         self.verify_span_attribute(
-            child_span, LangfuseOtelSpanAttributes.VERSION, "1.0.0"
+            child_span, ElasticDashOtelSpanAttributes.VERSION, "1.0.0"
         )
 
     def test_trace_name_with_metadata(self, langfuse_client, memory_exporter):
@@ -2874,16 +2874,16 @@ class TestPropagateAttributesTraceName(TestPropagateAttributesBase):
 
         child_span = self.get_span_by_name(memory_exporter, "child-span")
         self.verify_span_attribute(
-            child_span, LangfuseOtelSpanAttributes.TRACE_NAME, "metadata-trace"
+            child_span, ElasticDashOtelSpanAttributes.TRACE_NAME, "metadata-trace"
         )
         self.verify_span_attribute(
             child_span,
-            f"{LangfuseOtelSpanAttributes.TRACE_METADATA}.env",
+            f"{ElasticDashOtelSpanAttributes.TRACE_METADATA}.env",
             "production",
         )
         self.verify_span_attribute(
             child_span,
-            f"{LangfuseOtelSpanAttributes.TRACE_METADATA}.region",
+            f"{ElasticDashOtelSpanAttributes.TRACE_METADATA}.region",
             "us-east",
         )
 
@@ -2900,7 +2900,7 @@ class TestPropagateAttributesTraceName(TestPropagateAttributesBase):
 
         # Verify child does NOT have trace_name
         child_span = self.get_span_by_name(memory_exporter, "child-span")
-        self.verify_missing_attribute(child_span, LangfuseOtelSpanAttributes.TRACE_NAME)
+        self.verify_missing_attribute(child_span, ElasticDashOtelSpanAttributes.TRACE_NAME)
 
     def test_trace_name_exactly_200_chars(self, langfuse_client, memory_exporter):
         """Verify exactly 200 character trace_name is accepted."""
@@ -2914,7 +2914,7 @@ class TestPropagateAttributesTraceName(TestPropagateAttributesBase):
         # Verify child HAS trace_name
         child_span = self.get_span_by_name(memory_exporter, "child-span")
         self.verify_span_attribute(
-            child_span, LangfuseOtelSpanAttributes.TRACE_NAME, trace_name_200
+            child_span, ElasticDashOtelSpanAttributes.TRACE_NAME, trace_name_200
         )
 
     def test_trace_name_nested_contexts_inner_overwrites(
@@ -2939,17 +2939,17 @@ class TestPropagateAttributesTraceName(TestPropagateAttributesBase):
         # Verify: span1 and span3 have outer-trace, span2 has inner-trace
         span1_data = self.get_span_by_name(memory_exporter, "span-1")
         self.verify_span_attribute(
-            span1_data, LangfuseOtelSpanAttributes.TRACE_NAME, "outer-trace"
+            span1_data, ElasticDashOtelSpanAttributes.TRACE_NAME, "outer-trace"
         )
 
         span2_data = self.get_span_by_name(memory_exporter, "span-2")
         self.verify_span_attribute(
-            span2_data, LangfuseOtelSpanAttributes.TRACE_NAME, "inner-trace"
+            span2_data, ElasticDashOtelSpanAttributes.TRACE_NAME, "inner-trace"
         )
 
         span3_data = self.get_span_by_name(memory_exporter, "span-3")
         self.verify_span_attribute(
-            span3_data, LangfuseOtelSpanAttributes.TRACE_NAME, "outer-trace"
+            span3_data, ElasticDashOtelSpanAttributes.TRACE_NAME, "outer-trace"
         )
 
     def test_trace_name_sets_on_current_span(self, langfuse_client, memory_exporter):
@@ -2961,7 +2961,7 @@ class TestPropagateAttributesTraceName(TestPropagateAttributesBase):
         # Verify parent span has trace_name set
         parent_span = self.get_span_by_name(memory_exporter, "parent-span")
         self.verify_span_attribute(
-            parent_span, LangfuseOtelSpanAttributes.TRACE_NAME, "current-trace"
+            parent_span, ElasticDashOtelSpanAttributes.TRACE_NAME, "current-trace"
         )
 
     def test_trace_name_non_string_dropped(self, langfuse_client, memory_exporter):
@@ -2973,7 +2973,7 @@ class TestPropagateAttributesTraceName(TestPropagateAttributesBase):
 
         # Verify child does NOT have trace_name
         child_span = self.get_span_by_name(memory_exporter, "child-span")
-        self.verify_missing_attribute(child_span, LangfuseOtelSpanAttributes.TRACE_NAME)
+        self.verify_missing_attribute(child_span, ElasticDashOtelSpanAttributes.TRACE_NAME)
 
     def test_trace_name_with_baggage(self, langfuse_client, memory_exporter):
         """Verify trace_name propagates through baggage."""
@@ -2989,8 +2989,8 @@ class TestPropagateAttributesTraceName(TestPropagateAttributesBase):
         # Verify child has trace_name
         child_span = self.get_span_by_name(memory_exporter, "child-span")
         self.verify_span_attribute(
-            child_span, LangfuseOtelSpanAttributes.TRACE_NAME, "baggage-trace"
+            child_span, ElasticDashOtelSpanAttributes.TRACE_NAME, "baggage-trace"
         )
         self.verify_span_attribute(
-            child_span, LangfuseOtelSpanAttributes.TRACE_USER_ID, "user_123"
+            child_span, ElasticDashOtelSpanAttributes.TRACE_USER_ID, "user_123"
         )

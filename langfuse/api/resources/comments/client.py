@@ -49,12 +49,12 @@ class CommentsClient:
         Examples
         --------
         from langfuse import CreateCommentRequest
-        from langfuse.client import FernLangfuse
+        from langfuse.client import FernElasticDash
 
-        client = FernLangfuse(
-            x_langfuse_sdk_name="YOUR_X_LANGFUSE_SDK_NAME",
-            x_langfuse_sdk_version="YOUR_X_LANGFUSE_SDK_VERSION",
-            x_langfuse_public_key="YOUR_X_LANGFUSE_PUBLIC_KEY",
+        client = FernElasticDash(
+            x_langfuse_sdk_name="YOUR_X_ELASTICDASH_SDK_NAME",
+            x_langfuse_sdk_version="YOUR_X_ELASTICDASH_SDK_VERSION",
+            x_langfuse_public_key="YOUR_X_ELASTICDASH_PUBLIC_KEY",
             username="YOUR_USERNAME",
             password="YOUR_PASSWORD",
             base_url="https://yourhost.com/path/to/api",
@@ -140,12 +140,12 @@ class CommentsClient:
 
         Examples
         --------
-        from langfuse.client import FernLangfuse
+        from langfuse.client import FernElasticDash
 
-        client = FernLangfuse(
-            x_langfuse_sdk_name="YOUR_X_LANGFUSE_SDK_NAME",
-            x_langfuse_sdk_version="YOUR_X_LANGFUSE_SDK_VERSION",
-            x_langfuse_public_key="YOUR_X_LANGFUSE_PUBLIC_KEY",
+        client = FernElasticDash(
+            x_langfuse_sdk_name="YOUR_X_ELASTICDASH_SDK_NAME",
+            x_langfuse_sdk_version="YOUR_X_ELASTICDASH_SDK_VERSION",
+            x_langfuse_public_key="YOUR_X_ELASTICDASH_PUBLIC_KEY",
             username="YOUR_USERNAME",
             password="YOUR_PASSWORD",
             base_url="https://yourhost.com/path/to/api",
@@ -213,12 +213,12 @@ class CommentsClient:
 
         Examples
         --------
-        from langfuse.client import FernLangfuse
+        from langfuse.client import FernElasticDash
 
-        client = FernLangfuse(
-            x_langfuse_sdk_name="YOUR_X_LANGFUSE_SDK_NAME",
-            x_langfuse_sdk_version="YOUR_X_LANGFUSE_SDK_VERSION",
-            x_langfuse_public_key="YOUR_X_LANGFUSE_PUBLIC_KEY",
+        client = FernElasticDash(
+            x_langfuse_sdk_name="YOUR_X_ELASTICDASH_SDK_NAME",
+            x_langfuse_sdk_version="YOUR_X_ELASTICDASH_SDK_VERSION",
+            x_langfuse_public_key="YOUR_X_ELASTICDASH_PUBLIC_KEY",
             username="YOUR_USERNAME",
             password="YOUR_PASSWORD",
             base_url="https://yourhost.com/path/to/api",
@@ -288,12 +288,12 @@ class AsyncCommentsClient:
         import asyncio
 
         from langfuse import CreateCommentRequest
-        from langfuse.client import AsyncFernLangfuse
+        from langfuse.client import AsyncFernElasticDash
 
-        client = AsyncFernLangfuse(
-            x_langfuse_sdk_name="YOUR_X_LANGFUSE_SDK_NAME",
-            x_langfuse_sdk_version="YOUR_X_LANGFUSE_SDK_VERSION",
-            x_langfuse_public_key="YOUR_X_LANGFUSE_PUBLIC_KEY",
+        client = AsyncFernElasticDash(
+            x_langfuse_sdk_name="YOUR_X_ELASTICDASH_SDK_NAME",
+            x_langfuse_sdk_version="YOUR_X_ELASTICDASH_SDK_VERSION",
+            x_langfuse_public_key="YOUR_X_ELASTICDASH_PUBLIC_KEY",
             username="YOUR_USERNAME",
             password="YOUR_PASSWORD",
             base_url="https://yourhost.com/path/to/api",
@@ -387,12 +387,12 @@ class AsyncCommentsClient:
         --------
         import asyncio
 
-        from langfuse.client import AsyncFernLangfuse
+        from langfuse.client import AsyncFernElasticDash
 
-        client = AsyncFernLangfuse(
-            x_langfuse_sdk_name="YOUR_X_LANGFUSE_SDK_NAME",
-            x_langfuse_sdk_version="YOUR_X_LANGFUSE_SDK_VERSION",
-            x_langfuse_public_key="YOUR_X_LANGFUSE_PUBLIC_KEY",
+        client = AsyncFernElasticDash(
+            x_langfuse_sdk_name="YOUR_X_ELASTICDASH_SDK_NAME",
+            x_langfuse_sdk_version="YOUR_X_ELASTICDASH_SDK_VERSION",
+            x_langfuse_public_key="YOUR_X_ELASTICDASH_PUBLIC_KEY",
             username="YOUR_USERNAME",
             password="YOUR_PASSWORD",
             base_url="https://yourhost.com/path/to/api",
@@ -468,12 +468,12 @@ class AsyncCommentsClient:
         --------
         import asyncio
 
-        from langfuse.client import AsyncFernLangfuse
+        from langfuse.client import AsyncFernElasticDash
 
-        client = AsyncFernLangfuse(
-            x_langfuse_sdk_name="YOUR_X_LANGFUSE_SDK_NAME",
-            x_langfuse_sdk_version="YOUR_X_LANGFUSE_SDK_VERSION",
-            x_langfuse_public_key="YOUR_X_LANGFUSE_PUBLIC_KEY",
+        client = AsyncFernElasticDash(
+            x_langfuse_sdk_name="YOUR_X_ELASTICDASH_SDK_NAME",
+            x_langfuse_sdk_version="YOUR_X_ELASTICDASH_SDK_VERSION",
+            x_langfuse_public_key="YOUR_X_ELASTICDASH_PUBLIC_KEY",
             username="YOUR_USERNAME",
             password="YOUR_PASSWORD",
             base_url="https://yourhost.com/path/to/api",

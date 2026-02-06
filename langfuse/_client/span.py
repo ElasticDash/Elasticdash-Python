@@ -1,16 +1,16 @@
-"""OTEL span wrapper for Langfuse.
+"""OTEL span wrapper for ElasticDash.
 
 This module defines custom span classes that extend OpenTelemetry spans with
-Langfuse-specific functionality. These wrapper classes provide methods for
+ElasticDash-specific functionality. These wrapper classes provide methods for
 creating, updating, and scoring various types of spans used in AI application tracing.
 
 Classes:
-- LangfuseObservationWrapper: Abstract base class for all Langfuse spans
-- LangfuseSpan: Implementation for general-purpose spans
-- LangfuseGeneration: Specialized span implementation for LLM generations
+- ElasticDashObservationWrapper: Abstract base class for all ElasticDash spans
+- ElasticDashSpan: Implementation for general-purpose spans
+- ElasticDashGeneration: Specialized span implementation for LLM generations
 
 All span classes provide methods for media processing, attribute management,
-and scoring integration specific to Langfuse's observability platform.
+and scoring integration specific to ElasticDash's observability platform.
 """
 
 import warnings
@@ -36,10 +36,10 @@ from opentelemetry.util._decorator import _AgnosticContextManager
 from langfuse.model import PromptClient
 
 if TYPE_CHECKING:
-    from langfuse._client.client import Langfuse
+    from langfuse._client.client import ElasticDash
 
 from langfuse._client.attributes import (
-    LangfuseOtelSpanAttributes,
+    ElasticDashOtelSpanAttributes,
     create_generation_attributes,
     create_span_attributes,
     create_trace_attributes,
@@ -57,19 +57,19 @@ from langfuse.types import MapValue, ScoreDataType, SpanLevel
 # Factory mapping for observation classes
 # Note: "event" is handled separately due to special instantiation logic
 # Populated after class definitions
-_OBSERVATION_CLASS_MAP: Dict[str, Type["LangfuseObservationWrapper"]] = {}
+_OBSERVATION_CLASS_MAP: Dict[str, Type["ElasticDashObservationWrapper"]] = {}
 
 
-class LangfuseObservationWrapper:
-    """Abstract base class for all Langfuse span types.
+class ElasticDashObservationWrapper:
+    """Abstract base class for all ElasticDash span types.
 
-    This class provides common functionality for all Langfuse span types, including
+    This class provides common functionality for all ElasticDash span types, including
     media processing, attribute management, and scoring. It wraps an OpenTelemetry
-    span and extends it with Langfuse-specific features.
+    span and extends it with ElasticDash-specific features.
 
     Attributes:
         _otel_span: The underlying OpenTelemetry span
-        _langfuse_client: Reference to the parent Langfuse client
+        _langfuse_client: Reference to the parent ElasticDash client
         trace_id: The trace ID for this span
         observation_id: The observation ID (span ID) for this span
     """
@@ -78,7 +78,7 @@ class LangfuseObservationWrapper:
         self,
         *,
         otel_span: otel_trace_api.Span,
-        langfuse_client: "Langfuse",
+        langfuse_client: "ElasticDash",
         as_type: ObservationTypeLiteral,
         input: Optional[Any] = None,
         output: Optional[Any] = None,
@@ -94,11 +94,11 @@ class LangfuseObservationWrapper:
         cost_details: Optional[Dict[str, float]] = None,
         prompt: Optional[PromptClient] = None,
     ):
-        """Initialize a new Langfuse span wrapper.
+        """Initialize a new ElasticDash span wrapper.
 
         Args:
             otel_span: The OpenTelemetry span to wrap
-            langfuse_client: Reference to the parent Langfuse client
+            langfuse_client: Reference to the parent ElasticDash client
             as_type: The type of span ("span" or "generation")
             input: Input data for the span (any JSON-serializable object)
             output: Output data from the span (any JSON-serializable object)
@@ -112,11 +112,11 @@ class LangfuseObservationWrapper:
             model_parameters: Parameters used for the model (e.g., temperature, max_tokens)
             usage_details: Token usage information (e.g., prompt_tokens, completion_tokens)
             cost_details: Cost information for the model call
-            prompt: Associated prompt template from Langfuse prompt management
+            prompt: Associated prompt template from ElasticDash prompt management
         """
         self._otel_span = otel_span
         self._otel_span.set_attribute(
-            LangfuseOtelSpanAttributes.OBSERVATION_TYPE, as_type
+            ElasticDashOtelSpanAttributes.OBSERVATION_TYPE, as_type
         )
         self._langfuse_client = langfuse_client
         self._observation_type = as_type
@@ -127,7 +127,7 @@ class LangfuseObservationWrapper:
         self._environment = environment or self._langfuse_client._environment
         if self._environment is not None:
             self._otel_span.set_attribute(
-                LangfuseOtelSpanAttributes.ENVIRONMENT, self._environment
+                ElasticDashOtelSpanAttributes.ENVIRONMENT, self._environment
             )
 
         # Handle media only if span is sampled
@@ -184,7 +184,7 @@ class LangfuseObservationWrapper:
                 )
 
             # We don't want to overwrite the observation type, and already set it
-            attributes.pop(LangfuseOtelSpanAttributes.OBSERVATION_TYPE, None)
+            attributes.pop(ElasticDashOtelSpanAttributes.OBSERVATION_TYPE, None)
 
             self._otel_span.set_attributes(
                 {k: v for k, v in attributes.items() if v is not None}
@@ -194,7 +194,7 @@ class LangfuseObservationWrapper:
                 level=level, status_message=status_message
             )
 
-    def end(self, *, end_time: Optional[int] = None) -> "LangfuseObservationWrapper":
+    def end(self, *, end_time: Optional[int] = None) -> "ElasticDashObservationWrapper":
         """End the span, marking it as completed.
 
         This method ends the wrapped OpenTelemetry span, marking the end of the
@@ -220,7 +220,7 @@ class LangfuseObservationWrapper:
         metadata: Optional[Any] = None,
         tags: Optional[List[str]] = None,
         public: Optional[bool] = None,
-    ) -> "LangfuseObservationWrapper":
+    ) -> "ElasticDashObservationWrapper":
         """Update the trace that this span belongs to.
 
         Args:
@@ -317,7 +317,7 @@ class LangfuseObservationWrapper:
             score_id: Optional custom ID for the score (auto-generated if not provided)
             data_type: Type of score (NUMERIC, BOOLEAN, or CATEGORICAL)
             comment: Optional comment or explanation for the score
-            config_id: Optional ID of a score config defined in Langfuse
+            config_id: Optional ID of a score config defined in ElasticDash
             timestamp: Optional timestamp for the score (defaults to current UTC time)
             metadata: Optional metadata to be attached to the score
 
@@ -401,7 +401,7 @@ class LangfuseObservationWrapper:
             score_id: Optional custom ID for the score (auto-generated if not provided)
             data_type: Type of score (NUMERIC, BOOLEAN, or CATEGORICAL)
             comment: Optional comment or explanation for the score
-            config_id: Optional ID of a score config defined in Langfuse
+            config_id: Optional ID of a score config defined in ElasticDash
             timestamp: Optional timestamp for the score (defaults to current UTC time)
             metadata: Optional metadata to be attached to the score
 
@@ -570,8 +570,8 @@ class LangfuseObservationWrapper:
         """Set OpenTelemetry span status to ERROR if level is ERROR.
 
         This method sets the underlying OpenTelemetry span status to ERROR when the
-        Langfuse observation level is set to ERROR, ensuring consistency between
-        Langfuse and OpenTelemetry error states.
+        ElasticDash observation level is set to ERROR, ensuring consistency between
+        ElasticDash and OpenTelemetry error states.
 
         Args:
             level: The span level to check
@@ -603,7 +603,7 @@ class LangfuseObservationWrapper:
         cost_details: Optional[Dict[str, float]] = None,
         prompt: Optional[PromptClient] = None,
         **kwargs: Any,
-    ) -> "LangfuseObservationWrapper":
+    ) -> "ElasticDashObservationWrapper":
         """Update this observation with new information.
 
         This method updates the observation with new information that becomes available
@@ -699,7 +699,7 @@ class LangfuseObservationWrapper:
         version: Optional[str] = None,
         level: Optional[SpanLevel] = None,
         status_message: Optional[str] = None,
-    ) -> "LangfuseSpan": ...
+    ) -> "ElasticDashSpan": ...
 
     @overload
     def start_observation(
@@ -719,7 +719,7 @@ class LangfuseObservationWrapper:
         usage_details: Optional[Dict[str, int]] = None,
         cost_details: Optional[Dict[str, float]] = None,
         prompt: Optional[PromptClient] = None,
-    ) -> "LangfuseGeneration": ...
+    ) -> "ElasticDashGeneration": ...
 
     @overload
     def start_observation(
@@ -733,7 +733,7 @@ class LangfuseObservationWrapper:
         version: Optional[str] = None,
         level: Optional[SpanLevel] = None,
         status_message: Optional[str] = None,
-    ) -> "LangfuseAgent": ...
+    ) -> "ElasticDashAgent": ...
 
     @overload
     def start_observation(
@@ -747,7 +747,7 @@ class LangfuseObservationWrapper:
         version: Optional[str] = None,
         level: Optional[SpanLevel] = None,
         status_message: Optional[str] = None,
-    ) -> "LangfuseTool": ...
+    ) -> "ElasticDashTool": ...
 
     @overload
     def start_observation(
@@ -761,7 +761,7 @@ class LangfuseObservationWrapper:
         version: Optional[str] = None,
         level: Optional[SpanLevel] = None,
         status_message: Optional[str] = None,
-    ) -> "LangfuseChain": ...
+    ) -> "ElasticDashChain": ...
 
     @overload
     def start_observation(
@@ -775,7 +775,7 @@ class LangfuseObservationWrapper:
         version: Optional[str] = None,
         level: Optional[SpanLevel] = None,
         status_message: Optional[str] = None,
-    ) -> "LangfuseRetriever": ...
+    ) -> "ElasticDashRetriever": ...
 
     @overload
     def start_observation(
@@ -789,7 +789,7 @@ class LangfuseObservationWrapper:
         version: Optional[str] = None,
         level: Optional[SpanLevel] = None,
         status_message: Optional[str] = None,
-    ) -> "LangfuseEvaluator": ...
+    ) -> "ElasticDashEvaluator": ...
 
     @overload
     def start_observation(
@@ -809,7 +809,7 @@ class LangfuseObservationWrapper:
         usage_details: Optional[Dict[str, int]] = None,
         cost_details: Optional[Dict[str, float]] = None,
         prompt: Optional[PromptClient] = None,
-    ) -> "LangfuseEmbedding": ...
+    ) -> "ElasticDashEmbedding": ...
 
     @overload
     def start_observation(
@@ -823,7 +823,7 @@ class LangfuseObservationWrapper:
         version: Optional[str] = None,
         level: Optional[SpanLevel] = None,
         status_message: Optional[str] = None,
-    ) -> "LangfuseGuardrail": ...
+    ) -> "ElasticDashGuardrail": ...
 
     @overload
     def start_observation(
@@ -837,7 +837,7 @@ class LangfuseObservationWrapper:
         version: Optional[str] = None,
         level: Optional[SpanLevel] = None,
         status_message: Optional[str] = None,
-    ) -> "LangfuseEvent": ...
+    ) -> "ElasticDashEvent": ...
 
     def start_observation(
         self,
@@ -857,16 +857,16 @@ class LangfuseObservationWrapper:
         cost_details: Optional[Dict[str, float]] = None,
         prompt: Optional[PromptClient] = None,
     ) -> Union[
-        "LangfuseSpan",
-        "LangfuseGeneration",
-        "LangfuseAgent",
-        "LangfuseTool",
-        "LangfuseChain",
-        "LangfuseRetriever",
-        "LangfuseEvaluator",
-        "LangfuseEmbedding",
-        "LangfuseGuardrail",
-        "LangfuseEvent",
+        "ElasticDashSpan",
+        "ElasticDashGeneration",
+        "ElasticDashAgent",
+        "ElasticDashTool",
+        "ElasticDashChain",
+        "ElasticDashRetriever",
+        "ElasticDashEvaluator",
+        "ElasticDashEmbedding",
+        "ElasticDashGuardrail",
+        "ElasticDashEvent",
     ]:
         """Create a new child observation of the specified type.
 
@@ -899,8 +899,8 @@ class LangfuseObservationWrapper:
                 name=name, start_time=timestamp
             )
             return cast(
-                LangfuseEvent,
-                LangfuseEvent(
+                ElasticDashEvent,
+                ElasticDashEvent(
                     otel_span=event_span,
                     langfuse_client=self._langfuse_client,
                     input=input,
@@ -916,9 +916,9 @@ class LangfuseObservationWrapper:
         observation_class = _OBSERVATION_CLASS_MAP.get(as_type)
         if not observation_class:
             langfuse_logger.warning(
-                f"Unknown observation type: {as_type}, falling back to LangfuseSpan"
+                f"Unknown observation type: {as_type}, falling back to ElasticDashSpan"
             )
-            observation_class = LangfuseSpan
+            observation_class = ElasticDashSpan
 
         with otel_trace_api.use_span(self._otel_span):
             new_otel_span = self._langfuse_client._otel_tracer.start_span(name=name)
@@ -961,7 +961,7 @@ class LangfuseObservationWrapper:
         version: Optional[str] = None,
         level: Optional[SpanLevel] = None,
         status_message: Optional[str] = None,
-    ) -> _AgnosticContextManager["LangfuseSpan"]: ...
+    ) -> _AgnosticContextManager["ElasticDashSpan"]: ...
 
     @overload
     def start_as_current_observation(
@@ -981,7 +981,7 @@ class LangfuseObservationWrapper:
         usage_details: Optional[Dict[str, int]] = None,
         cost_details: Optional[Dict[str, float]] = None,
         prompt: Optional[PromptClient] = None,
-    ) -> _AgnosticContextManager["LangfuseGeneration"]: ...
+    ) -> _AgnosticContextManager["ElasticDashGeneration"]: ...
 
     @overload
     def start_as_current_observation(
@@ -1001,7 +1001,7 @@ class LangfuseObservationWrapper:
         usage_details: Optional[Dict[str, int]] = None,
         cost_details: Optional[Dict[str, float]] = None,
         prompt: Optional[PromptClient] = None,
-    ) -> _AgnosticContextManager["LangfuseEmbedding"]: ...
+    ) -> _AgnosticContextManager["ElasticDashEmbedding"]: ...
 
     @overload
     def start_as_current_observation(
@@ -1015,7 +1015,7 @@ class LangfuseObservationWrapper:
         version: Optional[str] = None,
         level: Optional[SpanLevel] = None,
         status_message: Optional[str] = None,
-    ) -> _AgnosticContextManager["LangfuseAgent"]: ...
+    ) -> _AgnosticContextManager["ElasticDashAgent"]: ...
 
     @overload
     def start_as_current_observation(
@@ -1029,7 +1029,7 @@ class LangfuseObservationWrapper:
         version: Optional[str] = None,
         level: Optional[SpanLevel] = None,
         status_message: Optional[str] = None,
-    ) -> _AgnosticContextManager["LangfuseTool"]: ...
+    ) -> _AgnosticContextManager["ElasticDashTool"]: ...
 
     @overload
     def start_as_current_observation(
@@ -1043,7 +1043,7 @@ class LangfuseObservationWrapper:
         version: Optional[str] = None,
         level: Optional[SpanLevel] = None,
         status_message: Optional[str] = None,
-    ) -> _AgnosticContextManager["LangfuseChain"]: ...
+    ) -> _AgnosticContextManager["ElasticDashChain"]: ...
 
     @overload
     def start_as_current_observation(
@@ -1057,7 +1057,7 @@ class LangfuseObservationWrapper:
         version: Optional[str] = None,
         level: Optional[SpanLevel] = None,
         status_message: Optional[str] = None,
-    ) -> _AgnosticContextManager["LangfuseRetriever"]: ...
+    ) -> _AgnosticContextManager["ElasticDashRetriever"]: ...
 
     @overload
     def start_as_current_observation(
@@ -1071,7 +1071,7 @@ class LangfuseObservationWrapper:
         version: Optional[str] = None,
         level: Optional[SpanLevel] = None,
         status_message: Optional[str] = None,
-    ) -> _AgnosticContextManager["LangfuseEvaluator"]: ...
+    ) -> _AgnosticContextManager["ElasticDashEvaluator"]: ...
 
     @overload
     def start_as_current_observation(
@@ -1085,7 +1085,7 @@ class LangfuseObservationWrapper:
         version: Optional[str] = None,
         level: Optional[SpanLevel] = None,
         status_message: Optional[str] = None,
-    ) -> _AgnosticContextManager["LangfuseGuardrail"]: ...
+    ) -> _AgnosticContextManager["ElasticDashGuardrail"]: ...
 
     def start_as_current_observation(  # type: ignore[misc]
         self,
@@ -1107,15 +1107,15 @@ class LangfuseObservationWrapper:
         # TODO: or union of context managers?
     ) -> _AgnosticContextManager[
         Union[
-            "LangfuseSpan",
-            "LangfuseGeneration",
-            "LangfuseAgent",
-            "LangfuseTool",
-            "LangfuseChain",
-            "LangfuseRetriever",
-            "LangfuseEvaluator",
-            "LangfuseEmbedding",
-            "LangfuseGuardrail",
+            "ElasticDashSpan",
+            "ElasticDashGeneration",
+            "ElasticDashAgent",
+            "ElasticDashTool",
+            "ElasticDashChain",
+            "ElasticDashRetriever",
+            "ElasticDashEvaluator",
+            "ElasticDashEmbedding",
+            "ElasticDashGuardrail",
         ]
     ]:
         """Create a new child observation and set it as the current observation in a context manager.
@@ -1162,11 +1162,11 @@ class LangfuseObservationWrapper:
         )
 
 
-class LangfuseSpan(LangfuseObservationWrapper):
-    """Standard span implementation for general operations in Langfuse.
+class ElasticDashSpan(ElasticDashObservationWrapper):
+    """Standard span implementation for general operations in ElasticDash.
 
     This class represents a general-purpose span that can be used to trace
-    any operation in your application. It extends the base LangfuseObservationWrapper
+    any operation in your application. It extends the base ElasticDashObservationWrapper
     with specific methods for creating child spans, generations, and updating
     span-specific attributes. If possible, use a more specific type for
     better observability and insights.
@@ -1176,7 +1176,7 @@ class LangfuseSpan(LangfuseObservationWrapper):
         self,
         *,
         otel_span: otel_trace_api.Span,
-        langfuse_client: "Langfuse",
+        langfuse_client: "ElasticDash",
         input: Optional[Any] = None,
         output: Optional[Any] = None,
         metadata: Optional[Any] = None,
@@ -1185,11 +1185,11 @@ class LangfuseSpan(LangfuseObservationWrapper):
         level: Optional[SpanLevel] = None,
         status_message: Optional[str] = None,
     ):
-        """Initialize a new LangfuseSpan.
+        """Initialize a new ElasticDashSpan.
 
         Args:
             otel_span: The OpenTelemetry span to wrap
-            langfuse_client: Reference to the parent Langfuse client
+            langfuse_client: Reference to the parent ElasticDash client
             input: Input data for the span (any JSON-serializable object)
             output: Output data from the span (any JSON-serializable object)
             metadata: Additional metadata to associate with the span
@@ -1220,7 +1220,7 @@ class LangfuseSpan(LangfuseObservationWrapper):
         version: Optional[str] = None,
         level: Optional[SpanLevel] = None,
         status_message: Optional[str] = None,
-    ) -> "LangfuseSpan":
+    ) -> "ElasticDashSpan":
         """Create a new child span.
 
         This method creates a new child span with this span as the parent.
@@ -1237,7 +1237,7 @@ class LangfuseSpan(LangfuseObservationWrapper):
             status_message: Optional status message for the span
 
         Returns:
-            A new LangfuseSpan that must be ended with .end() when complete
+            A new ElasticDashSpan that must be ended with .end() when complete
 
         Example:
             ```python
@@ -1280,7 +1280,7 @@ class LangfuseSpan(LangfuseObservationWrapper):
         version: Optional[str] = None,
         level: Optional[SpanLevel] = None,
         status_message: Optional[str] = None,
-    ) -> _AgnosticContextManager["LangfuseSpan"]:
+    ) -> _AgnosticContextManager["ElasticDashSpan"]:
         """[DEPRECATED] Create a new child span and set it as the current span in a context manager.
 
         DEPRECATED: This method is deprecated and will be removed in a future version.
@@ -1300,7 +1300,7 @@ class LangfuseSpan(LangfuseObservationWrapper):
             status_message: Optional status message for the span
 
         Returns:
-            A context manager that yields a new LangfuseSpan
+            A context manager that yields a new ElasticDashSpan
 
         Example:
             ```python
@@ -1351,7 +1351,7 @@ class LangfuseSpan(LangfuseObservationWrapper):
         usage_details: Optional[Dict[str, int]] = None,
         cost_details: Optional[Dict[str, float]] = None,
         prompt: Optional[PromptClient] = None,
-    ) -> "LangfuseGeneration":
+    ) -> "ElasticDashGeneration":
         """[DEPRECATED] Create a new child generation span.
 
         DEPRECATED: This method is deprecated and will be removed in a future version.
@@ -1377,10 +1377,10 @@ class LangfuseSpan(LangfuseObservationWrapper):
             model_parameters: Parameters used for the model (e.g., temperature, max_tokens)
             usage_details: Token usage information (e.g., prompt_tokens, completion_tokens)
             cost_details: Cost information for the model call
-            prompt: Associated prompt template from Langfuse prompt management
+            prompt: Associated prompt template from ElasticDash prompt management
 
         Returns:
-            A new LangfuseGeneration that must be ended with .end() when complete
+            A new ElasticDashGeneration that must be ended with .end() when complete
 
         Example:
             ```python
@@ -1451,7 +1451,7 @@ class LangfuseSpan(LangfuseObservationWrapper):
         usage_details: Optional[Dict[str, int]] = None,
         cost_details: Optional[Dict[str, float]] = None,
         prompt: Optional[PromptClient] = None,
-    ) -> _AgnosticContextManager["LangfuseGeneration"]:
+    ) -> _AgnosticContextManager["ElasticDashGeneration"]:
         """[DEPRECATED] Create a new child generation span and set it as the current span in a context manager.
 
         DEPRECATED: This method is deprecated and will be removed in a future version.
@@ -1474,10 +1474,10 @@ class LangfuseSpan(LangfuseObservationWrapper):
             model_parameters: Parameters used for the model (e.g., temperature, max_tokens)
             usage_details: Token usage information (e.g., prompt_tokens, completion_tokens)
             cost_details: Cost information for the model call
-            prompt: Associated prompt template from Langfuse prompt management
+            prompt: Associated prompt template from ElasticDash prompt management
 
         Returns:
-            A context manager that yields a new LangfuseGeneration
+            A context manager that yields a new ElasticDashGeneration
 
         Example:
             ```python
@@ -1540,8 +1540,8 @@ class LangfuseSpan(LangfuseObservationWrapper):
         version: Optional[str] = None,
         level: Optional[SpanLevel] = None,
         status_message: Optional[str] = None,
-    ) -> "LangfuseEvent":
-        """Create a new Langfuse observation of type 'EVENT'.
+    ) -> "ElasticDashEvent":
+        """Create a new ElasticDash observation of type 'EVENT'.
 
         Args:
             name: Name of the span (e.g., function or operation name)
@@ -1553,7 +1553,7 @@ class LangfuseSpan(LangfuseObservationWrapper):
             status_message: Optional status message for the span
 
         Returns:
-            The LangfuseEvent object
+            The ElasticDashEvent object
 
         Example:
             ```python
@@ -1568,8 +1568,8 @@ class LangfuseSpan(LangfuseObservationWrapper):
             )
 
         return cast(
-            "LangfuseEvent",
-            LangfuseEvent(
+            "ElasticDashEvent",
+            ElasticDashEvent(
                 otel_span=new_otel_span,
                 langfuse_client=self._langfuse_client,
                 input=input,
@@ -1583,11 +1583,11 @@ class LangfuseSpan(LangfuseObservationWrapper):
         )
 
 
-class LangfuseGeneration(LangfuseObservationWrapper):
-    """Specialized span implementation for AI model generations in Langfuse.
+class ElasticDashGeneration(ElasticDashObservationWrapper):
+    """Specialized span implementation for AI model generations in ElasticDash.
 
     This class represents a generation span specifically designed for tracking
-    AI/LLM operations. It extends the base LangfuseObservationWrapper with specialized
+    AI/LLM operations. It extends the base ElasticDashObservationWrapper with specialized
     attributes for model details, token usage, and costs.
     """
 
@@ -1595,7 +1595,7 @@ class LangfuseGeneration(LangfuseObservationWrapper):
         self,
         *,
         otel_span: otel_trace_api.Span,
-        langfuse_client: "Langfuse",
+        langfuse_client: "ElasticDash",
         input: Optional[Any] = None,
         output: Optional[Any] = None,
         metadata: Optional[Any] = None,
@@ -1610,11 +1610,11 @@ class LangfuseGeneration(LangfuseObservationWrapper):
         cost_details: Optional[Dict[str, float]] = None,
         prompt: Optional[PromptClient] = None,
     ):
-        """Initialize a new LangfuseGeneration span.
+        """Initialize a new ElasticDashGeneration span.
 
         Args:
             otel_span: The OpenTelemetry span to wrap
-            langfuse_client: Reference to the parent Langfuse client
+            langfuse_client: Reference to the parent ElasticDash client
             input: Input data for the generation (e.g., prompts)
             output: Output from the generation (e.g., completions)
             metadata: Additional metadata to associate with the generation
@@ -1627,7 +1627,7 @@ class LangfuseGeneration(LangfuseObservationWrapper):
             model_parameters: Parameters used for the model (e.g., temperature, max_tokens)
             usage_details: Token usage information (e.g., prompt_tokens, completion_tokens)
             cost_details: Cost information for the model call
-            prompt: Associated prompt template from Langfuse prompt management
+            prompt: Associated prompt template from ElasticDash prompt management
         """
         super().__init__(
             as_type="generation",
@@ -1649,14 +1649,14 @@ class LangfuseGeneration(LangfuseObservationWrapper):
         )
 
 
-class LangfuseEvent(LangfuseObservationWrapper):
-    """Specialized span implementation for Langfuse Events."""
+class ElasticDashEvent(ElasticDashObservationWrapper):
+    """Specialized span implementation for ElasticDash Events."""
 
     def __init__(
         self,
         *,
         otel_span: otel_trace_api.Span,
-        langfuse_client: "Langfuse",
+        langfuse_client: "ElasticDash",
         input: Optional[Any] = None,
         output: Optional[Any] = None,
         metadata: Optional[Any] = None,
@@ -1665,11 +1665,11 @@ class LangfuseEvent(LangfuseObservationWrapper):
         level: Optional[SpanLevel] = None,
         status_message: Optional[str] = None,
     ):
-        """Initialize a new LangfuseEvent span.
+        """Initialize a new ElasticDashEvent span.
 
         Args:
             otel_span: The OpenTelemetry span to wrap
-            langfuse_client: Reference to the parent Langfuse client
+            langfuse_client: Reference to the parent ElasticDash client
             input: Input data for the event
             output: Output from the event
             metadata: Additional metadata to associate with the generation
@@ -1708,93 +1708,93 @@ class LangfuseEvent(LangfuseObservationWrapper):
         cost_details: Optional[Dict[str, float]] = None,
         prompt: Optional[PromptClient] = None,
         **kwargs: Any,
-    ) -> "LangfuseEvent":
-        """Update is not allowed for LangfuseEvent because events cannot be updated.
+    ) -> "ElasticDashEvent":
+        """Update is not allowed for ElasticDashEvent because events cannot be updated.
 
         This method logs a warning and returns self without making changes.
 
         Returns:
-            self: Returns the unchanged LangfuseEvent instance
+            self: Returns the unchanged ElasticDashEvent instance
         """
         langfuse_logger.warning(
-            "Attempted to update LangfuseEvent observation. Events cannot be updated after creation."
+            "Attempted to update ElasticDashEvent observation. Events cannot be updated after creation."
         )
         return self
 
 
-class LangfuseAgent(LangfuseObservationWrapper):
+class ElasticDashAgent(ElasticDashObservationWrapper):
     """Agent observation for reasoning blocks that act on tools using LLM guidance."""
 
     def __init__(self, **kwargs: Any) -> None:
-        """Initialize a new LangfuseAgent span."""
+        """Initialize a new ElasticDashAgent span."""
         kwargs["as_type"] = "agent"
         super().__init__(**kwargs)
 
 
-class LangfuseTool(LangfuseObservationWrapper):
+class ElasticDashTool(ElasticDashObservationWrapper):
     """Tool observation representing external tool calls, e.g., calling a weather API."""
 
     def __init__(self, **kwargs: Any) -> None:
-        """Initialize a new LangfuseTool span."""
+        """Initialize a new ElasticDashTool span."""
         kwargs["as_type"] = "tool"
         super().__init__(**kwargs)
 
 
-class LangfuseChain(LangfuseObservationWrapper):
+class ElasticDashChain(ElasticDashObservationWrapper):
     """Chain observation for connecting LLM application steps, e.g. passing context from retriever to LLM."""
 
     def __init__(self, **kwargs: Any) -> None:
-        """Initialize a new LangfuseChain span."""
+        """Initialize a new ElasticDashChain span."""
         kwargs["as_type"] = "chain"
         super().__init__(**kwargs)
 
 
-class LangfuseRetriever(LangfuseObservationWrapper):
+class ElasticDashRetriever(ElasticDashObservationWrapper):
     """Retriever observation for data retrieval steps, e.g. vector store or database queries."""
 
     def __init__(self, **kwargs: Any) -> None:
-        """Initialize a new LangfuseRetriever span."""
+        """Initialize a new ElasticDashRetriever span."""
         kwargs["as_type"] = "retriever"
         super().__init__(**kwargs)
 
 
-class LangfuseEmbedding(LangfuseObservationWrapper):
+class ElasticDashEmbedding(ElasticDashObservationWrapper):
     """Embedding observation for LLM embedding calls, typically used before retrieval."""
 
     def __init__(self, **kwargs: Any) -> None:
-        """Initialize a new LangfuseEmbedding span."""
+        """Initialize a new ElasticDashEmbedding span."""
         kwargs["as_type"] = "embedding"
         super().__init__(**kwargs)
 
 
-class LangfuseEvaluator(LangfuseObservationWrapper):
+class ElasticDashEvaluator(ElasticDashObservationWrapper):
     """Evaluator observation for assessing relevance, correctness, or helpfulness of LLM outputs."""
 
     def __init__(self, **kwargs: Any) -> None:
-        """Initialize a new LangfuseEvaluator span."""
+        """Initialize a new ElasticDashEvaluator span."""
         kwargs["as_type"] = "evaluator"
         super().__init__(**kwargs)
 
 
-class LangfuseGuardrail(LangfuseObservationWrapper):
+class ElasticDashGuardrail(ElasticDashObservationWrapper):
     """Guardrail observation for protection e.g. against jailbreaks or offensive content."""
 
     def __init__(self, **kwargs: Any) -> None:
-        """Initialize a new LangfuseGuardrail span."""
+        """Initialize a new ElasticDashGuardrail span."""
         kwargs["as_type"] = "guardrail"
         super().__init__(**kwargs)
 
 
 _OBSERVATION_CLASS_MAP.update(
     {
-        "span": LangfuseSpan,
-        "generation": LangfuseGeneration,
-        "agent": LangfuseAgent,
-        "tool": LangfuseTool,
-        "chain": LangfuseChain,
-        "retriever": LangfuseRetriever,
-        "evaluator": LangfuseEvaluator,
-        "embedding": LangfuseEmbedding,
-        "guardrail": LangfuseGuardrail,
+        "span": ElasticDashSpan,
+        "generation": ElasticDashGeneration,
+        "agent": ElasticDashAgent,
+        "tool": ElasticDashTool,
+        "chain": ElasticDashChain,
+        "retriever": ElasticDashRetriever,
+        "evaluator": ElasticDashEvaluator,
+        "embedding": ElasticDashEmbedding,
+        "guardrail": ElasticDashGuardrail,
     }
 )

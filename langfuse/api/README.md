@@ -1,9 +1,9 @@
-# Langfuse Python Library
+# ElasticDash Python Library
 
-[![fern shield](https://img.shields.io/badge/%F0%9F%8C%BF-Built%20with%20Fern-brightgreen)](https://buildwithfern.com?utm_source=github&utm_medium=github&utm_campaign=readme&utm_source=Langfuse%2FPython)
+[![fern shield](https://img.shields.io/badge/%F0%9F%8C%BF-Built%20with%20Fern-brightgreen)](https://buildwithfern.com?utm_source=github&utm_medium=github&utm_campaign=readme&utm_source=ElasticDash%2FPython)
 [![pypi](https://img.shields.io/pypi/v/langfuse)](https://pypi.python.org/pypi/langfuse)
 
-The Langfuse Python library provides convenient access to the Langfuse APIs from Python.
+The ElasticDash Python library provides convenient access to the ElasticDash APIs from Python.
 
 ## Table of Contents
 
@@ -29,12 +29,12 @@ Instantiate and use the client with the following:
 
 ```python
 from langfuse import CreateAnnotationQueueRequest
-from langfuse.client import FernLangfuse
+from langfuse.client import FernElasticDash
 
-client = FernLangfuse(
-    x_langfuse_sdk_name="YOUR_X_LANGFUSE_SDK_NAME",
-    x_langfuse_sdk_version="YOUR_X_LANGFUSE_SDK_VERSION",
-    x_langfuse_public_key="YOUR_X_LANGFUSE_PUBLIC_KEY",
+client = FernElasticDash(
+    x_langfuse_sdk_name="YOUR_X_ELASTICDASH_SDK_NAME",
+    x_langfuse_sdk_version="YOUR_X_ELASTICDASH_SDK_VERSION",
+    x_langfuse_public_key="YOUR_X_ELASTICDASH_PUBLIC_KEY",
     username="YOUR_USERNAME",
     password="YOUR_PASSWORD",
     base_url="https://yourhost.com/path/to/api",
@@ -55,12 +55,12 @@ The SDK also exports an `async` client so that you can make non-blocking calls t
 import asyncio
 
 from langfuse import CreateAnnotationQueueRequest
-from langfuse.client import AsyncFernLangfuse
+from langfuse.client import AsyncFernElasticDash
 
-client = AsyncFernLangfuse(
-    x_langfuse_sdk_name="YOUR_X_LANGFUSE_SDK_NAME",
-    x_langfuse_sdk_version="YOUR_X_LANGFUSE_SDK_VERSION",
-    x_langfuse_public_key="YOUR_X_LANGFUSE_PUBLIC_KEY",
+client = AsyncFernElasticDash(
+    x_langfuse_sdk_name="YOUR_X_ELASTICDASH_SDK_NAME",
+    x_langfuse_sdk_version="YOUR_X_ELASTICDASH_SDK_VERSION",
+    x_langfuse_public_key="YOUR_X_ELASTICDASH_PUBLIC_KEY",
     username="YOUR_USERNAME",
     password="YOUR_PASSWORD",
     base_url="https://yourhost.com/path/to/api",
@@ -122,9 +122,9 @@ The SDK defaults to a 60 second timeout. You can configure this with a timeout o
 
 ```python
 
-from langfuse.client import FernLangfuse
+from langfuse.client import FernElasticDash
 
-client = FernLangfuse(..., { timeout=20.0 }, )
+client = FernElasticDash(..., { timeout=20.0 }, )
 
 
 # Override timeout for a specific method
@@ -139,9 +139,9 @@ You can override the `httpx` client to customize it for your use-case. Some comm
 and transports.
 ```python
 import httpx
-from langfuse.client import FernLangfuse
+from langfuse.client import FernElasticDash
 
-client = FernLangfuse(
+client = FernElasticDash(
     ...,
     http_client=httpx.Client(
         proxies="http://my.test.proxy.example.com",

@@ -17,16 +17,16 @@ import pydantic
 from opentelemetry import context, trace
 from opentelemetry.context import _RUNTIME_CONTEXT
 
-from langfuse._client.attributes import LangfuseOtelSpanAttributes
-from langfuse._client.client import Langfuse
+from langfuse._client.attributes import ElasticDashOtelSpanAttributes
+from langfuse._client.client import ElasticDash
 from langfuse._client.get_client import get_client
 from langfuse._client.span import (
-    LangfuseAgent,
-    LangfuseChain,
-    LangfuseGeneration,
-    LangfuseRetriever,
-    LangfuseSpan,
-    LangfuseTool,
+    ElasticDashAgent,
+    ElasticDashChain,
+    ElasticDashGeneration,
+    ElasticDashRetriever,
+    ElasticDashSpan,
+    ElasticDashTool,
 )
 from langfuse._utils import _get_timestamp
 from langfuse.langchain.utils import _extract_model_name
@@ -77,7 +77,7 @@ try:
 
 except ImportError:
     raise ModuleNotFoundError(
-        "Please install langchain to use the Langfuse langchain integration: 'pip install langchain'"
+        "Please install langchain to use the ElasticDash langchain integration: 'pip install langchain'"
     )
 
 LANGSMITH_TAG_HIDDEN: str = "langsmith:hidden"
@@ -102,8 +102,8 @@ class LangchainCallbackHandler(LangchainBaseCallbackHandler):
         """Initialize the LangchainCallbackHandler.
 
         Args:
-            public_key: Optional Langfuse public key. If not provided, will use the default client configuration.
-            update_trace: Whether to update the Langfuse trace with the chains input / output / metadata / name. Defaults to False.
+            public_key: Optional ElasticDash public key. If not provided, will use the default client configuration.
+            update_trace: Whether to update the ElasticDash trace with the chains input / output / metadata / name. Defaults to False.
             trace_context: Optional context for connecting to an existing trace (distributed tracing) or
                 setting a custom trace id for the root LangChain run. Pass a `TraceContext` dict, e.g.
                 `{"trace_id": "<trace_id>"}` (and optionally `{"parent_span_id": "<span_id>"}`) to link
@@ -124,12 +124,12 @@ class LangchainCallbackHandler(LangchainBaseCallbackHandler):
         self.runs: Dict[
             UUID,
             Union[
-                LangfuseSpan,
-                LangfuseGeneration,
-                LangfuseAgent,
-                LangfuseChain,
-                LangfuseTool,
-                LangfuseRetriever,
+                ElasticDashSpan,
+                ElasticDashGeneration,
+                ElasticDashAgent,
+                ElasticDashChain,
+                ElasticDashTool,
+                ElasticDashRetriever,
             ],
         ] = {}
         self._child_to_parent_run_id_map: Dict[UUID, Optional[UUID]] = {}
@@ -155,10 +155,10 @@ class LangchainCallbackHandler(LangchainBaseCallbackHandler):
         )
         if (
             run_id in self.runs
-            and isinstance(self.runs[run_id], LangfuseGeneration)
+            and isinstance(self.runs[run_id], ElasticDashGeneration)
             and run_id not in self.updated_completion_start_time_memo
         ):
-            current_generation = cast(LangfuseGeneration, self.runs[run_id])
+            current_generation = cast(ElasticDashGeneration, self.runs[run_id])
             current_generation.update(completion_start_time=_get_timestamp())
 
             self.updated_completion_start_time_memo.add(run_id)
@@ -173,7 +173,7 @@ class LangchainCallbackHandler(LangchainBaseCallbackHandler):
         Literal["chain"],
         Literal["span"],
     ]:
-        """Determine Langfuse observation type from LangChain component.
+        """Determine ElasticDash observation type from LangChain component.
 
         Args:
             serialized: LangChain's serialized component dict
@@ -181,7 +181,7 @@ class LangchainCallbackHandler(LangchainBaseCallbackHandler):
             **kwargs: Additional keyword arguments from the callback
 
         Returns:
-            The appropriate Langfuse observation type string
+            The appropriate ElasticDash observation type string
         """
         # Direct mappings based on callback type
         if callback_type == "tool":
@@ -322,7 +322,7 @@ class LangchainCallbackHandler(LangchainBaseCallbackHandler):
             )
 
             obs = self._get_parent_observation(parent_run_id)
-            if isinstance(obs, Langfuse):
+            if isinstance(obs, ElasticDash):
                 span = obs.start_observation(
                     trace_context=self.trace_context,
                     name=span_name,
@@ -377,7 +377,7 @@ class LangchainCallbackHandler(LangchainBaseCallbackHandler):
         parent_run_id: Optional[UUID],
         metadata: Optional[Dict[str, Any]],
     ) -> None:
-        """We need to register any passed Langfuse prompt to the parent_run_id so that we can link following generations with that prompt.
+        """We need to register any passed ElasticDash prompt to the parent_run_id so that we can link following generations with that prompt.
 
         If parent_run_id is None, we are at the root of a trace and should not attempt to register the prompt, as there will be no LLM invocation following it.
         Otherwise it would have been traced in with a parent run consisting of the prompt template formatting and the LLM invocation.
@@ -403,13 +403,13 @@ class LangchainCallbackHandler(LangchainBaseCallbackHandler):
     def _get_parent_observation(
         self, parent_run_id: Optional[UUID]
     ) -> Union[
-        Langfuse,
-        LangfuseAgent,
-        LangfuseChain,
-        LangfuseGeneration,
-        LangfuseRetriever,
-        LangfuseSpan,
-        LangfuseTool,
+        ElasticDash,
+        ElasticDashAgent,
+        ElasticDashChain,
+        ElasticDashGeneration,
+        ElasticDashRetriever,
+        ElasticDashSpan,
+        ElasticDashTool,
     ]:
         if parent_run_id and parent_run_id in self.runs:
             return self.runs[parent_run_id]
@@ -420,12 +420,12 @@ class LangchainCallbackHandler(LangchainBaseCallbackHandler):
         self,
         run_id: UUID,
         observation: Union[
-            LangfuseAgent,
-            LangfuseChain,
-            LangfuseGeneration,
-            LangfuseRetriever,
-            LangfuseSpan,
-            LangfuseTool,
+            ElasticDashAgent,
+            ElasticDashChain,
+            ElasticDashGeneration,
+            ElasticDashRetriever,
+            ElasticDashSpan,
+            ElasticDashTool,
         ],
     ) -> None:
         ctx = trace.set_span_in_context(observation._otel_span)
@@ -438,12 +438,12 @@ class LangchainCallbackHandler(LangchainBaseCallbackHandler):
         self, run_id: UUID
     ) -> Optional[
         Union[
-            LangfuseAgent,
-            LangfuseChain,
-            LangfuseGeneration,
-            LangfuseRetriever,
-            LangfuseSpan,
-            LangfuseTool,
+            ElasticDashAgent,
+            ElasticDashChain,
+            ElasticDashGeneration,
+            ElasticDashRetriever,
+            ElasticDashSpan,
+            ElasticDashTool,
         ]
     ]:
         token = self.context_tokens.pop(run_id, None)
@@ -464,12 +464,12 @@ class LangchainCallbackHandler(LangchainBaseCallbackHandler):
 
         return cast(
             Union[
-                LangfuseAgent,
-                LangfuseChain,
-                LangfuseGeneration,
-                LangfuseRetriever,
-                LangfuseSpan,
-                LangfuseTool,
+                ElasticDashAgent,
+                ElasticDashChain,
+                ElasticDashGeneration,
+                ElasticDashRetriever,
+                ElasticDashSpan,
+                ElasticDashTool,
             ],
             self.runs.pop(run_id, None),
         )
@@ -494,7 +494,7 @@ class LangchainCallbackHandler(LangchainBaseCallbackHandler):
 
             if agent_run is not None:
                 agent_run._otel_span.set_attribute(
-                    LangfuseOtelSpanAttributes.OBSERVATION_TYPE, "agent"
+                    ElasticDashOtelSpanAttributes.OBSERVATION_TYPE, "agent"
                 )
 
                 agent_run.update(
@@ -523,7 +523,7 @@ class LangchainCallbackHandler(LangchainBaseCallbackHandler):
 
             if agent_run is not None:
                 agent_run._otel_span.set_attribute(
-                    LangfuseOtelSpanAttributes.OBSERVATION_TYPE, "agent"
+                    ElasticDashOtelSpanAttributes.OBSERVATION_TYPE, "agent"
                 )
 
                 agent_run.update(
@@ -938,7 +938,7 @@ class LangchainCallbackHandler(LangchainBaseCallbackHandler):
     def _log_model_parse_warning(self) -> None:
         if not hasattr(self, "_model_parse_warning_logged"):
             langfuse_logger.warning(
-                "Langfuse was not able to parse the LLM model. The LLM call will be recorded without model name. Please create an issue: https://github.com/langfuse/langfuse/issues/new/choose"
+                "ElasticDash was not able to parse the LLM model. The LLM call will be recorded without model name. Please create an issue: https://github.com/langfuse/langfuse/issues/new/choose"
             )
 
             self._model_parse_warning_logged = True

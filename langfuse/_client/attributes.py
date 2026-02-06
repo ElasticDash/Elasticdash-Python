@@ -1,7 +1,7 @@
-"""Span attribute management for Langfuse OpenTelemetry integration.
+"""Span attribute management for ElasticDash OpenTelemetry integration.
 
 This module defines constants and functions for managing OpenTelemetry span attributes
-used by Langfuse. It provides a structured approach to creating and manipulating
+used by ElasticDash. It provides a structured approach to creating and manipulating
 attributes for different span types (trace, span, generation) while ensuring consistency.
 
 The module includes:
@@ -23,8 +23,8 @@ from langfuse.model import PromptClient
 from langfuse.types import MapValue, SpanLevel
 
 
-class LangfuseOtelSpanAttributes:
-    # Langfuse-Trace attributes
+class ElasticDashOtelSpanAttributes:
+    # ElasticDash-Trace attributes
     TRACE_NAME = "langfuse.trace.name"
     TRACE_USER_ID = "user.id"
     TRACE_SESSION_ID = "session.id"
@@ -34,7 +34,7 @@ class LangfuseOtelSpanAttributes:
     TRACE_INPUT = "langfuse.trace.input"
     TRACE_OUTPUT = "langfuse.trace.output"
 
-    # Langfuse-observation attributes
+    # ElasticDash-observation attributes
     OBSERVATION_TYPE = "langfuse.observation.type"
     OBSERVATION_METADATA = "langfuse.observation.metadata"
     OBSERVATION_LEVEL = "langfuse.observation.level"
@@ -42,7 +42,7 @@ class LangfuseOtelSpanAttributes:
     OBSERVATION_INPUT = "langfuse.observation.input"
     OBSERVATION_OUTPUT = "langfuse.observation.output"
 
-    # Langfuse-observation of type Generation attributes
+    # ElasticDash-observation of type Generation attributes
     OBSERVATION_COMPLETION_START_TIME = "langfuse.observation.completion_start_time"
     OBSERVATION_MODEL = "langfuse.observation.model.name"
     OBSERVATION_MODEL_PARAMETERS = "langfuse.observation.model.parameters"
@@ -85,15 +85,15 @@ def create_trace_attributes(
     public: Optional[bool] = None,
 ) -> dict:
     attributes = {
-        LangfuseOtelSpanAttributes.TRACE_NAME: name,
-        LangfuseOtelSpanAttributes.TRACE_USER_ID: user_id,
-        LangfuseOtelSpanAttributes.TRACE_SESSION_ID: session_id,
-        LangfuseOtelSpanAttributes.VERSION: version,
-        LangfuseOtelSpanAttributes.RELEASE: release,
-        LangfuseOtelSpanAttributes.TRACE_INPUT: _serialize(input),
-        LangfuseOtelSpanAttributes.TRACE_OUTPUT: _serialize(output),
-        LangfuseOtelSpanAttributes.TRACE_TAGS: tags,
-        LangfuseOtelSpanAttributes.TRACE_PUBLIC: public,
+        ElasticDashOtelSpanAttributes.TRACE_NAME: name,
+        ElasticDashOtelSpanAttributes.TRACE_USER_ID: user_id,
+        ElasticDashOtelSpanAttributes.TRACE_SESSION_ID: session_id,
+        ElasticDashOtelSpanAttributes.VERSION: version,
+        ElasticDashOtelSpanAttributes.RELEASE: release,
+        ElasticDashOtelSpanAttributes.TRACE_INPUT: _serialize(input),
+        ElasticDashOtelSpanAttributes.TRACE_OUTPUT: _serialize(output),
+        ElasticDashOtelSpanAttributes.TRACE_TAGS: tags,
+        ElasticDashOtelSpanAttributes.TRACE_PUBLIC: public,
         **_flatten_and_serialize_metadata(metadata, "trace"),
     }
 
@@ -113,12 +113,12 @@ def create_span_attributes(
     ] = "span",
 ) -> dict:
     attributes = {
-        LangfuseOtelSpanAttributes.OBSERVATION_TYPE: observation_type,
-        LangfuseOtelSpanAttributes.OBSERVATION_LEVEL: level,
-        LangfuseOtelSpanAttributes.OBSERVATION_STATUS_MESSAGE: status_message,
-        LangfuseOtelSpanAttributes.VERSION: version,
-        LangfuseOtelSpanAttributes.OBSERVATION_INPUT: _serialize(input),
-        LangfuseOtelSpanAttributes.OBSERVATION_OUTPUT: _serialize(output),
+        ElasticDashOtelSpanAttributes.OBSERVATION_TYPE: observation_type,
+        ElasticDashOtelSpanAttributes.OBSERVATION_LEVEL: level,
+        ElasticDashOtelSpanAttributes.OBSERVATION_STATUS_MESSAGE: status_message,
+        ElasticDashOtelSpanAttributes.VERSION: version,
+        ElasticDashOtelSpanAttributes.OBSERVATION_INPUT: _serialize(input),
+        ElasticDashOtelSpanAttributes.OBSERVATION_OUTPUT: _serialize(output),
         **_flatten_and_serialize_metadata(metadata, "observation"),
     }
 
@@ -143,25 +143,25 @@ def create_generation_attributes(
     observation_type: Optional[ObservationTypeGenerationLike] = "generation",
 ) -> dict:
     attributes = {
-        LangfuseOtelSpanAttributes.OBSERVATION_TYPE: observation_type,
-        LangfuseOtelSpanAttributes.OBSERVATION_LEVEL: level,
-        LangfuseOtelSpanAttributes.OBSERVATION_STATUS_MESSAGE: status_message,
-        LangfuseOtelSpanAttributes.VERSION: version,
-        LangfuseOtelSpanAttributes.OBSERVATION_INPUT: _serialize(input),
-        LangfuseOtelSpanAttributes.OBSERVATION_OUTPUT: _serialize(output),
-        LangfuseOtelSpanAttributes.OBSERVATION_MODEL: model,
-        LangfuseOtelSpanAttributes.OBSERVATION_PROMPT_NAME: prompt.name
+        ElasticDashOtelSpanAttributes.OBSERVATION_TYPE: observation_type,
+        ElasticDashOtelSpanAttributes.OBSERVATION_LEVEL: level,
+        ElasticDashOtelSpanAttributes.OBSERVATION_STATUS_MESSAGE: status_message,
+        ElasticDashOtelSpanAttributes.VERSION: version,
+        ElasticDashOtelSpanAttributes.OBSERVATION_INPUT: _serialize(input),
+        ElasticDashOtelSpanAttributes.OBSERVATION_OUTPUT: _serialize(output),
+        ElasticDashOtelSpanAttributes.OBSERVATION_MODEL: model,
+        ElasticDashOtelSpanAttributes.OBSERVATION_PROMPT_NAME: prompt.name
         if prompt and not prompt.is_fallback
         else None,
-        LangfuseOtelSpanAttributes.OBSERVATION_PROMPT_VERSION: prompt.version
+        ElasticDashOtelSpanAttributes.OBSERVATION_PROMPT_VERSION: prompt.version
         if prompt and not prompt.is_fallback
         else None,
-        LangfuseOtelSpanAttributes.OBSERVATION_USAGE_DETAILS: _serialize(usage_details),
-        LangfuseOtelSpanAttributes.OBSERVATION_COST_DETAILS: _serialize(cost_details),
-        LangfuseOtelSpanAttributes.OBSERVATION_COMPLETION_START_TIME: _serialize(
+        ElasticDashOtelSpanAttributes.OBSERVATION_USAGE_DETAILS: _serialize(usage_details),
+        ElasticDashOtelSpanAttributes.OBSERVATION_COST_DETAILS: _serialize(cost_details),
+        ElasticDashOtelSpanAttributes.OBSERVATION_COMPLETION_START_TIME: _serialize(
             completion_start_time
         ),
-        LangfuseOtelSpanAttributes.OBSERVATION_MODEL_PARAMETERS: _serialize(
+        ElasticDashOtelSpanAttributes.OBSERVATION_MODEL_PARAMETERS: _serialize(
             model_parameters
         ),
         **_flatten_and_serialize_metadata(metadata, "observation"),
@@ -181,9 +181,9 @@ def _flatten_and_serialize_metadata(
     metadata: Any, type: Literal["observation", "trace"]
 ) -> dict:
     prefix = (
-        LangfuseOtelSpanAttributes.OBSERVATION_METADATA
+        ElasticDashOtelSpanAttributes.OBSERVATION_METADATA
         if type == "observation"
-        else LangfuseOtelSpanAttributes.TRACE_METADATA
+        else ElasticDashOtelSpanAttributes.TRACE_METADATA
     )
 
     metadata_attributes: Dict[str, Union[str, int, None]] = {}

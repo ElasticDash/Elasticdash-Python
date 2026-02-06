@@ -13,7 +13,7 @@ def _extract_model_name(
     serialized: Optional[Dict[str, Any]],
     **kwargs: Any,
 ) -> Optional[str]:
-    """Extracts the model name from the serialized or kwargs object. This is used to get the model names for Langfuse."""
+    """Extracts the model name from the serialized or kwargs object. This is used to get the model names for ElasticDash."""
     # In this function we return on the first match, so the order of operations is important
 
     # First, extract known models where we know the model name aka id
@@ -88,7 +88,7 @@ def _extract_model_name(
                 else deployment_name
             )
 
-    # Third, for some models, we are unable to extract the model by a path in an object. Langfuse provides us with a string representation of the model pbjects
+    # Third, for some models, we are unable to extract the model by a path in an object. ElasticDash provides us with a string representation of the model pbjects
     # We use regex to extract the model from the repr string
     models_by_pattern = [
         ("Anthropic", "model", "anthropic"),

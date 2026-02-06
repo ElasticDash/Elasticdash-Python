@@ -10,7 +10,7 @@ import httpx
 from langfuse._utils.serializer import EventSerializer
 
 
-class LangfuseClient:
+class ElasticDashClient:
     _public_key: str
     _secret_key: str
     _base_url: str
@@ -137,4 +137,4 @@ class APIErrors(Exception):
     def __str__(self) -> str:
         errors = ", ".join(str(error) for error in self.errors)
 
-        return f"[Langfuse] {errors}"
+        return f"[ElasticDash] {errors}"

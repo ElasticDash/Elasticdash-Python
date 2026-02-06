@@ -10,7 +10,7 @@ from ....core.pydantic_utilities import deep_union_pydantic_dicts, pydantic_v1
 class CreateScoreResponse(pydantic_v1.BaseModel):
     id: str = pydantic_v1.Field()
     """
-    The id of the created object in Langfuse
+    The id of the created object in ElasticDash
     """
 
     def json(self, **kwargs: typing.Any) -> str:

@@ -1,4 +1,4 @@
-"""Comprehensive tests for Langfuse experiment functionality matching JS SDK."""
+"""Comprehensive tests for ElasticDash experiment functionality matching JS SDK."""
 
 import time
 from typing import Any, Dict, List
@@ -136,7 +136,7 @@ def test_run_experiment_on_local_dataset(sample_dataset):
 
 
 def test_run_experiment_on_langfuse_dataset():
-    """Test running experiment on Langfuse dataset."""
+    """Test running experiment on ElasticDash dataset."""
     langfuse_client = get_client()
     # Create dataset
     dataset_name = "test-dataset-" + create_uuid()
@@ -162,13 +162,13 @@ def test_run_experiment_on_langfuse_dataset():
     experiment_name = "Dataset Test " + create_uuid()[:8]
     result = dataset.run_experiment(
         name=experiment_name,
-        description="Test on Langfuse dataset",
+        description="Test on ElasticDash dataset",
         task=mock_task,
         evaluators=[factuality_evaluator],
         run_evaluators=[run_evaluator_average_length],
     )
 
-    # Should have dataset run ID for Langfuse datasets
+    # Should have dataset run ID for ElasticDash datasets
     assert result.dataset_run_id is not None
     assert len(result.item_results) == 2
     assert all(item.dataset_run_id is not None for item in result.item_results)
@@ -259,7 +259,7 @@ def test_run_experiment_on_langfuse_dataset():
 
     assert dataset_run is not None, f"Dataset run {dataset_run_id} should exist"
     assert dataset_run.name == result.run_name, "Dataset run should have correct name"
-    assert dataset_run.description == "Test on Langfuse dataset", (
+    assert dataset_run.description == "Test on ElasticDash dataset", (
         "Dataset run should have correct description"
     )
 

@@ -5,10 +5,10 @@ from time import sleep
 import pytest
 from pydantic import BaseModel
 
-from langfuse._client.client import Langfuse
+from langfuse._client.client import ElasticDash
 from tests.utils import create_uuid, encode_file_to_base64, get_api
 
-langfuse = Langfuse()
+langfuse = ElasticDash()
 
 
 @pytest.fixture(scope="module")
@@ -238,7 +238,7 @@ def test_openai_chat_completion_stream_fail(openai):
 
 def test_openai_chat_completion_with_langfuse_prompt(openai):
     generation_name = create_uuid()
-    langfuse = Langfuse()
+    langfuse = ElasticDash()
     prompt_name = create_uuid()
     langfuse.create_prompt(
         name=prompt_name, prompt="test prompt", labels=["production"]
@@ -572,7 +572,7 @@ def test_openai_completion_stream_fail(openai):
 
 def test_openai_completion_with_langfuse_prompt(openai):
     generation_name = create_uuid()
-    langfuse = Langfuse()
+    langfuse = ElasticDash()
     prompt_name = create_uuid()
     prompt_client = langfuse.create_prompt(
         name=prompt_name, prompt="test prompt", labels=["production"]

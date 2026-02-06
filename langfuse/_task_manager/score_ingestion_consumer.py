@@ -16,11 +16,11 @@ except ImportError:
     import pydantic  # type: ignore
 
 from langfuse._utils.parse_error import handle_exception
-from langfuse._utils.request import APIError, LangfuseClient
+from langfuse._utils.request import APIError, ElasticDashClient
 from langfuse._utils.serializer import EventSerializer
 
-MAX_EVENT_SIZE_BYTES = int(os.environ.get("LANGFUSE_MAX_EVENT_SIZE_BYTES", 1_000_000))
-MAX_BATCH_SIZE_BYTES = int(os.environ.get("LANGFUSE_MAX_BATCH_SIZE_BYTES", 2_500_000))
+MAX_EVENT_SIZE_BYTES = int(os.environ.get("ELASTICDASH_MAX_EVENT_SIZE_BYTES", 1_000_000))
+MAX_BATCH_SIZE_BYTES = int(os.environ.get("ELASTICDASH_MAX_BATCH_SIZE_BYTES", 2_500_000))
 
 
 class ScoreIngestionMetadata(pydantic.BaseModel):
@@ -38,7 +38,7 @@ class ScoreIngestionConsumer(threading.Thread):
         *,
         ingestion_queue: Queue,
         identifier: int,
-        client: LangfuseClient,
+        client: ElasticDashClient,
         public_key: str,
         flush_at: Optional[int] = None,
         flush_interval: Optional[float] = None,
@@ -148,7 +148,7 @@ class ScoreIngestionConsumer(threading.Thread):
 
     def _upload_batch(self, batch: List[Any]) -> None:
         self._log.debug(
-            f"API: Uploading batch of {len(batch)} score events to Langfuse API"
+            f"API: Uploading batch of {len(batch)} score events to ElasticDash API"
         )
 
         metadata = ScoreIngestionMetadata(
@@ -176,5 +176,5 @@ class ScoreIngestionConsumer(threading.Thread):
 
         execute_task_with_backoff(batch)
         self._log.debug(
-            f"API: Successfully sent {len(batch)} score events to Langfuse API in batch mode"
+            f"API: Successfully sent {len(batch)} score events to ElasticDash API in batch mode"
         )

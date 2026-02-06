@@ -1,11 +1,11 @@
-"""Simplified tests for additional_headers functionality in Langfuse client.
+"""Simplified tests for additional_headers functionality in ElasticDash client.
 
 This module tests that additional headers are properly configured in the HTTP clients.
 """
 
 import httpx
 
-from langfuse._client.client import Langfuse
+from langfuse._client.client import ElasticDash
 
 
 class TestAdditionalHeadersSimple:
@@ -13,9 +13,9 @@ class TestAdditionalHeadersSimple:
 
     def teardown_method(self):
         """Clean up after each test to avoid singleton interference."""
-        from langfuse._client.resource_manager import LangfuseResourceManager
+        from langfuse._client.resource_manager import ElasticDashResourceManager
 
-        LangfuseResourceManager.reset()
+        ElasticDashResourceManager.reset()
 
     def test_httpx_client_has_additional_headers_when_none_provided(self):
         """Test that additional headers are set in httpx client when no custom client is provided."""
@@ -24,7 +24,7 @@ class TestAdditionalHeadersSimple:
             "X-Another-Header": "another-value",
         }
 
-        langfuse = Langfuse(
+        langfuse = ElasticDash(
             public_key="test-public-key",
             secret_key="test-secret-key",
             host="https://mock-host.com",
@@ -55,7 +55,7 @@ class TestAdditionalHeadersSimple:
             "X-Another-Header": "another-value",
         }
 
-        langfuse = Langfuse(
+        langfuse = ElasticDash(
             public_key="test-public-key",
             secret_key="test-secret-key",
             host="https://mock-host.com",
@@ -83,7 +83,7 @@ class TestAdditionalHeadersSimple:
         existing_headers = {"X-Existing-Header": "existing-value"}
         custom_client = httpx.Client(headers=existing_headers)
 
-        langfuse = Langfuse(
+        langfuse = ElasticDash(
             public_key="test-public-key",
             secret_key="test-secret-key",
             host="https://mock-host.com",
@@ -102,7 +102,7 @@ class TestAdditionalHeadersSimple:
 
     def test_none_additional_headers_works(self):
         """Test that passing None for additional_headers works without errors."""
-        langfuse = Langfuse(
+        langfuse = ElasticDash(
             public_key="test-public-key",
             secret_key="test-secret-key",
             host="https://mock-host.com",
@@ -117,7 +117,7 @@ class TestAdditionalHeadersSimple:
 
     def test_empty_additional_headers_works(self):
         """Test that passing an empty dict for additional_headers works."""
-        langfuse = Langfuse(
+        langfuse = ElasticDash(
             public_key="test-public-key",
             secret_key="test-secret-key",
             host="https://mock-host.com",
@@ -132,7 +132,7 @@ class TestAdditionalHeadersSimple:
 
     def test_span_processor_has_additional_headers_in_otel_exporter(self):
         """Test that span processor includes additional headers in OTEL exporter."""
-        from langfuse._client.span_processor import LangfuseSpanProcessor
+        from langfuse._client.span_processor import ElasticDashSpanProcessor
 
         additional_headers = {
             "X-Custom-Trace-Header": "trace-value",
@@ -140,7 +140,7 @@ class TestAdditionalHeadersSimple:
         }
 
         # Create span processor with additional headers
-        processor = LangfuseSpanProcessor(
+        processor = ElasticDashSpanProcessor(
             public_key="test-public-key",
             secret_key="test-secret-key",
             base_url="https://mock-host.com",
@@ -164,10 +164,10 @@ class TestAdditionalHeadersSimple:
 
     def test_span_processor_none_additional_headers_works(self):
         """Test that span processor works with None additional headers."""
-        from langfuse._client.span_processor import LangfuseSpanProcessor
+        from langfuse._client.span_processor import ElasticDashSpanProcessor
 
         # Create span processor without additional headers
-        processor = LangfuseSpanProcessor(
+        processor = ElasticDashSpanProcessor(
             public_key="test-public-key",
             secret_key="test-secret-key",
             base_url="https://mock-host.com",

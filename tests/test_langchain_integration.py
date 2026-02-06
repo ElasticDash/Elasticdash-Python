@@ -5,7 +5,7 @@ from langchain_core.output_parsers import StrOutputParser
 from langchain_core.prompts import ChatPromptTemplate, PromptTemplate
 from langchain_openai import ChatOpenAI, OpenAI
 
-from langfuse import Langfuse
+from langfuse import ElasticDash
 from langfuse.langchain import CallbackHandler
 from tests.utils import get_api
 
@@ -32,7 +32,7 @@ def test_stream_chat_models(model_name):
     handler = CallbackHandler()
 
     langfuse_client = handler.client
-    trace_id = Langfuse.create_trace_id()
+    trace_id = ElasticDash.create_trace_id()
     with langfuse_client.start_as_current_span(
         name=name, trace_context={"trace_id": trace_id}
     ):
@@ -87,7 +87,7 @@ def test_stream_completions_models(model_name):
     handler = CallbackHandler()
 
     langfuse_client = handler.client
-    trace_id = Langfuse.create_trace_id()
+    trace_id = ElasticDash.create_trace_id()
     with langfuse_client.start_as_current_span(
         name=name, trace_context={"trace_id": trace_id}
     ):
@@ -141,7 +141,7 @@ def test_invoke_chat_models(model_name):
     handler = CallbackHandler()
 
     langfuse_client = handler.client
-    trace_id = Langfuse.create_trace_id()
+    trace_id = ElasticDash.create_trace_id()
     with langfuse_client.start_as_current_span(
         name=name, trace_context={"trace_id": trace_id}
     ):
@@ -191,7 +191,7 @@ def test_invoke_in_completions_models(model_name):
     handler = CallbackHandler()
 
     langfuse_client = handler.client
-    trace_id = Langfuse.create_trace_id()
+    trace_id = ElasticDash.create_trace_id()
     with langfuse_client.start_as_current_span(
         name=name, trace_context={"trace_id": trace_id}
     ):
@@ -240,7 +240,7 @@ def test_batch_in_completions_models(model_name):
     handler = CallbackHandler()
 
     langfuse_client = handler.client
-    trace_id = Langfuse.create_trace_id()
+    trace_id = ElasticDash.create_trace_id()
     with langfuse_client.start_as_current_span(
         name=name, trace_context={"trace_id": trace_id}
     ):
@@ -289,7 +289,7 @@ def test_batch_in_chat_models(model_name):
     handler = CallbackHandler()
 
     langfuse_client = handler.client
-    trace_id = Langfuse.create_trace_id()
+    trace_id = ElasticDash.create_trace_id()
     with langfuse_client.start_as_current_span(
         name=name, trace_context={"trace_id": trace_id}
     ):
@@ -341,7 +341,7 @@ async def test_astream_chat_models(model_name):
     handler = CallbackHandler()
 
     langfuse_client = handler.client
-    trace_id = Langfuse.create_trace_id()
+    trace_id = ElasticDash.create_trace_id()
     with langfuse_client.start_as_current_span(
         name=name, trace_context={"trace_id": trace_id}
     ):
@@ -397,7 +397,7 @@ async def test_astream_completions_models(model_name):
 
     langfuse_client = handler.client
 
-    trace_id = Langfuse.create_trace_id()
+    trace_id = ElasticDash.create_trace_id()
     with langfuse_client.start_as_current_span(
         name=name, trace_context={"trace_id": trace_id}
     ):
@@ -453,7 +453,7 @@ async def test_ainvoke_chat_models(model_name):
     handler = CallbackHandler()
 
     langfuse_client = handler.client
-    trace_id = Langfuse.create_trace_id()
+    trace_id = ElasticDash.create_trace_id()
     with langfuse_client.start_as_current_span(
         name=name, trace_context={"trace_id": trace_id}
     ):
@@ -504,7 +504,7 @@ async def test_ainvoke_in_completions_models(model_name):
     handler = CallbackHandler()
 
     langfuse_client = handler.client
-    trace_id = Langfuse.create_trace_id()
+    trace_id = ElasticDash.create_trace_id()
     with langfuse_client.start_as_current_span(
         name=name, trace_context={"trace_id": trace_id}
     ):
@@ -557,7 +557,7 @@ def test_chains_batch_in_chat_models(model_name):
     handler = CallbackHandler()
 
     langfuse_client = handler.client
-    trace_id = Langfuse.create_trace_id()
+    trace_id = ElasticDash.create_trace_id()
     with langfuse_client.start_as_current_span(
         name=name, trace_context={"trace_id": trace_id}
     ):
@@ -608,7 +608,7 @@ def test_chains_batch_in_completions_models(model_name):
     handler = CallbackHandler()
 
     langfuse_client = handler.client
-    trace_id = Langfuse.create_trace_id()
+    trace_id = ElasticDash.create_trace_id()
     with langfuse_client.start_as_current_span(
         name=name, trace_context={"trace_id": trace_id}
     ):
@@ -661,7 +661,7 @@ async def test_chains_abatch_in_chat_models(model_name):
     handler = CallbackHandler()
 
     langfuse_client = handler.client
-    trace_id = Langfuse.create_trace_id()
+    trace_id = ElasticDash.create_trace_id()
     with langfuse_client.start_as_current_span(
         name=name, trace_context={"trace_id": trace_id}
     ):
@@ -714,7 +714,7 @@ async def test_chains_abatch_in_completions_models(model_name):
     handler = CallbackHandler()
 
     langfuse_client = handler.client
-    trace_id = Langfuse.create_trace_id()
+    trace_id = ElasticDash.create_trace_id()
     with langfuse_client.start_as_current_span(
         name=name, trace_context={"trace_id": trace_id}
     ):
@@ -763,7 +763,7 @@ async def test_chains_ainvoke_chat_models(model_name):
     handler = CallbackHandler()
 
     langfuse_client = handler.client
-    trace_id = Langfuse.create_trace_id()
+    trace_id = ElasticDash.create_trace_id()
     with langfuse_client.start_as_current_span(
         name=name, trace_context={"trace_id": trace_id}
     ):
@@ -819,7 +819,7 @@ async def test_chains_ainvoke_completions_models(model_name):
     handler = CallbackHandler()
 
     langfuse_client = handler.client
-    trace_id = Langfuse.create_trace_id()
+    trace_id = ElasticDash.create_trace_id()
     with langfuse_client.start_as_current_span(
         name=name, trace_context={"trace_id": trace_id}
     ):
@@ -875,7 +875,7 @@ async def test_chains_astream_chat_models(model_name):
     handler = CallbackHandler()
 
     langfuse_client = handler.client
-    trace_id = Langfuse.create_trace_id()
+    trace_id = ElasticDash.create_trace_id()
     with langfuse_client.start_as_current_span(
         name=name, trace_context={"trace_id": trace_id}
     ):
@@ -937,7 +937,7 @@ async def test_chains_astream_completions_models(model_name):
     handler = CallbackHandler()
 
     langfuse_client = handler.client
-    trace_id = Langfuse.create_trace_id()
+    trace_id = ElasticDash.create_trace_id()
     with langfuse_client.start_as_current_span(
         name=name, trace_context={"trace_id": trace_id}
     ):

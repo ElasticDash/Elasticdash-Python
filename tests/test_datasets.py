@@ -6,7 +6,7 @@ from typing import Sequence
 from langchain_core.prompts import PromptTemplate
 from langchain_openai import OpenAI
 
-from langfuse import Langfuse, observe
+from langfuse import ElasticDash, observe
 from langfuse.api.resources.commons.types.dataset_status import DatasetStatus
 from langfuse.api.resources.commons.types.observation import Observation
 from langfuse.langchain import CallbackHandler
@@ -14,7 +14,7 @@ from tests.utils import create_uuid, get_api
 
 
 def test_create_and_get_dataset():
-    langfuse = Langfuse(debug=False)
+    langfuse = ElasticDash(debug=False)
 
     name = "Text with spaces " + create_uuid()[:5]
     langfuse.create_dataset(name=name)
@@ -32,7 +32,7 @@ def test_create_and_get_dataset():
 
 
 def test_create_dataset_item():
-    langfuse = Langfuse(debug=False)
+    langfuse = ElasticDash(debug=False)
     name = create_uuid()
     langfuse.create_dataset(name=name)
 
@@ -77,7 +77,7 @@ def test_create_dataset_item():
 
 
 def test_get_all_items():
-    langfuse = Langfuse(debug=False)
+    langfuse = ElasticDash(debug=False)
     name = create_uuid()
     langfuse.create_dataset(name=name)
 
@@ -96,7 +96,7 @@ def test_get_all_items():
 
 
 def test_upsert_and_get_dataset_item():
-    langfuse = Langfuse(debug=False)
+    langfuse = ElasticDash(debug=False)
     name = create_uuid()
     langfuse.create_dataset(name=name)
     input = {"input": "Hello World"}
@@ -142,7 +142,7 @@ def test_upsert_and_get_dataset_item():
 
 
 def test_dataset_run_with_metadata_and_description():
-    langfuse = Langfuse(debug=False)
+    langfuse = ElasticDash(debug=False)
 
     dataset_name = create_uuid()
     langfuse.create_dataset(name=dataset_name)
@@ -183,7 +183,7 @@ def test_dataset_run_with_metadata_and_description():
 
 
 def test_get_dataset_runs():
-    langfuse = Langfuse(debug=False)
+    langfuse = ElasticDash(debug=False)
 
     dataset_name = create_uuid()
     langfuse.create_dataset(name=dataset_name)
@@ -234,7 +234,7 @@ def test_get_dataset_runs():
 
 
 def test_langchain_dataset():
-    langfuse = Langfuse(debug=False)
+    langfuse = ElasticDash(debug=False)
     dataset_name = create_uuid()
     langfuse.create_dataset(name=dataset_name)
 
@@ -351,7 +351,7 @@ def sorted_dependencies(
 
 def test_observe_dataset_run():
     # Create dataset
-    langfuse = Langfuse()
+    langfuse = ElasticDash()
     dataset_name = create_uuid()
     langfuse.create_dataset(name=dataset_name)
 
@@ -423,7 +423,7 @@ def test_observe_dataset_run():
 
 def test_get_dataset_with_folder_name():
     """Test that get_dataset works with folder-format names containing slashes."""
-    langfuse = Langfuse(debug=False)
+    langfuse = ElasticDash(debug=False)
 
     # Create a dataset with slashes in the name (folder format)
     folder_name = f"folder/subfolder/dataset-{create_uuid()[:8]}"
@@ -437,7 +437,7 @@ def test_get_dataset_with_folder_name():
 
 def test_get_dataset_runs_with_folder_name():
     """Test that get_dataset_runs works with folder-format dataset names."""
-    langfuse = Langfuse(debug=False)
+    langfuse = ElasticDash(debug=False)
 
     # Create a dataset with slashes in the name
     folder_name = f"folder/subfolder/dataset-{create_uuid()[:8]}"
@@ -465,7 +465,7 @@ def test_get_dataset_runs_with_folder_name():
 
 def test_get_dataset_run_with_folder_names():
     """Test that get_dataset_run works with folder-format dataset and run names."""
-    langfuse = Langfuse(debug=False)
+    langfuse = ElasticDash(debug=False)
 
     # Create a dataset with slashes in the name
     folder_name = f"folder/subfolder/dataset-{create_uuid()[:8]}"
@@ -495,7 +495,7 @@ def test_get_dataset_run_with_folder_names():
 
 def test_delete_dataset_run_with_folder_names():
     """Test that delete_dataset_run works with folder-format dataset and run names."""
-    langfuse = Langfuse(debug=False)
+    langfuse = ElasticDash(debug=False)
 
     # Create a dataset with slashes in the name
     folder_name = f"folder/subfolder/dataset-{create_uuid()[:8]}"

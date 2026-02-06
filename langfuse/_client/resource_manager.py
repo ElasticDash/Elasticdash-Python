@@ -1,11 +1,11 @@
-"""Tracer implementation for Langfuse OpenTelemetry integration.
+"""Tracer implementation for ElasticDash OpenTelemetry integration.
 
-This module provides the LangfuseTracer class, a thread-safe singleton that manages OpenTelemetry
-tracing infrastructure for Langfuse. It handles tracer initialization, span processors,
+This module provides the ElasticDashTracer class, a thread-safe singleton that manages OpenTelemetry
+tracing infrastructure for ElasticDash. It handles tracer initialization, span processors,
 API clients, and coordinates background tasks for efficient data processing and media handling.
 
 Key features:
-- Thread-safe OpenTelemetry tracer with Langfuse-specific span processors and sampling
+- Thread-safe OpenTelemetry tracer with ElasticDash-specific span processors and sampling
 - Configurable batch processing of spans and scores with intelligent flushing behavior
 - Asynchronous background media upload processing with dedicated worker threads
 - Concurrent score ingestion with batching and retry mechanisms
@@ -27,29 +27,29 @@ from opentelemetry.sdk.trace import TracerProvider
 from opentelemetry.sdk.trace.sampling import Decision, TraceIdRatioBased
 from opentelemetry.trace import Tracer
 
-from langfuse._client.attributes import LangfuseOtelSpanAttributes
-from langfuse._client.constants import LANGFUSE_TRACER_NAME
+from langfuse._client.attributes import ElasticDashOtelSpanAttributes
+from langfuse._client.constants import ELASTICDASH_TRACER_NAME
 from langfuse._client.environment_variables import (
-    LANGFUSE_MEDIA_UPLOAD_ENABLED,
-    LANGFUSE_MEDIA_UPLOAD_THREAD_COUNT,
-    LANGFUSE_RELEASE,
-    LANGFUSE_TRACING_ENVIRONMENT,
+    ELASTICDASH_MEDIA_UPLOAD_ENABLED,
+    ELASTICDASH_MEDIA_UPLOAD_THREAD_COUNT,
+    ELASTICDASH_RELEASE,
+    ELASTICDASH_TRACING_ENVIRONMENT,
 )
-from langfuse._client.span_processor import LangfuseSpanProcessor
+from langfuse._client.span_processor import ElasticDashSpanProcessor
 from langfuse._task_manager.media_manager import MediaManager
 from langfuse._task_manager.media_upload_consumer import MediaUploadConsumer
 from langfuse._task_manager.score_ingestion_consumer import ScoreIngestionConsumer
 from langfuse._utils.environment import get_common_release_envs
 from langfuse._utils.prompt_cache import PromptCache
-from langfuse._utils.request import LangfuseClient
-from langfuse.api.client import AsyncFernLangfuse, FernLangfuse
+from langfuse._utils.request import ElasticDashClient
+from langfuse.api.client import AsyncFernElasticDash, FernElasticDash
 from langfuse.logger import langfuse_logger
 from langfuse.types import MaskFunction
 
 from ..version import __version__ as langfuse_version
 
 
-class LangfuseResourceManager:
+class ElasticDashResourceManager:
     """Thread-safe singleton that provides access to the OpenTelemetry tracer and processors.
 
     This class implements a thread-safe singleton pattern keyed by the public API key,
@@ -59,8 +59,8 @@ class LangfuseResourceManager:
 
     The tracer is responsible for:
     1. Setting up the OpenTelemetry tracer with appropriate sampling and configuration
-    2. Managing the span processor for exporting spans to the Langfuse API
-    3. Creating and managing Langfuse API clients (both synchronous and asynchronous)
+    2. Managing the span processor for exporting spans to the ElasticDash API
+    3. Creating and managing ElasticDash API clients (both synchronous and asynchronous)
     4. Handling background media upload processing via dedicated worker threads
     5. Processing and batching score ingestion events with configurable flush settings
     6. Retrieving and caching project information for URL generation and media handling
@@ -75,7 +75,7 @@ class LangfuseResourceManager:
     making this implementation suitable for multi-threaded and asyncio applications.
     """
 
-    _instances: Dict[str, "LangfuseResourceManager"] = {}
+    _instances: Dict[str, "ElasticDashResourceManager"] = {}
     _lock = threading.RLock()
 
     def __new__(
@@ -97,17 +97,17 @@ class LangfuseResourceManager:
         blocked_instrumentation_scopes: Optional[List[str]] = None,
         additional_headers: Optional[Dict[str, str]] = None,
         tracer_provider: Optional[TracerProvider] = None,
-    ) -> "LangfuseResourceManager":
+    ) -> "ElasticDashResourceManager":
         if public_key in cls._instances:
             return cls._instances[public_key]
 
         with cls._lock:
             if public_key not in cls._instances:
-                instance = super(LangfuseResourceManager, cls).__new__(cls)
+                instance = super(ElasticDashResourceManager, cls).__new__(cls)
 
                 # Initialize tracer (will be noop until init instance)
                 instance._otel_tracer = otel_trace_api.get_tracer(
-                    LANGFUSE_TRACER_NAME,
+                    ELASTICDASH_TRACER_NAME,
                     langfuse_version,
                     attributes={"public_key": public_key},
                 )
@@ -182,7 +182,7 @@ class LangfuseResourceManager:
             )
             self.tracer_provider = tracer_provider
 
-            langfuse_processor = LangfuseSpanProcessor(
+            langfuse_processor = ElasticDashSpanProcessor(
                 public_key=self.public_key,
                 secret_key=secret_key,
                 base_url=base_url,
@@ -195,7 +195,7 @@ class LangfuseResourceManager:
             tracer_provider.add_span_processor(langfuse_processor)
 
             self._otel_tracer = tracer_provider.get_tracer(
-                LANGFUSE_TRACER_NAME,
+                ELASTICDASH_TRACER_NAME,
                 langfuse_version,
                 attributes={"public_key": self.public_key},
             )
@@ -213,7 +213,7 @@ class LangfuseResourceManager:
             client_headers = additional_headers if additional_headers else {}
             self.httpx_client = httpx.Client(timeout=timeout, headers=client_headers)
 
-        self.api = FernLangfuse(
+        self.api = FernElasticDash(
             base_url=base_url,
             username=self.public_key,
             password=secret_key,
@@ -223,7 +223,7 @@ class LangfuseResourceManager:
             httpx_client=self.httpx_client,
             timeout=timeout,
         )
-        self.async_api = AsyncFernLangfuse(
+        self.async_api = AsyncFernElasticDash(
             base_url=base_url,
             username=self.public_key,
             password=secret_key,
@@ -232,7 +232,7 @@ class LangfuseResourceManager:
             x_langfuse_public_key=self.public_key,
             timeout=timeout,
         )
-        score_ingestion_client = LangfuseClient(
+        score_ingestion_client = ElasticDashClient(
             public_key=self.public_key,
             secret_key=secret_key,
             base_url=base_url,
@@ -243,7 +243,7 @@ class LangfuseResourceManager:
 
         # Media
         self._media_upload_enabled = os.environ.get(
-            LANGFUSE_MEDIA_UPLOAD_ENABLED, "True"
+            ELASTICDASH_MEDIA_UPLOAD_ENABLED, "True"
         ).lower() not in ("false", "0")
 
         self._media_upload_queue: Queue[Any] = Queue(100_000)
@@ -255,7 +255,7 @@ class LangfuseResourceManager:
         self._media_upload_consumers = []
 
         media_upload_thread_count = media_upload_thread_count or max(
-            int(os.getenv(LANGFUSE_MEDIA_UPLOAD_THREAD_COUNT, 1)), 1
+            int(os.getenv(ELASTICDASH_MEDIA_UPLOAD_THREAD_COUNT, 1)), 1
         )
 
         if self._media_upload_enabled:
@@ -290,7 +290,7 @@ class LangfuseResourceManager:
         atexit.register(self.shutdown)
 
         langfuse_logger.info(
-            f"Startup: Langfuse tracer successfully initialized | "
+            f"Startup: ElasticDash tracer successfully initialized | "
             f"public_key={self.public_key} | "
             f"base_url={base_url} | "
             f"environment={environment or 'default'} | "
@@ -425,12 +425,12 @@ def _init_tracer_provider(
     release: Optional[str] = None,
     sample_rate: Optional[float] = None,
 ) -> TracerProvider:
-    environment = environment or os.environ.get(LANGFUSE_TRACING_ENVIRONMENT)
-    release = release or os.environ.get(LANGFUSE_RELEASE) or get_common_release_envs()
+    environment = environment or os.environ.get(ELASTICDASH_TRACING_ENVIRONMENT)
+    release = release or os.environ.get(ELASTICDASH_RELEASE) or get_common_release_envs()
 
     resource_attributes = {
-        LangfuseOtelSpanAttributes.ENVIRONMENT: environment,
-        LangfuseOtelSpanAttributes.RELEASE: release,
+        ElasticDashOtelSpanAttributes.ENVIRONMENT: environment,
+        ElasticDashOtelSpanAttributes.RELEASE: release,
     }
 
     resource = Resource.create(

@@ -79,7 +79,7 @@ class Model(pydantic_v1.BaseModel):
     Optional. Configuration for the selected tokenizer. Needs to be JSON. See docs for more details.
     """
 
-    is_langfuse_managed: bool = pydantic_v1.Field(alias="isLangfuseManaged")
+    is_langfuse_managed: bool = pydantic_v1.Field(alias="isElasticDashManaged")
     created_at: dt.datetime = pydantic_v1.Field(alias="createdAt")
     """
     Timestamp when the model was created

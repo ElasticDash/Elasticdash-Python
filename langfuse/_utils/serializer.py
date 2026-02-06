@@ -15,7 +15,7 @@ from uuid import UUID
 from pydantic import BaseModel
 
 from langfuse.api.core import pydantic_utilities, serialize_datetime
-from langfuse.media import LangfuseMedia
+from langfuse.media import ElasticDashMedia
 
 # Attempt to import Serializable
 try:
@@ -46,10 +46,10 @@ class EventSerializer(JSONEncoder):
                 # Timezone-awareness check
                 return serialize_datetime(obj)
 
-            if isinstance(obj, LangfuseMedia):
+            if isinstance(obj, ElasticDashMedia):
                 return (
                     obj._reference_string
-                    or f"<Upload handling failed for LangfuseMedia of type {obj._content_type}>"
+                    or f"<Upload handling failed for ElasticDashMedia of type {obj._content_type}>"
                 )
 
             # Check if numpy is available and if the object is a numpy scalar

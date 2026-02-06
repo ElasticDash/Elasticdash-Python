@@ -28,19 +28,19 @@ from langfuse._client.constants import (
     get_observation_types_list,
 )
 from langfuse._client.environment_variables import (
-    LANGFUSE_OBSERVE_DECORATOR_IO_CAPTURE_ENABLED,
+    ELASTICDASH_OBSERVE_DECORATOR_IO_CAPTURE_ENABLED,
 )
 from langfuse._client.get_client import _set_current_public_key, get_client
 from langfuse._client.span import (
-    LangfuseAgent,
-    LangfuseChain,
-    LangfuseEmbedding,
-    LangfuseEvaluator,
-    LangfuseGeneration,
-    LangfuseGuardrail,
-    LangfuseRetriever,
-    LangfuseSpan,
-    LangfuseTool,
+    ElasticDashAgent,
+    ElasticDashChain,
+    ElasticDashEmbedding,
+    ElasticDashEvaluator,
+    ElasticDashGeneration,
+    ElasticDashGuardrail,
+    ElasticDashRetriever,
+    ElasticDashSpan,
+    ElasticDashTool,
 )
 from langfuse.types import TraceContext
 
@@ -49,13 +49,13 @@ P = ParamSpec("P")
 R = TypeVar("R")
 
 
-class LangfuseDecorator:
-    """Implementation of the @observe decorator for seamless Langfuse tracing integration.
+class ElasticDashDecorator:
+    """Implementation of the @observe decorator for seamless ElasticDash tracing integration.
 
     This class provides the core functionality for the @observe decorator, which enables
-    automatic tracing of functions and methods in your application with Langfuse.
+    automatic tracing of functions and methods in your application with ElasticDash.
     It handles both synchronous and asynchronous functions, maintains proper trace context,
-    and intelligently routes to the correct Langfuse client instance.
+    and intelligently routes to the correct ElasticDash client instance.
 
     The implementation follows a singleton pattern where a single decorator instance
     handles all @observe decorations throughout the application codebase.
@@ -66,7 +66,7 @@ class LangfuseDecorator:
     - Specialized handling for LLM-related spans with the 'as_type="generation"' parameter
     - Type-safe decoration that preserves function signatures and type hints
     - Support for explicit trace and parent span ID specification
-    - Thread-safe client resolution when multiple Langfuse projects are used
+    - Thread-safe client resolution when multiple ElasticDash projects are used
     """
 
     _log = logging.getLogger("langfuse")
@@ -96,9 +96,9 @@ class LangfuseDecorator:
         capture_output: Optional[bool] = None,
         transform_to_string: Optional[Callable[[Iterable], str]] = None,
     ) -> Union[F, Callable[[F], F]]:
-        """Wrap a function to create and manage Langfuse tracing around its execution, supporting both synchronous and asynchronous functions.
+        """Wrap a function to create and manage ElasticDash tracing around its execution, supporting both synchronous and asynchronous functions.
 
-        This decorator provides seamless integration of Langfuse observability into your codebase. It automatically creates
+        This decorator provides seamless integration of ElasticDash observability into your codebase. It automatically creates
         spans or generations around function execution, capturing timing, inputs/outputs, and error states. The decorator
         intelligently handles both synchronous and asynchronous functions, preserving function signatures and type hints.
 
@@ -110,12 +110,12 @@ class LangfuseDecorator:
             name (Optional[str]): Custom name for the created trace or span. If not provided, the function name is used.
             as_type (Optional[Literal]): Set the observation type. Supported values:
                     "generation", "span", "agent", "tool", "chain", "retriever", "embedding", "evaluator", "guardrail".
-                    Observation types are highlighted in the Langfuse UI for filtering and visualization.
+                    Observation types are highlighted in the ElasticDash UI for filtering and visualization.
                     The types "generation" and "embedding" create a span on which additional attributes such as model metrics
                     can be set.
 
         Returns:
-            Callable: A wrapped version of the original function that automatically creates and manages Langfuse spans.
+            Callable: A wrapped version of the original function that automatically creates and manages ElasticDash spans.
 
         Example:
             For general function tracing with automatic naming:
@@ -160,7 +160,7 @@ class LangfuseDecorator:
             - Special keyword arguments can be passed to control tracing:
               - langfuse_trace_id: Explicitly set the trace ID for this function call
               - langfuse_parent_observation_id: Explicitly set the parent span ID
-              - langfuse_public_key: Use a specific Langfuse project (when multiple clients exist)
+              - langfuse_public_key: Use a specific ElasticDash project (when multiple clients exist)
             - For async functions, the decorator returns an async function wrapper.
             - For sync functions, the decorator returns a synchronous wrapper.
         """
@@ -172,7 +172,7 @@ class LangfuseDecorator:
             as_type = "span"
 
         function_io_capture_enabled = os.environ.get(
-            LANGFUSE_OBSERVE_DECORATOR_IO_CAPTURE_ENABLED, "True"
+            ELASTICDASH_OBSERVE_DECORATOR_IO_CAPTURE_ENABLED, "True"
         ).lower() not in ("false", "0")
 
         should_capture_input = (
@@ -262,15 +262,15 @@ class LangfuseDecorator:
                 langfuse_client = get_client(public_key=public_key)
                 context_manager: Optional[
                     Union[
-                        _AgnosticContextManager[LangfuseGeneration],
-                        _AgnosticContextManager[LangfuseSpan],
-                        _AgnosticContextManager[LangfuseAgent],
-                        _AgnosticContextManager[LangfuseTool],
-                        _AgnosticContextManager[LangfuseChain],
-                        _AgnosticContextManager[LangfuseRetriever],
-                        _AgnosticContextManager[LangfuseEvaluator],
-                        _AgnosticContextManager[LangfuseEmbedding],
-                        _AgnosticContextManager[LangfuseGuardrail],
+                        _AgnosticContextManager[ElasticDashGeneration],
+                        _AgnosticContextManager[ElasticDashSpan],
+                        _AgnosticContextManager[ElasticDashAgent],
+                        _AgnosticContextManager[ElasticDashTool],
+                        _AgnosticContextManager[ElasticDashChain],
+                        _AgnosticContextManager[ElasticDashRetriever],
+                        _AgnosticContextManager[ElasticDashEvaluator],
+                        _AgnosticContextManager[ElasticDashEmbedding],
+                        _AgnosticContextManager[ElasticDashGuardrail],
                     ]
                 ] = (
                     langfuse_client.start_as_current_observation(
@@ -380,15 +380,15 @@ class LangfuseDecorator:
                 langfuse_client = get_client(public_key=public_key)
                 context_manager: Optional[
                     Union[
-                        _AgnosticContextManager[LangfuseGeneration],
-                        _AgnosticContextManager[LangfuseSpan],
-                        _AgnosticContextManager[LangfuseAgent],
-                        _AgnosticContextManager[LangfuseTool],
-                        _AgnosticContextManager[LangfuseChain],
-                        _AgnosticContextManager[LangfuseRetriever],
-                        _AgnosticContextManager[LangfuseEvaluator],
-                        _AgnosticContextManager[LangfuseEmbedding],
-                        _AgnosticContextManager[LangfuseGuardrail],
+                        _AgnosticContextManager[ElasticDashGeneration],
+                        _AgnosticContextManager[ElasticDashSpan],
+                        _AgnosticContextManager[ElasticDashAgent],
+                        _AgnosticContextManager[ElasticDashTool],
+                        _AgnosticContextManager[ElasticDashChain],
+                        _AgnosticContextManager[ElasticDashRetriever],
+                        _AgnosticContextManager[ElasticDashEvaluator],
+                        _AgnosticContextManager[ElasticDashEmbedding],
+                        _AgnosticContextManager[ElasticDashGuardrail],
                     ]
                 ] = (
                     langfuse_client.start_as_current_observation(
@@ -484,15 +484,15 @@ class LangfuseDecorator:
     def _wrap_sync_generator_result(
         self,
         langfuse_span_or_generation: Union[
-            LangfuseSpan,
-            LangfuseGeneration,
-            LangfuseAgent,
-            LangfuseTool,
-            LangfuseChain,
-            LangfuseRetriever,
-            LangfuseEvaluator,
-            LangfuseEmbedding,
-            LangfuseGuardrail,
+            ElasticDashSpan,
+            ElasticDashGeneration,
+            ElasticDashAgent,
+            ElasticDashTool,
+            ElasticDashChain,
+            ElasticDashRetriever,
+            ElasticDashEvaluator,
+            ElasticDashEmbedding,
+            ElasticDashGuardrail,
         ],
         generator: Generator,
         transform_to_string: Optional[Callable[[Iterable], str]] = None,
@@ -509,15 +509,15 @@ class LangfuseDecorator:
     def _wrap_async_generator_result(
         self,
         langfuse_span_or_generation: Union[
-            LangfuseSpan,
-            LangfuseGeneration,
-            LangfuseAgent,
-            LangfuseTool,
-            LangfuseChain,
-            LangfuseRetriever,
-            LangfuseEvaluator,
-            LangfuseEmbedding,
-            LangfuseGuardrail,
+            ElasticDashSpan,
+            ElasticDashGeneration,
+            ElasticDashAgent,
+            ElasticDashTool,
+            ElasticDashChain,
+            ElasticDashRetriever,
+            ElasticDashEvaluator,
+            ElasticDashEmbedding,
+            ElasticDashGuardrail,
         ],
         generator: AsyncGenerator,
         transform_to_string: Optional[Callable[[Iterable], str]] = None,
@@ -532,7 +532,7 @@ class LangfuseDecorator:
         )
 
 
-_decorator = LangfuseDecorator()
+_decorator = ElasticDashDecorator()
 
 observe = _decorator.observe
 
@@ -545,15 +545,15 @@ class _ContextPreservedSyncGeneratorWrapper:
         generator: Generator,
         context: contextvars.Context,
         span: Union[
-            LangfuseSpan,
-            LangfuseGeneration,
-            LangfuseAgent,
-            LangfuseTool,
-            LangfuseChain,
-            LangfuseRetriever,
-            LangfuseEvaluator,
-            LangfuseEmbedding,
-            LangfuseGuardrail,
+            ElasticDashSpan,
+            ElasticDashGeneration,
+            ElasticDashAgent,
+            ElasticDashTool,
+            ElasticDashChain,
+            ElasticDashRetriever,
+            ElasticDashEvaluator,
+            ElasticDashEmbedding,
+            ElasticDashGuardrail,
         ],
         transform_fn: Optional[Callable[[Iterable], str]],
     ) -> None:
@@ -604,15 +604,15 @@ class _ContextPreservedAsyncGeneratorWrapper:
         generator: AsyncGenerator,
         context: contextvars.Context,
         span: Union[
-            LangfuseSpan,
-            LangfuseGeneration,
-            LangfuseAgent,
-            LangfuseTool,
-            LangfuseChain,
-            LangfuseRetriever,
-            LangfuseEvaluator,
-            LangfuseEmbedding,
-            LangfuseGuardrail,
+            ElasticDashSpan,
+            ElasticDashGeneration,
+            ElasticDashAgent,
+            ElasticDashTool,
+            ElasticDashChain,
+            ElasticDashRetriever,
+            ElasticDashEvaluator,
+            ElasticDashEmbedding,
+            ElasticDashGuardrail,
         ],
         transform_fn: Optional[Callable[[Iterable], str]],
     ) -> None:

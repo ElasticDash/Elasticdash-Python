@@ -1,6 +1,6 @@
-"""Langfuse OpenTelemetry integration module.
+"""ElasticDash OpenTelemetry integration module.
 
-This module implements Langfuse's core observability functionality on top of the OpenTelemetry (OTel) standard.
+This module implements ElasticDash's core observability functionality on top of the OpenTelemetry (OTel) standard.
 """
 
 import asyncio
@@ -36,9 +36,9 @@ from opentelemetry.util._decorator import (
 )
 from packaging.version import Version
 
-from langfuse._client.attributes import LangfuseOtelSpanAttributes, _serialize
+from langfuse._client.attributes import ElasticDashOtelSpanAttributes, _serialize
 from langfuse._client.constants import (
-    LANGFUSE_SDK_EXPERIMENT_ENVIRONMENT,
+    ELASTICDASH_SDK_EXPERIMENT_ENVIRONMENT,
     ObservationTypeGenerationLike,
     ObservationTypeLiteral,
     ObservationTypeLiteralNoEvent,
@@ -47,32 +47,32 @@ from langfuse._client.constants import (
 )
 from langfuse._client.datasets import DatasetClient, DatasetItemClient
 from langfuse._client.environment_variables import (
-    LANGFUSE_BASE_URL,
-    LANGFUSE_DEBUG,
-    LANGFUSE_HOST,
-    LANGFUSE_PUBLIC_KEY,
-    LANGFUSE_SAMPLE_RATE,
-    LANGFUSE_SECRET_KEY,
-    LANGFUSE_TIMEOUT,
-    LANGFUSE_TRACING_ENABLED,
-    LANGFUSE_TRACING_ENVIRONMENT,
+    ELASTICDASH_BASE_URL,
+    ELASTICDASH_DEBUG,
+    ELASTICDASH_HOST,
+    ELASTICDASH_PUBLIC_KEY,
+    ELASTICDASH_SAMPLE_RATE,
+    ELASTICDASH_SECRET_KEY,
+    ELASTICDASH_TIMEOUT,
+    ELASTICDASH_TRACING_ENABLED,
+    ELASTICDASH_TRACING_ENVIRONMENT,
 )
 from langfuse._client.propagation import (
     PropagatedExperimentAttributes,
     _propagate_attributes,
 )
-from langfuse._client.resource_manager import LangfuseResourceManager
+from langfuse._client.resource_manager import ElasticDashResourceManager
 from langfuse._client.span import (
-    LangfuseAgent,
-    LangfuseChain,
-    LangfuseEmbedding,
-    LangfuseEvaluator,
-    LangfuseEvent,
-    LangfuseGeneration,
-    LangfuseGuardrail,
-    LangfuseRetriever,
-    LangfuseSpan,
-    LangfuseTool,
+    ElasticDashAgent,
+    ElasticDashChain,
+    ElasticDashEmbedding,
+    ElasticDashEvaluator,
+    ElasticDashEvent,
+    ElasticDashGeneration,
+    ElasticDashGuardrail,
+    ElasticDashRetriever,
+    ElasticDashSpan,
+    ElasticDashTool,
 )
 from langfuse._client.utils import get_sha256_hash_hex, run_async_safely
 from langfuse._utils import _get_timestamp
@@ -112,7 +112,7 @@ from langfuse.experiment import (
     _run_task,
 )
 from langfuse.logger import langfuse_logger
-from langfuse.media import LangfuseMedia
+from langfuse.media import ElasticDashMedia
 from langfuse.model import (
     ChatMessageDict,
     ChatMessageWithPlaceholdersDict,
@@ -130,11 +130,11 @@ from langfuse.model import (
 from langfuse.types import MaskFunction, ScoreDataType, SpanLevel, TraceContext
 
 
-class Langfuse:
-    """Main client for Langfuse tracing and platform features.
+class ElasticDash:
+    """Main client for ElasticDash tracing and platform features.
 
     This class provides an interface for creating and managing traces, spans,
-    and generations in Langfuse as well as interacting with the Langfuse API.
+    and generations in ElasticDash as well as interacting with the ElasticDash API.
 
     The client features a thread-safe singleton pattern for each unique public API key,
     ensuring consistent trace context propagation across your application. It implements
@@ -145,36 +145,36 @@ class Langfuse:
     with graceful fallbacks and runtime configuration updates.
 
     Attributes:
-        api: Synchronous API client for Langfuse backend communication
-        async_api: Asynchronous API client for Langfuse backend communication
-        _otel_tracer: Internal LangfuseTracer instance managing OpenTelemetry components
+        api: Synchronous API client for ElasticDash backend communication
+        async_api: Asynchronous API client for ElasticDash backend communication
+        _otel_tracer: Internal ElasticDashTracer instance managing OpenTelemetry components
 
     Parameters:
-        public_key (Optional[str]): Your Langfuse public API key. Can also be set via LANGFUSE_PUBLIC_KEY environment variable.
-        secret_key (Optional[str]): Your Langfuse secret API key. Can also be set via LANGFUSE_SECRET_KEY environment variable.
-        base_url (Optional[str]): The Langfuse API base URL. Defaults to "https://cloud.langfuse.com". Can also be set via LANGFUSE_BASE_URL environment variable.
-        host (Optional[str]): Deprecated. Use base_url instead. The Langfuse API host URL. Defaults to "https://cloud.langfuse.com".
+        public_key (Optional[str]): Your ElasticDash public API key. Can also be set via ELASTICDASH_PUBLIC_KEY environment variable.
+        secret_key (Optional[str]): Your ElasticDash secret API key. Can also be set via ELASTICDASH_SECRET_KEY environment variable.
+        base_url (Optional[str]): The ElasticDash API base URL. Defaults to "https://cloud.langfuse.com". Can also be set via ELASTICDASH_BASE_URL environment variable.
+        host (Optional[str]): Deprecated. Use base_url instead. The ElasticDash API host URL. Defaults to "https://cloud.langfuse.com".
         timeout (Optional[int]): Timeout in seconds for API requests. Defaults to 5 seconds.
         httpx_client (Optional[httpx.Client]): Custom httpx client for making non-tracing HTTP requests. If not provided, a default client will be created.
-        debug (bool): Enable debug logging. Defaults to False. Can also be set via LANGFUSE_DEBUG environment variable.
-        tracing_enabled (Optional[bool]): Enable or disable tracing. Defaults to True. Can also be set via LANGFUSE_TRACING_ENABLED environment variable.
-        flush_at (Optional[int]): Number of spans to batch before sending to the API. Defaults to 512. Can also be set via LANGFUSE_FLUSH_AT environment variable.
-        flush_interval (Optional[float]): Time in seconds between batch flushes. Defaults to 5 seconds. Can also be set via LANGFUSE_FLUSH_INTERVAL environment variable.
-        environment (Optional[str]): Environment name for tracing. Default is 'default'. Can also be set via LANGFUSE_TRACING_ENVIRONMENT environment variable. Can be any lowercase alphanumeric string with hyphens and underscores that does not start with 'langfuse'.
+        debug (bool): Enable debug logging. Defaults to False. Can also be set via ELASTICDASH_DEBUG environment variable.
+        tracing_enabled (Optional[bool]): Enable or disable tracing. Defaults to True. Can also be set via ELASTICDASH_TRACING_ENABLED environment variable.
+        flush_at (Optional[int]): Number of spans to batch before sending to the API. Defaults to 512. Can also be set via ELASTICDASH_FLUSH_AT environment variable.
+        flush_interval (Optional[float]): Time in seconds between batch flushes. Defaults to 5 seconds. Can also be set via ELASTICDASH_FLUSH_INTERVAL environment variable.
+        environment (Optional[str]): Environment name for tracing. Default is 'default'. Can also be set via ELASTICDASH_TRACING_ENVIRONMENT environment variable. Can be any lowercase alphanumeric string with hyphens and underscores that does not start with 'langfuse'.
         release (Optional[str]): Release version/hash of your application. Used for grouping analytics by release.
-        media_upload_thread_count (Optional[int]): Number of background threads for handling media uploads. Defaults to 1. Can also be set via LANGFUSE_MEDIA_UPLOAD_THREAD_COUNT environment variable.
-        sample_rate (Optional[float]): Sampling rate for traces (0.0 to 1.0). Defaults to 1.0 (100% of traces are sampled). Can also be set via LANGFUSE_SAMPLE_RATE environment variable.
+        media_upload_thread_count (Optional[int]): Number of background threads for handling media uploads. Defaults to 1. Can also be set via ELASTICDASH_MEDIA_UPLOAD_THREAD_COUNT environment variable.
+        sample_rate (Optional[float]): Sampling rate for traces (0.0 to 1.0). Defaults to 1.0 (100% of traces are sampled). Can also be set via ELASTICDASH_SAMPLE_RATE environment variable.
         mask (Optional[MaskFunction]): Function to mask sensitive data in traces before sending to the API.
-        blocked_instrumentation_scopes (Optional[List[str]]): List of instrumentation scope names to block from being exported to Langfuse. Spans from these scopes will be filtered out before being sent to the API. Useful for filtering out spans from specific libraries or frameworks. For exported spans, you can see the instrumentation scope name in the span metadata in Langfuse (`metadata.scope.name`)
+        blocked_instrumentation_scopes (Optional[List[str]]): List of instrumentation scope names to block from being exported to ElasticDash. Spans from these scopes will be filtered out before being sent to the API. Useful for filtering out spans from specific libraries or frameworks. For exported spans, you can see the instrumentation scope name in the span metadata in ElasticDash (`metadata.scope.name`)
         additional_headers (Optional[Dict[str, str]]): Additional headers to include in all API requests and OTLPSpanExporter requests. These headers will be merged with default headers. Note: If httpx_client is provided, additional_headers must be set directly on your custom httpx_client as well.
-        tracer_provider(Optional[TracerProvider]): OpenTelemetry TracerProvider to use for Langfuse. This can be useful to set to have disconnected tracing between Langfuse and other OpenTelemetry-span emitting libraries. Note: To track active spans, the context is still shared between TracerProviders. This may lead to broken trace trees.
+        tracer_provider(Optional[TracerProvider]): OpenTelemetry TracerProvider to use for ElasticDash. This can be useful to set to have disconnected tracing between ElasticDash and other OpenTelemetry-span emitting libraries. Note: To track active spans, the context is still shared between TracerProviders. This may lead to broken trace trees.
 
     Example:
         ```python
-        from langfuse.otel import Langfuse
+        from langfuse.otel import ElasticDash
 
         # Initialize the client (reads from env vars if not provided)
-        langfuse = Langfuse(
+        langfuse = ElasticDash(
             public_key="your-public-key",
             secret_key="your-secret-key",
             host="https://cloud.langfuse.com",  # Optional, default shown
@@ -205,7 +205,7 @@ class Langfuse:
         ```
     """
 
-    _resources: Optional[LangfuseResourceManager] = None
+    _resources: Optional[ElasticDashResourceManager] = None
     _mask: Optional[MaskFunction] = None
     _otel_tracer: otel_trace_api.Tracer
 
@@ -233,33 +233,33 @@ class Langfuse:
     ):
         self._base_url = (
             base_url
-            or os.environ.get(LANGFUSE_BASE_URL)
+            or os.environ.get(ELASTICDASH_BASE_URL)
             or host
-            or os.environ.get(LANGFUSE_HOST, "https://cloud.langfuse.com")
+            or os.environ.get(ELASTICDASH_HOST, "https://cloud.langfuse.com")
         )
         self._environment = environment or cast(
-            str, os.environ.get(LANGFUSE_TRACING_ENVIRONMENT)
+            str, os.environ.get(ELASTICDASH_TRACING_ENVIRONMENT)
         )
         self._project_id: Optional[str] = None
-        sample_rate = sample_rate or float(os.environ.get(LANGFUSE_SAMPLE_RATE, 1.0))
+        sample_rate = sample_rate or float(os.environ.get(ELASTICDASH_SAMPLE_RATE, 1.0))
         if not 0.0 <= sample_rate <= 1.0:
             raise ValueError(
                 f"Sample rate must be between 0.0 and 1.0, got {sample_rate}"
             )
 
-        timeout = timeout or int(os.environ.get(LANGFUSE_TIMEOUT, 5))
+        timeout = timeout or int(os.environ.get(ELASTICDASH_TIMEOUT, 5))
 
         self._tracing_enabled = (
             tracing_enabled
-            and os.environ.get(LANGFUSE_TRACING_ENABLED, "true").lower() != "false"
+            and os.environ.get(ELASTICDASH_TRACING_ENABLED, "true").lower() != "false"
         )
         if not self._tracing_enabled:
             langfuse_logger.info(
-                "Configuration: Langfuse tracing is explicitly disabled. No data will be sent to the Langfuse API."
+                "Configuration: ElasticDash tracing is explicitly disabled. No data will be sent to the ElasticDash API."
             )
 
         debug = (
-            debug if debug else (os.getenv(LANGFUSE_DEBUG, "false").lower() == "true")
+            debug if debug else (os.getenv(ELASTICDASH_DEBUG, "false").lower() == "true")
         )
         if debug:
             logging.basicConfig(
@@ -267,31 +267,31 @@ class Langfuse:
             )
             langfuse_logger.setLevel(logging.DEBUG)
 
-        public_key = public_key or os.environ.get(LANGFUSE_PUBLIC_KEY)
+        public_key = public_key or os.environ.get(ELASTICDASH_PUBLIC_KEY)
         if public_key is None:
             langfuse_logger.warning(
-                "Authentication error: Langfuse client initialized without public_key. Client will be disabled. "
-                "Provide a public_key parameter or set LANGFUSE_PUBLIC_KEY environment variable. "
+                "Authentication error: ElasticDash client initialized without public_key. Client will be disabled. "
+                "Provide a public_key parameter or set ELASTICDASH_PUBLIC_KEY environment variable. "
             )
             self._otel_tracer = otel_trace_api.NoOpTracer()
             return
 
-        secret_key = secret_key or os.environ.get(LANGFUSE_SECRET_KEY)
+        secret_key = secret_key or os.environ.get(ELASTICDASH_SECRET_KEY)
         if secret_key is None:
             langfuse_logger.warning(
-                "Authentication error: Langfuse client initialized without secret_key. Client will be disabled. "
-                "Provide a secret_key parameter or set LANGFUSE_SECRET_KEY environment variable. "
+                "Authentication error: ElasticDash client initialized without secret_key. Client will be disabled. "
+                "Provide a secret_key parameter or set ELASTICDASH_SECRET_KEY environment variable. "
             )
             self._otel_tracer = otel_trace_api.NoOpTracer()
             return
 
         if os.environ.get("OTEL_SDK_DISABLED", "false").lower() == "true":
             langfuse_logger.warning(
-                "OTEL_SDK_DISABLED is set. Langfuse tracing will be disabled and no traces will appear in the UI."
+                "OTEL_SDK_DISABLED is set. ElasticDash tracing will be disabled and no traces will appear in the UI."
             )
 
         # Initialize api and tracer if requirements are met
-        self._resources = LangfuseResourceManager(
+        self._resources = ElasticDashResourceManager(
             public_key=public_key,
             secret_key=secret_key,
             base_url=self._base_url,
@@ -330,7 +330,7 @@ class Langfuse:
         version: Optional[str] = None,
         level: Optional[SpanLevel] = None,
         status_message: Optional[str] = None,
-    ) -> LangfuseSpan:
+    ) -> ElasticDashSpan:
         """Create a new span for tracing a unit of work.
 
         This method creates a new span but does not set it as the current span in the
@@ -349,7 +349,7 @@ class Langfuse:
             status_message: Optional status message for the span
 
         Returns:
-            A LangfuseSpan object that must be ended with .end() when the operation completes
+            A ElasticDashSpan object that must be ended with .end() when the operation completes
 
         Example:
             ```python
@@ -385,7 +385,7 @@ class Langfuse:
         level: Optional[SpanLevel] = None,
         status_message: Optional[str] = None,
         end_on_exit: Optional[bool] = None,
-    ) -> _AgnosticContextManager[LangfuseSpan]:
+    ) -> _AgnosticContextManager[ElasticDashSpan]:
         """Create a new span and set it as the current span in a context manager.
 
         This method creates a new span and sets it as the current span within a context
@@ -406,7 +406,7 @@ class Langfuse:
             end_on_exit (default: True): Whether to end the span automatically when leaving the context manager. If False, the span must be manually ended to avoid memory leaks.
 
         Returns:
-            A context manager that yields a LangfuseSpan
+            A context manager that yields a ElasticDashSpan
 
         Example:
             ```python
@@ -453,7 +453,7 @@ class Langfuse:
         usage_details: Optional[Dict[str, int]] = None,
         cost_details: Optional[Dict[str, float]] = None,
         prompt: Optional[PromptClient] = None,
-    ) -> LangfuseGeneration: ...
+    ) -> ElasticDashGeneration: ...
 
     @overload
     def start_observation(
@@ -468,7 +468,7 @@ class Langfuse:
         version: Optional[str] = None,
         level: Optional[SpanLevel] = None,
         status_message: Optional[str] = None,
-    ) -> LangfuseSpan: ...
+    ) -> ElasticDashSpan: ...
 
     @overload
     def start_observation(
@@ -483,7 +483,7 @@ class Langfuse:
         version: Optional[str] = None,
         level: Optional[SpanLevel] = None,
         status_message: Optional[str] = None,
-    ) -> LangfuseAgent: ...
+    ) -> ElasticDashAgent: ...
 
     @overload
     def start_observation(
@@ -498,7 +498,7 @@ class Langfuse:
         version: Optional[str] = None,
         level: Optional[SpanLevel] = None,
         status_message: Optional[str] = None,
-    ) -> LangfuseTool: ...
+    ) -> ElasticDashTool: ...
 
     @overload
     def start_observation(
@@ -513,7 +513,7 @@ class Langfuse:
         version: Optional[str] = None,
         level: Optional[SpanLevel] = None,
         status_message: Optional[str] = None,
-    ) -> LangfuseChain: ...
+    ) -> ElasticDashChain: ...
 
     @overload
     def start_observation(
@@ -528,7 +528,7 @@ class Langfuse:
         version: Optional[str] = None,
         level: Optional[SpanLevel] = None,
         status_message: Optional[str] = None,
-    ) -> LangfuseRetriever: ...
+    ) -> ElasticDashRetriever: ...
 
     @overload
     def start_observation(
@@ -543,7 +543,7 @@ class Langfuse:
         version: Optional[str] = None,
         level: Optional[SpanLevel] = None,
         status_message: Optional[str] = None,
-    ) -> LangfuseEvaluator: ...
+    ) -> ElasticDashEvaluator: ...
 
     @overload
     def start_observation(
@@ -564,7 +564,7 @@ class Langfuse:
         usage_details: Optional[Dict[str, int]] = None,
         cost_details: Optional[Dict[str, float]] = None,
         prompt: Optional[PromptClient] = None,
-    ) -> LangfuseEmbedding: ...
+    ) -> ElasticDashEmbedding: ...
 
     @overload
     def start_observation(
@@ -579,7 +579,7 @@ class Langfuse:
         version: Optional[str] = None,
         level: Optional[SpanLevel] = None,
         status_message: Optional[str] = None,
-    ) -> LangfuseGuardrail: ...
+    ) -> ElasticDashGuardrail: ...
 
     def start_observation(
         self,
@@ -600,15 +600,15 @@ class Langfuse:
         cost_details: Optional[Dict[str, float]] = None,
         prompt: Optional[PromptClient] = None,
     ) -> Union[
-        LangfuseSpan,
-        LangfuseGeneration,
-        LangfuseAgent,
-        LangfuseTool,
-        LangfuseChain,
-        LangfuseRetriever,
-        LangfuseEvaluator,
-        LangfuseEmbedding,
-        LangfuseGuardrail,
+        ElasticDashSpan,
+        ElasticDashGeneration,
+        ElasticDashAgent,
+        ElasticDashTool,
+        ElasticDashChain,
+        ElasticDashRetriever,
+        ElasticDashEvaluator,
+        ElasticDashEmbedding,
+        ElasticDashGuardrail,
     ]:
         """Create a new observation of the specified type.
 
@@ -648,7 +648,7 @@ class Langfuse:
                     cast(otel_trace_api.Span, remote_parent_span)
                 ):
                     otel_span = self._otel_tracer.start_span(name=name)
-                    otel_span.set_attribute(LangfuseOtelSpanAttributes.AS_ROOT, True)
+                    otel_span.set_attribute(ElasticDashOtelSpanAttributes.AS_ROOT, True)
 
                     return self._create_observation_from_otel_span(
                         otel_span=otel_span,
@@ -704,21 +704,21 @@ class Langfuse:
         cost_details: Optional[Dict[str, float]] = None,
         prompt: Optional[PromptClient] = None,
     ) -> Union[
-        LangfuseSpan,
-        LangfuseGeneration,
-        LangfuseAgent,
-        LangfuseTool,
-        LangfuseChain,
-        LangfuseRetriever,
-        LangfuseEvaluator,
-        LangfuseEmbedding,
-        LangfuseGuardrail,
+        ElasticDashSpan,
+        ElasticDashGeneration,
+        ElasticDashAgent,
+        ElasticDashTool,
+        ElasticDashChain,
+        ElasticDashRetriever,
+        ElasticDashEvaluator,
+        ElasticDashEmbedding,
+        ElasticDashGuardrail,
     ]:
         """Create the appropriate observation type from an OTEL span."""
         if as_type in get_observation_types_list(ObservationTypeGenerationLike):
             observation_class = self._get_span_class(as_type)
             # Type ignore to prevent overloads of internal _get_span_class function,
-            # issue is that LangfuseEvent could be returned and that classes have diff. args
+            # issue is that ElasticDashEvent could be returned and that classes have diff. args
             return observation_class(  # type: ignore[return-value,call-arg]
                 otel_span=otel_span,
                 langfuse_client=self,
@@ -740,7 +740,7 @@ class Langfuse:
             # For other types (e.g. span, guardrail), create appropriate class without generation properties
             observation_class = self._get_span_class(as_type)
             # Type ignore to prevent overloads of internal _get_span_class function,
-            # issue is that LangfuseEvent could be returned and that classes have diff. args
+            # issue is that ElasticDashEvent could be returned and that classes have diff. args
             return observation_class(  # type: ignore[return-value,call-arg]
                 otel_span=otel_span,
                 langfuse_client=self,
@@ -773,7 +773,7 @@ class Langfuse:
         usage_details: Optional[Dict[str, int]] = None,
         cost_details: Optional[Dict[str, float]] = None,
         prompt: Optional[PromptClient] = None,
-    ) -> LangfuseGeneration:
+    ) -> ElasticDashGeneration:
         """Create a new generation span for model generations.
 
         DEPRECATED: This method is deprecated and will be removed in a future version.
@@ -799,10 +799,10 @@ class Langfuse:
             model_parameters: Parameters used for the model (e.g., temperature, max_tokens)
             usage_details: Token usage information (e.g., prompt_tokens, completion_tokens)
             cost_details: Cost information for the model call
-            prompt: Associated prompt template from Langfuse prompt management
+            prompt: Associated prompt template from ElasticDash prompt management
 
         Returns:
-            A LangfuseGeneration object that must be ended with .end() when complete
+            A ElasticDashGeneration object that must be ended with .end() when complete
 
         Example:
             ```python
@@ -869,7 +869,7 @@ class Langfuse:
         cost_details: Optional[Dict[str, float]] = None,
         prompt: Optional[PromptClient] = None,
         end_on_exit: Optional[bool] = None,
-    ) -> _AgnosticContextManager[LangfuseGeneration]:
+    ) -> _AgnosticContextManager[ElasticDashGeneration]:
         """Create a new generation span and set it as the current span in a context manager.
 
         DEPRECATED: This method is deprecated and will be removed in a future version.
@@ -895,11 +895,11 @@ class Langfuse:
             model_parameters: Parameters used for the model (e.g., temperature, max_tokens)
             usage_details: Token usage information (e.g., prompt_tokens, completion_tokens)
             cost_details: Cost information for the model call
-            prompt: Associated prompt template from Langfuse prompt management
+            prompt: Associated prompt template from ElasticDash prompt management
             end_on_exit (default: True): Whether to end the span automatically when leaving the context manager. If False, the span must be manually ended to avoid memory leaks.
 
         Returns:
-            A context manager that yields a LangfuseGeneration
+            A context manager that yields a ElasticDashGeneration
 
         Example:
             ```python
@@ -966,7 +966,7 @@ class Langfuse:
         cost_details: Optional[Dict[str, float]] = None,
         prompt: Optional[PromptClient] = None,
         end_on_exit: Optional[bool] = None,
-    ) -> _AgnosticContextManager[LangfuseGeneration]: ...
+    ) -> _AgnosticContextManager[ElasticDashGeneration]: ...
 
     @overload
     def start_as_current_observation(
@@ -982,7 +982,7 @@ class Langfuse:
         level: Optional[SpanLevel] = None,
         status_message: Optional[str] = None,
         end_on_exit: Optional[bool] = None,
-    ) -> _AgnosticContextManager[LangfuseSpan]: ...
+    ) -> _AgnosticContextManager[ElasticDashSpan]: ...
 
     @overload
     def start_as_current_observation(
@@ -998,7 +998,7 @@ class Langfuse:
         level: Optional[SpanLevel] = None,
         status_message: Optional[str] = None,
         end_on_exit: Optional[bool] = None,
-    ) -> _AgnosticContextManager[LangfuseAgent]: ...
+    ) -> _AgnosticContextManager[ElasticDashAgent]: ...
 
     @overload
     def start_as_current_observation(
@@ -1014,7 +1014,7 @@ class Langfuse:
         level: Optional[SpanLevel] = None,
         status_message: Optional[str] = None,
         end_on_exit: Optional[bool] = None,
-    ) -> _AgnosticContextManager[LangfuseTool]: ...
+    ) -> _AgnosticContextManager[ElasticDashTool]: ...
 
     @overload
     def start_as_current_observation(
@@ -1030,7 +1030,7 @@ class Langfuse:
         level: Optional[SpanLevel] = None,
         status_message: Optional[str] = None,
         end_on_exit: Optional[bool] = None,
-    ) -> _AgnosticContextManager[LangfuseChain]: ...
+    ) -> _AgnosticContextManager[ElasticDashChain]: ...
 
     @overload
     def start_as_current_observation(
@@ -1046,7 +1046,7 @@ class Langfuse:
         level: Optional[SpanLevel] = None,
         status_message: Optional[str] = None,
         end_on_exit: Optional[bool] = None,
-    ) -> _AgnosticContextManager[LangfuseRetriever]: ...
+    ) -> _AgnosticContextManager[ElasticDashRetriever]: ...
 
     @overload
     def start_as_current_observation(
@@ -1062,7 +1062,7 @@ class Langfuse:
         level: Optional[SpanLevel] = None,
         status_message: Optional[str] = None,
         end_on_exit: Optional[bool] = None,
-    ) -> _AgnosticContextManager[LangfuseEvaluator]: ...
+    ) -> _AgnosticContextManager[ElasticDashEvaluator]: ...
 
     @overload
     def start_as_current_observation(
@@ -1084,7 +1084,7 @@ class Langfuse:
         cost_details: Optional[Dict[str, float]] = None,
         prompt: Optional[PromptClient] = None,
         end_on_exit: Optional[bool] = None,
-    ) -> _AgnosticContextManager[LangfuseEmbedding]: ...
+    ) -> _AgnosticContextManager[ElasticDashEmbedding]: ...
 
     @overload
     def start_as_current_observation(
@@ -1100,7 +1100,7 @@ class Langfuse:
         level: Optional[SpanLevel] = None,
         status_message: Optional[str] = None,
         end_on_exit: Optional[bool] = None,
-    ) -> _AgnosticContextManager[LangfuseGuardrail]: ...
+    ) -> _AgnosticContextManager[ElasticDashGuardrail]: ...
 
     def start_as_current_observation(
         self,
@@ -1122,15 +1122,15 @@ class Langfuse:
         prompt: Optional[PromptClient] = None,
         end_on_exit: Optional[bool] = None,
     ) -> Union[
-        _AgnosticContextManager[LangfuseGeneration],
-        _AgnosticContextManager[LangfuseSpan],
-        _AgnosticContextManager[LangfuseAgent],
-        _AgnosticContextManager[LangfuseTool],
-        _AgnosticContextManager[LangfuseChain],
-        _AgnosticContextManager[LangfuseRetriever],
-        _AgnosticContextManager[LangfuseEvaluator],
-        _AgnosticContextManager[LangfuseEmbedding],
-        _AgnosticContextManager[LangfuseGuardrail],
+        _AgnosticContextManager[ElasticDashGeneration],
+        _AgnosticContextManager[ElasticDashSpan],
+        _AgnosticContextManager[ElasticDashAgent],
+        _AgnosticContextManager[ElasticDashTool],
+        _AgnosticContextManager[ElasticDashChain],
+        _AgnosticContextManager[ElasticDashRetriever],
+        _AgnosticContextManager[ElasticDashEvaluator],
+        _AgnosticContextManager[ElasticDashEmbedding],
+        _AgnosticContextManager[ElasticDashGuardrail],
     ]:
         """Create a new observation and set it as the current span in a context manager.
 
@@ -1158,7 +1158,7 @@ class Langfuse:
             model_parameters: Parameters used for the model (e.g., temperature, max_tokens)
             usage_details: Token usage information (e.g., prompt_tokens, completion_tokens)
             cost_details: Cost information for the model call
-            prompt: Associated prompt template from Langfuse prompt management
+            prompt: Associated prompt template from ElasticDash prompt management
 
         Returns:
             A context manager that yields the appropriate observation type based on as_type
@@ -1205,8 +1205,8 @@ class Langfuse:
 
                     return cast(
                         Union[
-                            _AgnosticContextManager[LangfuseGeneration],
-                            _AgnosticContextManager[LangfuseEmbedding],
+                            _AgnosticContextManager[ElasticDashGeneration],
+                            _AgnosticContextManager[ElasticDashEmbedding],
                         ],
                         self._create_span_with_parent_context(
                             as_type=as_type,
@@ -1231,8 +1231,8 @@ class Langfuse:
 
             return cast(
                 Union[
-                    _AgnosticContextManager[LangfuseGeneration],
-                    _AgnosticContextManager[LangfuseEmbedding],
+                    _AgnosticContextManager[ElasticDashGeneration],
+                    _AgnosticContextManager[ElasticDashEmbedding],
                 ],
                 self._start_as_current_otel_span_with_processed_media(
                     as_type=as_type,
@@ -1265,13 +1265,13 @@ class Langfuse:
 
                     return cast(
                         Union[
-                            _AgnosticContextManager[LangfuseSpan],
-                            _AgnosticContextManager[LangfuseAgent],
-                            _AgnosticContextManager[LangfuseTool],
-                            _AgnosticContextManager[LangfuseChain],
-                            _AgnosticContextManager[LangfuseRetriever],
-                            _AgnosticContextManager[LangfuseEvaluator],
-                            _AgnosticContextManager[LangfuseGuardrail],
+                            _AgnosticContextManager[ElasticDashSpan],
+                            _AgnosticContextManager[ElasticDashAgent],
+                            _AgnosticContextManager[ElasticDashTool],
+                            _AgnosticContextManager[ElasticDashChain],
+                            _AgnosticContextManager[ElasticDashRetriever],
+                            _AgnosticContextManager[ElasticDashEvaluator],
+                            _AgnosticContextManager[ElasticDashGuardrail],
                         ],
                         self._create_span_with_parent_context(
                             as_type=as_type,
@@ -1290,13 +1290,13 @@ class Langfuse:
 
             return cast(
                 Union[
-                    _AgnosticContextManager[LangfuseSpan],
-                    _AgnosticContextManager[LangfuseAgent],
-                    _AgnosticContextManager[LangfuseTool],
-                    _AgnosticContextManager[LangfuseChain],
-                    _AgnosticContextManager[LangfuseRetriever],
-                    _AgnosticContextManager[LangfuseEvaluator],
-                    _AgnosticContextManager[LangfuseGuardrail],
+                    _AgnosticContextManager[ElasticDashSpan],
+                    _AgnosticContextManager[ElasticDashAgent],
+                    _AgnosticContextManager[ElasticDashTool],
+                    _AgnosticContextManager[ElasticDashChain],
+                    _AgnosticContextManager[ElasticDashRetriever],
+                    _AgnosticContextManager[ElasticDashEvaluator],
+                    _AgnosticContextManager[ElasticDashGuardrail],
                 ],
                 self._start_as_current_otel_span_with_processed_media(
                     as_type=as_type,
@@ -1331,42 +1331,42 @@ class Langfuse:
         self,
         as_type: ObservationTypeLiteral,
     ) -> Union[
-        Type[LangfuseAgent],
-        Type[LangfuseTool],
-        Type[LangfuseChain],
-        Type[LangfuseRetriever],
-        Type[LangfuseEvaluator],
-        Type[LangfuseEmbedding],
-        Type[LangfuseGuardrail],
-        Type[LangfuseGeneration],
-        Type[LangfuseEvent],
-        Type[LangfuseSpan],
+        Type[ElasticDashAgent],
+        Type[ElasticDashTool],
+        Type[ElasticDashChain],
+        Type[ElasticDashRetriever],
+        Type[ElasticDashEvaluator],
+        Type[ElasticDashEmbedding],
+        Type[ElasticDashGuardrail],
+        Type[ElasticDashGeneration],
+        Type[ElasticDashEvent],
+        Type[ElasticDashSpan],
     ]:
         """Get the appropriate span class based on as_type."""
         normalized_type = as_type.lower()
 
         if normalized_type == "agent":
-            return LangfuseAgent
+            return ElasticDashAgent
         elif normalized_type == "tool":
-            return LangfuseTool
+            return ElasticDashTool
         elif normalized_type == "chain":
-            return LangfuseChain
+            return ElasticDashChain
         elif normalized_type == "retriever":
-            return LangfuseRetriever
+            return ElasticDashRetriever
         elif normalized_type == "evaluator":
-            return LangfuseEvaluator
+            return ElasticDashEvaluator
         elif normalized_type == "embedding":
-            return LangfuseEmbedding
+            return ElasticDashEmbedding
         elif normalized_type == "guardrail":
-            return LangfuseGuardrail
+            return ElasticDashGuardrail
         elif normalized_type == "generation":
-            return LangfuseGeneration
+            return ElasticDashGeneration
         elif normalized_type == "event":
-            return LangfuseEvent
+            return ElasticDashEvent
         elif normalized_type == "span":
-            return LangfuseSpan
+            return ElasticDashSpan
         else:
-            return LangfuseSpan
+            return ElasticDashSpan
 
     @_agnosticcontextmanager
     def _create_span_with_parent_context(
@@ -1412,7 +1412,7 @@ class Langfuse:
             ) as langfuse_span:
                 if remote_parent_span is not None:
                     langfuse_span._otel_span.set_attribute(
-                        LangfuseOtelSpanAttributes.AS_ROOT, True
+                        ElasticDashOtelSpanAttributes.AS_ROOT, True
                     )
 
                 yield langfuse_span
@@ -1457,8 +1457,8 @@ class Langfuse:
             }
 
             if span_class in [
-                LangfuseGeneration,
-                LangfuseEmbedding,
+                ElasticDashGeneration,
+                ElasticDashEmbedding,
             ]:
                 common_args.update(
                     {
@@ -1522,7 +1522,7 @@ class Langfuse:
             model_parameters: Parameters used for the model (e.g., temperature, max_tokens)
             usage_details: Token usage information (e.g., prompt_tokens, completion_tokens)
             cost_details: Cost information for the model call
-            prompt: Associated prompt template from Langfuse prompt management
+            prompt: Associated prompt template from ElasticDash prompt management
 
         Example:
             ```python
@@ -1549,7 +1549,7 @@ class Langfuse:
         current_otel_span = self._get_current_otel_span()
 
         if current_otel_span is not None:
-            generation = LangfuseGeneration(
+            generation = ElasticDashGeneration(
                 otel_span=current_otel_span, langfuse_client=self
             )
 
@@ -1622,7 +1622,7 @@ class Langfuse:
         current_otel_span = self._get_current_otel_span()
 
         if current_otel_span is not None:
-            span = LangfuseSpan(
+            span = ElasticDashSpan(
                 otel_span=current_otel_span,
                 langfuse_client=self,
                 environment=self._environment,
@@ -1656,15 +1656,15 @@ class Langfuse:
         """Update the current trace with additional information.
 
         Args:
-            name: Updated name for the Langfuse trace
-            user_id: ID of the user who initiated the Langfuse trace
-            session_id: Session identifier for grouping related Langfuse traces
+            name: Updated name for the ElasticDash trace
+            user_id: ID of the user who initiated the ElasticDash trace
+            session_id: Session identifier for grouping related ElasticDash traces
             version: Version identifier for the application or service
-            input: Input data for the overall Langfuse trace
-            output: Output data from the overall Langfuse trace
-            metadata: Additional metadata to associate with the Langfuse trace
-            tags: List of tags to categorize the Langfuse trace
-            public: Whether the Langfuse trace should be publicly accessible
+            input: Input data for the overall ElasticDash trace
+            output: Output data from the overall ElasticDash trace
+            metadata: Additional metadata to associate with the ElasticDash trace
+            tags: List of tags to categorize the ElasticDash trace
+            public: Whether the ElasticDash trace should be publicly accessible
 
         See Also:
             :func:`langfuse.propagate_attributes`: Recommended replacement
@@ -1679,7 +1679,7 @@ class Langfuse:
 
         if current_otel_span is not None and current_otel_span.is_recording():
             existing_observation_type = current_otel_span.attributes.get(  # type: ignore[attr-defined]
-                LangfuseOtelSpanAttributes.OBSERVATION_TYPE, "span"
+                ElasticDashOtelSpanAttributes.OBSERVATION_TYPE, "span"
             )
             # We need to preserve the class to keep the correct observation type
             span_class = self._get_span_class(existing_observation_type)
@@ -1712,10 +1712,10 @@ class Langfuse:
         version: Optional[str] = None,
         level: Optional[SpanLevel] = None,
         status_message: Optional[str] = None,
-    ) -> LangfuseEvent:
-        """Create a new Langfuse observation of type 'EVENT'.
+    ) -> ElasticDashEvent:
+        """Create a new ElasticDash observation of type 'EVENT'.
 
-        The created Langfuse Event observation will be the child of the current span in the context.
+        The created ElasticDash Event observation will be the child of the current span in the context.
 
         Args:
             trace_context: Optional context for connecting to an existing trace
@@ -1728,7 +1728,7 @@ class Langfuse:
             status_message: Optional status message for the span
 
         Returns:
-            The Langfuse Event object
+            The ElasticDash Event object
 
         Example:
             ```python
@@ -1752,11 +1752,11 @@ class Langfuse:
                     otel_span = self._otel_tracer.start_span(
                         name=name, start_time=timestamp
                     )
-                    otel_span.set_attribute(LangfuseOtelSpanAttributes.AS_ROOT, True)
+                    otel_span.set_attribute(ElasticDashOtelSpanAttributes.AS_ROOT, True)
 
                     return cast(
-                        LangfuseEvent,
-                        LangfuseEvent(
+                        ElasticDashEvent,
+                        ElasticDashEvent(
                             otel_span=otel_span,
                             langfuse_client=self,
                             environment=self._environment,
@@ -1772,8 +1772,8 @@ class Langfuse:
         otel_span = self._otel_tracer.start_span(name=name, start_time=timestamp)
 
         return cast(
-            LangfuseEvent,
-            LangfuseEvent(
+            ElasticDashEvent,
+            ElasticDashEvent(
                 otel_span=otel_span,
                 langfuse_client=self,
                 environment=self._environment,
@@ -1791,12 +1791,12 @@ class Langfuse:
     ) -> Any:
         if not self._is_valid_trace_id(trace_id):
             langfuse_logger.warning(
-                f"Passed trace ID '{trace_id}' is not a valid 32 lowercase hex char Langfuse trace id. Ignoring trace ID."
+                f"Passed trace ID '{trace_id}' is not a valid 32 lowercase hex char ElasticDash trace id. Ignoring trace ID."
             )
 
         if parent_span_id and not self._is_valid_span_id(parent_span_id):
             langfuse_logger.warning(
-                f"Passed span ID '{parent_span_id}' is not a valid 16 lowercase hex char Langfuse span id. Ignoring parent span ID."
+                f"Passed span ID '{parent_span_id}' is not a valid 16 lowercase hex char ElasticDash span id. Ignoring parent span ID."
             )
 
         int_trace_id = int(trace_id, 16)
@@ -1826,15 +1826,15 @@ class Langfuse:
         return bool(re.match(pattern, span_id))
 
     def _create_observation_id(self, *, seed: Optional[str] = None) -> str:
-        """Create a unique observation ID for use with Langfuse.
+        """Create a unique observation ID for use with ElasticDash.
 
         This method generates a unique observation ID (span ID in OpenTelemetry terms)
-        for use with various Langfuse APIs. It can either generate a random ID or
+        for use with various ElasticDash APIs. It can either generate a random ID or
         create a deterministic ID based on a seed string.
 
         Observation IDs must be 16 lowercase hexadecimal characters, representing 8 bytes.
         This method ensures the generated ID meets this requirement. If you need to
-        correlate an external ID with a Langfuse observation ID, use the external ID as
+        correlate an external ID with a ElasticDash observation ID, use the external ID as
         the seed to get a valid, deterministic observation ID.
 
         Args:
@@ -1853,11 +1853,11 @@ class Langfuse:
             # Generate a deterministic ID based on a seed
             user_obs_id = langfuse.create_observation_id(seed="user-123-feedback")
 
-            # Correlate an external item ID with a Langfuse observation ID
+            # Correlate an external item ID with a ElasticDash observation ID
             item_id = "item-789012"
             correlated_obs_id = langfuse.create_observation_id(seed=item_id)
 
-            # Use the ID with Langfuse APIs
+            # Use the ID with ElasticDash APIs
             langfuse.create_score(
                 name="relevance",
                 value=0.95,
@@ -1875,16 +1875,16 @@ class Langfuse:
 
     @staticmethod
     def create_trace_id(*, seed: Optional[str] = None) -> str:
-        """Create a unique trace ID for use with Langfuse.
+        """Create a unique trace ID for use with ElasticDash.
 
-        This method generates a unique trace ID for use with various Langfuse APIs.
+        This method generates a unique trace ID for use with various ElasticDash APIs.
         It can either generate a random ID or create a deterministic ID based on
         a seed string.
 
         Trace IDs must be 32 lowercase hexadecimal characters, representing 16 bytes.
         This method ensures the generated ID meets this requirement. If you need to
-        correlate an external ID with a Langfuse trace ID, use the external ID as the
-        seed to get a valid, deterministic Langfuse trace ID.
+        correlate an external ID with a ElasticDash trace ID, use the external ID as the
+        seed to get a valid, deterministic ElasticDash trace ID.
 
         Args:
             seed: Optional string to use as a seed for deterministic ID generation.
@@ -1892,7 +1892,7 @@ class Langfuse:
                  If not provided, a random ID will be generated.
 
         Returns:
-            A 32-character lowercase hexadecimal string representing the Langfuse trace ID.
+            A 32-character lowercase hexadecimal string representing the ElasticDash trace ID.
 
         Example:
             ```python
@@ -1902,7 +1902,7 @@ class Langfuse:
             # Generate a deterministic ID based on a seed
             session_trace_id = langfuse.create_trace_id(seed="session-456")
 
-            # Correlate an external ID with a Langfuse trace ID
+            # Correlate an external ID with a ElasticDash trace ID
             external_id = "external-system-123456"
             correlated_trace_id = langfuse.create_trace_id(seed=external_id)
 
@@ -1918,7 +1918,7 @@ class Langfuse:
         if not seed:
             trace_id_int = RandomIdGenerator().generate_trace_id()
 
-            return Langfuse._format_otel_trace_id(trace_id_int)
+            return ElasticDash._format_otel_trace_id(trace_id_int)
 
         return sha256(seed.encode("utf-8")).digest()[:16].hex()
 
@@ -2016,20 +2016,20 @@ class Langfuse:
     ) -> None:
         """Create a score for a specific trace or observation.
 
-        This method creates a score for evaluating a Langfuse trace or observation. Scores can be
+        This method creates a score for evaluating a ElasticDash trace or observation. Scores can be
         used to track quality metrics, user feedback, or automated evaluations.
 
         Args:
             name: Name of the score (e.g., "relevance", "accuracy")
             value: Score value (can be numeric for NUMERIC/BOOLEAN types or string for CATEGORICAL)
-            session_id: ID of the Langfuse session to associate the score with
-            dataset_run_id: ID of the Langfuse dataset run to associate the score with
-            trace_id: ID of the Langfuse trace to associate the score with
+            session_id: ID of the ElasticDash session to associate the score with
+            dataset_run_id: ID of the ElasticDash dataset run to associate the score with
+            trace_id: ID of the ElasticDash trace to associate the score with
             observation_id: Optional ID of the specific observation to score. Trace ID must be provided too.
             score_id: Optional custom ID for the score (auto-generated if not provided)
             data_type: Type of score (NUMERIC, BOOLEAN, or CATEGORICAL)
             comment: Optional comment or explanation for the score
-            config_id: Optional ID of a score config defined in Langfuse
+            config_id: Optional ID of a score config defined in ElasticDash
             metadata: Optional metadata to be attached to the score
             timestamp: Optional timestamp for the score (defaults to current UTC time)
 
@@ -2146,7 +2146,7 @@ class Langfuse:
             score_id: Optional custom ID for the score (auto-generated if not provided)
             data_type: Type of score (NUMERIC, BOOLEAN, or CATEGORICAL)
             comment: Optional comment or explanation for the score
-            config_id: Optional ID of a score config defined in Langfuse
+            config_id: Optional ID of a score config defined in ElasticDash
             metadata: Optional metadata to be attached to the score
 
         Example:
@@ -2237,7 +2237,7 @@ class Langfuse:
             score_id: Optional custom ID for the score (auto-generated if not provided)
             data_type: Type of score (NUMERIC, BOOLEAN, or CATEGORICAL)
             comment: Optional comment or explanation for the score
-            config_id: Optional ID of a score config defined in Langfuse
+            config_id: Optional ID of a score config defined in ElasticDash
             metadata: Optional metadata to be attached to the score
 
         Example:
@@ -2278,10 +2278,10 @@ class Langfuse:
             )
 
     def flush(self) -> None:
-        """Force flush all pending spans and events to the Langfuse API.
+        """Force flush all pending spans and events to the ElasticDash API.
 
         This method manually flushes any pending spans, scores, and other events to the
-        Langfuse API. It's useful in scenarios where you want to ensure all data is sent
+        ElasticDash API. It's useful in scenarios where you want to ensure all data is sent
         before proceeding, without waiting for the automatic flush interval.
 
         Example:
@@ -2291,7 +2291,7 @@ class Langfuse:
                 # Do work...
                 pass
 
-            # Ensure all data is sent to Langfuse before proceeding
+            # Ensure all data is sent to ElasticDash before proceeding
             langfuse.flush()
 
             # Continue with other work
@@ -2301,9 +2301,9 @@ class Langfuse:
             self._resources.flush()
 
     def shutdown(self) -> None:
-        """Shut down the Langfuse client and flush all pending data.
+        """Shut down the ElasticDash client and flush all pending data.
 
-        This method cleanly shuts down the Langfuse client, ensuring all pending data
+        This method cleanly shuts down the ElasticDash client, ensuring all pending data
         is flushed to the API and all background threads are properly terminated.
 
         It's important to call this method when your application is shutting down to
@@ -2312,10 +2312,10 @@ class Langfuse:
 
         Example:
             ```python
-            # Initialize Langfuse
-            langfuse = Langfuse(public_key="...", secret_key="...")
+            # Initialize ElasticDash
+            langfuse = ElasticDash(public_key="...", secret_key="...")
 
-            # Use Langfuse throughout your application
+            # Use ElasticDash throughout your application
             # ...
 
             # When application is shutting down
@@ -2404,9 +2404,9 @@ class Langfuse:
         return self._project_id
 
     def get_trace_url(self, *, trace_id: Optional[str] = None) -> Optional[str]:
-        """Get the URL to view a trace in the Langfuse UI.
+        """Get the URL to view a trace in the ElasticDash UI.
 
-        This method generates a URL that links directly to a trace in the Langfuse UI.
+        This method generates a URL that links directly to a trace in the ElasticDash UI.
         It's useful for providing links in logs, notifications, or debugging tools.
 
         Args:
@@ -2414,7 +2414,7 @@ class Langfuse:
                      the trace ID of the current active span will be used.
 
         Returns:
-            A URL string pointing to the trace in the Langfuse UI,
+            A URL string pointing to the trace in the ElasticDash UI,
             or None if the project ID couldn't be retrieved or no trace ID is available.
 
         Example:
@@ -2570,7 +2570,7 @@ class Langfuse:
         """Run an experiment on a dataset with automatic tracing and evaluation.
 
         This method executes a task function on each item in the provided dataset,
-        automatically traces all executions with Langfuse for observability, runs
+        automatically traces all executions with ElasticDash for observability, runs
         item-level and run-level evaluators on the outputs, and returns comprehensive
         results with evaluation metrics.
 
@@ -2578,20 +2578,20 @@ class Langfuse:
         - Automatic tracing of all task executions
         - Concurrent processing with configurable limits
         - Comprehensive error handling that isolates failures
-        - Integration with Langfuse datasets for experiment tracking
+        - Integration with ElasticDash datasets for experiment tracking
         - Flexible evaluation framework supporting both sync and async evaluators
 
         Args:
             name: Human-readable name for the experiment. Used for identification
-                in the Langfuse UI.
+                in the ElasticDash UI.
             run_name: Optional exact name for the experiment run. If provided, this will be
-                used as the exact dataset run name if the `data` contains Langfuse dataset items.
+                used as the exact dataset run name if the `data` contains ElasticDash dataset items.
                 If not provided, this will default to the experiment name appended with an ISO timestamp.
             description: Optional description explaining the experiment's purpose,
                 methodology, or expected outcomes.
             data: Array of data items to process. Can be either:
                 - List of dict-like items with 'input', 'expected_output', 'metadata' keys
-                - List of Langfuse DatasetItem objects from dataset.items
+                - List of ElasticDash DatasetItem objects from dataset.items
             task: Function that processes each data item and returns output.
                 Must accept 'item' as keyword argument and can return sync or async results.
                 The task function signature should be: task(*, item, **kwargs) -> Any
@@ -2610,15 +2610,15 @@ class Langfuse:
                 API rate limits and system resources.
             metadata: Optional metadata dictionary to attach to all experiment traces.
                 This metadata will be included in every trace created during the experiment.
-                If `data` are Langfuse dataset items, the metadata will be attached to the dataset run, too.
+                If `data` are ElasticDash dataset items, the metadata will be attached to the dataset run, too.
 
         Returns:
             ExperimentResult containing:
-            - run_name: The experiment run name. This is equal to the dataset run name if experiment was on Langfuse dataset.
+            - run_name: The experiment run name. This is equal to the dataset run name if experiment was on ElasticDash dataset.
             - item_results: List of results for each processed item with outputs and evaluations
             - run_evaluations: List of aggregate evaluation results for the entire run
-            - dataset_run_id: ID of the dataset run (if using Langfuse datasets)
-            - dataset_run_url: Direct URL to view results in Langfuse UI (if applicable)
+            - dataset_run_id: ID of the dataset run (if using ElasticDash datasets)
+            - dataset_run_url: Direct URL to view results in ElasticDash UI (if applicable)
 
         Raises:
             ValueError: If required parameters are missing or invalid
@@ -2703,9 +2703,9 @@ class Langfuse:
             )
             ```
 
-            Using with Langfuse datasets:
+            Using with ElasticDash datasets:
             ```python
-            # Get dataset from Langfuse
+            # Get dataset from ElasticDash
             dataset = langfuse.get_dataset("my-eval-dataset")
 
             result = dataset.run_experiment(
@@ -2715,15 +2715,15 @@ class Langfuse:
                 evaluators=[accuracy_evaluator, latency_evaluator]
             )
 
-            # Results automatically linked to dataset in Langfuse UI
+            # Results automatically linked to dataset in ElasticDash UI
             print(f"View results: {result['dataset_run_url']}")
             ```
 
         Note:
             - Task and evaluator functions can be either synchronous or asynchronous
             - Individual item failures are logged but don't stop the experiment
-            - All executions are automatically traced and visible in Langfuse UI
-            - When using Langfuse datasets, results are automatically linked for easy comparison
+            - All executions are automatically traced and visible in ElasticDash UI
+            - When using ElasticDash datasets, results are automatically linked for easy comparison
             - This method works in both sync and async contexts (Jupyter notebooks, web apps, etc.)
             - Async execution is handled automatically with smart event loop detection
         """
@@ -2948,9 +2948,9 @@ class Langfuse:
                     {
                         k: v
                         for k, v in {
-                            LangfuseOtelSpanAttributes.ENVIRONMENT: LANGFUSE_SDK_EXPERIMENT_ENVIRONMENT,
-                            LangfuseOtelSpanAttributes.EXPERIMENT_DESCRIPTION: experiment_description,
-                            LangfuseOtelSpanAttributes.EXPERIMENT_ITEM_EXPECTED_OUTPUT: _serialize(
+                            ElasticDashOtelSpanAttributes.ENVIRONMENT: ELASTICDASH_SDK_EXPERIMENT_ENVIRONMENT,
+                            ElasticDashOtelSpanAttributes.EXPERIMENT_DESCRIPTION: experiment_description,
+                            ElasticDashOtelSpanAttributes.EXPERIMENT_ITEM_EXPECTED_OUTPUT: _serialize(
                                 expected_output
                             ),
                         }.items()
@@ -3108,7 +3108,7 @@ class Langfuse:
     ) -> BatchEvaluationResult:
         """Fetch traces or observations and run evaluations on each item.
 
-        This method provides a powerful way to evaluate existing data in Langfuse at scale.
+        This method provides a powerful way to evaluate existing data in ElasticDash at scale.
         It fetches items based on filters, transforms them using a mapper function, runs
         evaluators on each item, and creates scores that are linked back to the original
         entities. This is ideal for:
@@ -3133,7 +3133,7 @@ class Langfuse:
             evaluators: List of evaluation functions to run on each item. Each evaluator
                 receives the mapped inputs and returns Evaluation object(s). Evaluator
                 failures are logged but don't stop the batch evaluation.
-            filter: Optional JSON filter string for querying items (same format as Langfuse API). Examples:
+            filter: Optional JSON filter string for querying items (same format as ElasticDash API). Examples:
                 - '{"tags": ["production"]}'
                 - '{"user_id": "user123", "timestamp": {"operator": ">", "value": "2024-01-01"}}'
                 Default: None (fetches all items).
@@ -3181,9 +3181,9 @@ class Langfuse:
         Examples:
             Basic trace evaluation:
             ```python
-            from langfuse import Langfuse, EvaluatorInputs, Evaluation
+            from langfuse import ElasticDash, EvaluatorInputs, Evaluation
 
-            client = Langfuse()
+            client = ElasticDash()
 
             # Define mapper to extract fields from traces
             def trace_mapper(trace):
@@ -3294,7 +3294,7 @@ class Langfuse:
             - Evaluator failures are logged but don't stop the batch evaluation
             - Individual item failures are tracked but don't stop processing
             - Fetch failures are retried with exponential backoff
-            - All scores are automatically flushed to Langfuse at the end
+            - All scores are automatically flushed to ElasticDash at the end
             - The resume mechanism uses timestamp-based filtering to avoid duplicates
         """
         runner = BatchEvaluationRunner(self)
@@ -3359,7 +3359,7 @@ class Langfuse:
         input_schema: Optional[Any] = None,
         expected_output_schema: Optional[Any] = None,
     ) -> Dataset:
-        """Create a dataset with the given name on Langfuse.
+        """Create a dataset with the given name on ElasticDash.
 
         Args:
             name: Name of the dataset to create.
@@ -3369,7 +3369,7 @@ class Langfuse:
             expected_output_schema: JSON Schema for validating dataset item expected outputs. When set, all new items will be validated against this schema.
 
         Returns:
-            Dataset: The created dataset as returned by the Langfuse API.
+            Dataset: The created dataset as returned by the ElasticDash API.
         """
         try:
             body = CreateDatasetRequest(
@@ -3414,15 +3414,15 @@ class Langfuse:
             id: Id of the dataset item. Defaults to None. Provide your own id if you want to dedupe dataset items. Id needs to be globally unique and cannot be reused across datasets.
 
         Returns:
-            DatasetItem: The created dataset item as returned by the Langfuse API.
+            DatasetItem: The created dataset item as returned by the ElasticDash API.
 
         Example:
             ```python
-            from langfuse import Langfuse
+            from langfuse import ElasticDash
 
-            langfuse = Langfuse()
+            langfuse = ElasticDash()
 
-            # Uploading items to the Langfuse dataset named "capital_cities"
+            # Uploading items to the ElasticDash dataset named "capital_cities"
             langfuse.create_dataset_item(
                 dataset_name="capital_cities",
                 input={"input": {"country": "Italy"}},
@@ -3460,7 +3460,7 @@ class Langfuse:
 
         This method recursively traverses an object (up to max_depth) looking for media reference strings
         in the format "@@@langfuseMedia:...@@@". When found, it (synchronously) fetches the actual media content using
-        the provided Langfuse client and replaces the reference string with a base64 data URI.
+        the provided ElasticDash client and replaces the reference string with a base64 data URI.
 
         If fetching media content fails for a reference string, a warning is logged and the reference
         string is left unchanged.
@@ -3485,7 +3485,7 @@ class Langfuse:
                 }
             }
 
-            result = await LangfuseMedia.resolve_media_references(obj, langfuse_client)
+            result = await ElasticDashMedia.resolve_media_references(obj, langfuse_client)
 
             # Result:
             # {
@@ -3495,7 +3495,7 @@ class Langfuse:
             #     }
             # }
         """
-        return LangfuseMedia.resolve_media_references(
+        return ElasticDashMedia.resolve_media_references(
             langfuse_client=self,
             obj=obj,
             resolve_with=resolve_with,
@@ -3559,7 +3559,7 @@ class Langfuse:
             cache_ttl_seconds: Optional[int]: Time-to-live in seconds for caching the prompt. Must be specified as a
             keyword argument. If not set, defaults to 60 seconds. Disables caching if set to 0.
             type: Literal["chat", "text"]: The type of the prompt to retrieve. Defaults to "text".
-            fallback: Union[Optional[List[ChatMessageDict]], Optional[str]]: The prompt string to return if fetching the prompt fails. Important on the first call where no cached prompt is available. Follows Langfuse prompt formatting with double curly braces for variables. Defaults to None.
+            fallback: Union[Optional[List[ChatMessageDict]], Optional[str]]: The prompt string to return if fetching the prompt fails. Important on the first call where no cached prompt is available. Follows ElasticDash prompt formatting with double curly braces for variables. Defaults to None.
             max_retries: Optional[int]: The maximum number of retries in case of API/network errors. Defaults to 2. The maximum value is 4. Retries have an exponential backoff with a maximum delay of 10 seconds.
             fetch_timeout_seconds: Optional[int]: The timeout in milliseconds for fetching the prompt. Defaults to the default timeout set on the SDK, which is 5 seconds per default.
 
@@ -3781,7 +3781,7 @@ class Langfuse:
         config: Optional[Any] = None,
         commit_message: Optional[str] = None,
     ) -> PromptClient:
-        """Create a new prompt in Langfuse.
+        """Create a new prompt in ElasticDash.
 
         Keyword Args:
             name : The name of the prompt to be created.
@@ -3854,15 +3854,15 @@ class Langfuse:
         version: int,
         new_labels: List[str] = [],
     ) -> Any:
-        """Update an existing prompt version in Langfuse. The Langfuse SDK prompt cache is invalidated for all prompts witht he specified name.
+        """Update an existing prompt version in ElasticDash. The ElasticDash SDK prompt cache is invalidated for all prompts witht he specified name.
 
         Args:
             name (str): The name of the prompt to update.
             version (int): The version number of the prompt to update.
-            new_labels (List[str], optional): New labels to assign to the prompt version. Labels are unique across versions. The "latest" label is reserved and managed by Langfuse. Defaults to [].
+            new_labels (List[str], optional): New labels to assign to the prompt version. Labels are unique across versions. The "latest" label is reserved and managed by ElasticDash. Defaults to [].
 
         Returns:
-            Prompt: The updated prompt from the Langfuse API.
+            Prompt: The updated prompt from the ElasticDash API.
 
         """
         updated_prompt = self.api.prompt_version.update(

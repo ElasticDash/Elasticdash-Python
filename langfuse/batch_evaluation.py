@@ -1,7 +1,7 @@
-"""Batch evaluation functionality for Langfuse.
+"""Batch evaluation functionality for ElasticDash.
 
 This module provides comprehensive batch evaluation capabilities for running evaluations
-on traces and observations fetched from Langfuse. It includes type definitions,
+on traces and observations fetched from ElasticDash. It includes type definitions,
 protocols, result classes, and the implementation for large-scale evaluation workflows
 with error handling, retry logic, and resume capability.
 """
@@ -30,7 +30,7 @@ from langfuse.api.resources.commons.types import (
 from langfuse.experiment import Evaluation, EvaluatorFunction
 
 if TYPE_CHECKING:
-    from langfuse._client.client import Langfuse
+    from langfuse._client.client import ElasticDash
 
 logger = logging.getLogger("langfuse")
 
@@ -815,26 +815,26 @@ class BatchEvaluationResult:
 
 
 class BatchEvaluationRunner:
-    """Handles batch evaluation execution for a Langfuse client.
+    """Handles batch evaluation execution for a ElasticDash client.
 
     This class encapsulates all the logic for fetching items, running evaluators,
     creating scores, and managing the evaluation lifecycle. It provides a clean
-    separation of concerns from the main Langfuse client class.
+    separation of concerns from the main ElasticDash client class.
 
     The runner uses a streaming/pipeline approach to process items in batches,
     avoiding loading the entire dataset into memory. This makes it suitable for
     evaluating large numbers of items.
 
     Attributes:
-        client: The Langfuse client instance used for API calls and score creation.
+        client: The ElasticDash client instance used for API calls and score creation.
         _log: Logger instance for this runner.
     """
 
-    def __init__(self, client: "Langfuse"):
+    def __init__(self, client: "ElasticDash"):
         """Initialize the batch evaluation runner.
 
         Args:
-            client: The Langfuse client instance.
+            client: The ElasticDash client instance.
         """
         self.client = client
         self._log = logger
@@ -1072,9 +1072,9 @@ class BatchEvaluationRunner:
                     has_more = True  # More items exist but we're stopping
                     break
 
-        # Flush all scores to Langfuse
+        # Flush all scores to ElasticDash
         if verbose:
-            self._log.info("Flushing scores to Langfuse...")
+            self._log.info("Flushing scores to ElasticDash...")
         self.client.flush()
 
         # Build final result

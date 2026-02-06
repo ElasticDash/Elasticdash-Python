@@ -1,9 +1,9 @@
-"""Logger configuration for Langfuse OpenTelemetry integration.
+"""Logger configuration for ElasticDash OpenTelemetry integration.
 
-This module initializes and configures loggers used by the Langfuse OpenTelemetry integration.
+This module initializes and configures loggers used by the ElasticDash OpenTelemetry integration.
 It sets up the main 'langfuse' logger and configures the httpx logger to reduce noise.
 
-Log levels used throughout Langfuse:
+Log levels used throughout ElasticDash:
 - DEBUG: Detailed tracing information useful for development and diagnostics
 - INFO: Normal operational information confirming expected behavior
 - WARNING: Indication of potential issues that don't prevent operation
@@ -13,7 +13,7 @@ Log levels used throughout Langfuse:
 
 import logging
 
-# Create the main Langfuse logger
+# Create the main ElasticDash logger
 langfuse_logger = logging.getLogger("langfuse")
 langfuse_logger.setLevel(logging.WARNING)
 

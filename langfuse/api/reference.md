@@ -27,12 +27,12 @@ Get all annotation queues
 <dd>
 
 ```python
-from langfuse.client import FernLangfuse
+from langfuse.client import FernElasticDash
 
-client = FernLangfuse(
-    x_langfuse_sdk_name="YOUR_X_LANGFUSE_SDK_NAME",
-    x_langfuse_sdk_version="YOUR_X_LANGFUSE_SDK_VERSION",
-    x_langfuse_public_key="YOUR_X_LANGFUSE_PUBLIC_KEY",
+client = FernElasticDash(
+    x_langfuse_sdk_name="YOUR_X_ELASTICDASH_SDK_NAME",
+    x_langfuse_sdk_version="YOUR_X_ELASTICDASH_SDK_VERSION",
+    x_langfuse_public_key="YOUR_X_ELASTICDASH_PUBLIC_KEY",
     username="YOUR_USERNAME",
     password="YOUR_PASSWORD",
     base_url="https://yourhost.com/path/to/api",
@@ -109,12 +109,12 @@ Create an annotation queue
 
 ```python
 from langfuse import CreateAnnotationQueueRequest
-from langfuse.client import FernLangfuse
+from langfuse.client import FernElasticDash
 
-client = FernLangfuse(
-    x_langfuse_sdk_name="YOUR_X_LANGFUSE_SDK_NAME",
-    x_langfuse_sdk_version="YOUR_X_LANGFUSE_SDK_VERSION",
-    x_langfuse_public_key="YOUR_X_LANGFUSE_PUBLIC_KEY",
+client = FernElasticDash(
+    x_langfuse_sdk_name="YOUR_X_ELASTICDASH_SDK_NAME",
+    x_langfuse_sdk_version="YOUR_X_ELASTICDASH_SDK_VERSION",
+    x_langfuse_public_key="YOUR_X_ELASTICDASH_PUBLIC_KEY",
     username="YOUR_USERNAME",
     password="YOUR_PASSWORD",
     base_url="https://yourhost.com/path/to/api",
@@ -187,12 +187,12 @@ Get an annotation queue by ID
 <dd>
 
 ```python
-from langfuse.client import FernLangfuse
+from langfuse.client import FernElasticDash
 
-client = FernLangfuse(
-    x_langfuse_sdk_name="YOUR_X_LANGFUSE_SDK_NAME",
-    x_langfuse_sdk_version="YOUR_X_LANGFUSE_SDK_VERSION",
-    x_langfuse_public_key="YOUR_X_LANGFUSE_PUBLIC_KEY",
+client = FernElasticDash(
+    x_langfuse_sdk_name="YOUR_X_ELASTICDASH_SDK_NAME",
+    x_langfuse_sdk_version="YOUR_X_ELASTICDASH_SDK_VERSION",
+    x_langfuse_public_key="YOUR_X_ELASTICDASH_PUBLIC_KEY",
     username="YOUR_USERNAME",
     password="YOUR_PASSWORD",
     base_url="https://yourhost.com/path/to/api",
@@ -262,12 +262,12 @@ Get items for a specific annotation queue
 <dd>
 
 ```python
-from langfuse.client import FernLangfuse
+from langfuse.client import FernElasticDash
 
-client = FernLangfuse(
-    x_langfuse_sdk_name="YOUR_X_LANGFUSE_SDK_NAME",
-    x_langfuse_sdk_version="YOUR_X_LANGFUSE_SDK_VERSION",
-    x_langfuse_public_key="YOUR_X_LANGFUSE_PUBLIC_KEY",
+client = FernElasticDash(
+    x_langfuse_sdk_name="YOUR_X_ELASTICDASH_SDK_NAME",
+    x_langfuse_sdk_version="YOUR_X_ELASTICDASH_SDK_VERSION",
+    x_langfuse_public_key="YOUR_X_ELASTICDASH_PUBLIC_KEY",
     username="YOUR_USERNAME",
     password="YOUR_PASSWORD",
     base_url="https://yourhost.com/path/to/api",
@@ -361,12 +361,12 @@ Get a specific item from an annotation queue
 <dd>
 
 ```python
-from langfuse.client import FernLangfuse
+from langfuse.client import FernElasticDash
 
-client = FernLangfuse(
-    x_langfuse_sdk_name="YOUR_X_LANGFUSE_SDK_NAME",
-    x_langfuse_sdk_version="YOUR_X_LANGFUSE_SDK_VERSION",
-    x_langfuse_public_key="YOUR_X_LANGFUSE_PUBLIC_KEY",
+client = FernElasticDash(
+    x_langfuse_sdk_name="YOUR_X_ELASTICDASH_SDK_NAME",
+    x_langfuse_sdk_version="YOUR_X_ELASTICDASH_SDK_VERSION",
+    x_langfuse_public_key="YOUR_X_ELASTICDASH_PUBLIC_KEY",
     username="YOUR_USERNAME",
     password="YOUR_PASSWORD",
     base_url="https://yourhost.com/path/to/api",
@@ -446,12 +446,12 @@ Add an item to an annotation queue
 
 ```python
 from langfuse import AnnotationQueueObjectType, CreateAnnotationQueueItemRequest
-from langfuse.client import FernLangfuse
+from langfuse.client import FernElasticDash
 
-client = FernLangfuse(
-    x_langfuse_sdk_name="YOUR_X_LANGFUSE_SDK_NAME",
-    x_langfuse_sdk_version="YOUR_X_LANGFUSE_SDK_VERSION",
-    x_langfuse_public_key="YOUR_X_LANGFUSE_PUBLIC_KEY",
+client = FernElasticDash(
+    x_langfuse_sdk_name="YOUR_X_ELASTICDASH_SDK_NAME",
+    x_langfuse_sdk_version="YOUR_X_ELASTICDASH_SDK_VERSION",
+    x_langfuse_public_key="YOUR_X_ELASTICDASH_PUBLIC_KEY",
     username="YOUR_USERNAME",
     password="YOUR_PASSWORD",
     base_url="https://yourhost.com/path/to/api",
@@ -534,12 +534,12 @@ Update an annotation queue item
 
 ```python
 from langfuse import UpdateAnnotationQueueItemRequest
-from langfuse.client import FernLangfuse
+from langfuse.client import FernElasticDash
 
-client = FernLangfuse(
-    x_langfuse_sdk_name="YOUR_X_LANGFUSE_SDK_NAME",
-    x_langfuse_sdk_version="YOUR_X_LANGFUSE_SDK_VERSION",
-    x_langfuse_public_key="YOUR_X_LANGFUSE_PUBLIC_KEY",
+client = FernElasticDash(
+    x_langfuse_sdk_name="YOUR_X_ELASTICDASH_SDK_NAME",
+    x_langfuse_sdk_version="YOUR_X_ELASTICDASH_SDK_VERSION",
+    x_langfuse_public_key="YOUR_X_ELASTICDASH_PUBLIC_KEY",
     username="YOUR_USERNAME",
     password="YOUR_PASSWORD",
     base_url="https://yourhost.com/path/to/api",
@@ -627,12 +627,12 @@ Remove an item from an annotation queue
 <dd>
 
 ```python
-from langfuse.client import FernLangfuse
+from langfuse.client import FernElasticDash
 
-client = FernLangfuse(
-    x_langfuse_sdk_name="YOUR_X_LANGFUSE_SDK_NAME",
-    x_langfuse_sdk_version="YOUR_X_LANGFUSE_SDK_VERSION",
-    x_langfuse_public_key="YOUR_X_LANGFUSE_PUBLIC_KEY",
+client = FernElasticDash(
+    x_langfuse_sdk_name="YOUR_X_ELASTICDASH_SDK_NAME",
+    x_langfuse_sdk_version="YOUR_X_ELASTICDASH_SDK_VERSION",
+    x_langfuse_public_key="YOUR_X_ELASTICDASH_PUBLIC_KEY",
     username="YOUR_USERNAME",
     password="YOUR_PASSWORD",
     base_url="https://yourhost.com/path/to/api",
@@ -712,12 +712,12 @@ Create an assignment for a user to an annotation queue
 
 ```python
 from langfuse import AnnotationQueueAssignmentRequest
-from langfuse.client import FernLangfuse
+from langfuse.client import FernElasticDash
 
-client = FernLangfuse(
-    x_langfuse_sdk_name="YOUR_X_LANGFUSE_SDK_NAME",
-    x_langfuse_sdk_version="YOUR_X_LANGFUSE_SDK_VERSION",
-    x_langfuse_public_key="YOUR_X_LANGFUSE_PUBLIC_KEY",
+client = FernElasticDash(
+    x_langfuse_sdk_name="YOUR_X_ELASTICDASH_SDK_NAME",
+    x_langfuse_sdk_version="YOUR_X_ELASTICDASH_SDK_VERSION",
+    x_langfuse_public_key="YOUR_X_ELASTICDASH_PUBLIC_KEY",
     username="YOUR_USERNAME",
     password="YOUR_PASSWORD",
     base_url="https://yourhost.com/path/to/api",
@@ -799,12 +799,12 @@ Delete an assignment for a user to an annotation queue
 
 ```python
 from langfuse import AnnotationQueueAssignmentRequest
-from langfuse.client import FernLangfuse
+from langfuse.client import FernElasticDash
 
-client = FernLangfuse(
-    x_langfuse_sdk_name="YOUR_X_LANGFUSE_SDK_NAME",
-    x_langfuse_sdk_version="YOUR_X_LANGFUSE_SDK_VERSION",
-    x_langfuse_public_key="YOUR_X_LANGFUSE_PUBLIC_KEY",
+client = FernElasticDash(
+    x_langfuse_sdk_name="YOUR_X_ELASTICDASH_SDK_NAME",
+    x_langfuse_sdk_version="YOUR_X_ELASTICDASH_SDK_VERSION",
+    x_langfuse_public_key="YOUR_X_ELASTICDASH_PUBLIC_KEY",
     username="YOUR_USERNAME",
     password="YOUR_PASSWORD",
     base_url="https://yourhost.com/path/to/api",
@@ -886,12 +886,12 @@ Get all blob storage integrations for the organization (requires organization-sc
 <dd>
 
 ```python
-from langfuse.client import FernLangfuse
+from langfuse.client import FernElasticDash
 
-client = FernLangfuse(
-    x_langfuse_sdk_name="YOUR_X_LANGFUSE_SDK_NAME",
-    x_langfuse_sdk_version="YOUR_X_LANGFUSE_SDK_VERSION",
-    x_langfuse_public_key="YOUR_X_LANGFUSE_PUBLIC_KEY",
+client = FernElasticDash(
+    x_langfuse_sdk_name="YOUR_X_ELASTICDASH_SDK_NAME",
+    x_langfuse_sdk_version="YOUR_X_ELASTICDASH_SDK_VERSION",
+    x_langfuse_public_key="YOUR_X_ELASTICDASH_PUBLIC_KEY",
     username="YOUR_USERNAME",
     password="YOUR_PASSWORD",
     base_url="https://yourhost.com/path/to/api",
@@ -958,12 +958,12 @@ from langfuse import (
     BlobStorageIntegrationType,
     CreateBlobStorageIntegrationRequest,
 )
-from langfuse.client import FernLangfuse
+from langfuse.client import FernElasticDash
 
-client = FernLangfuse(
-    x_langfuse_sdk_name="YOUR_X_LANGFUSE_SDK_NAME",
-    x_langfuse_sdk_version="YOUR_X_LANGFUSE_SDK_VERSION",
-    x_langfuse_public_key="YOUR_X_LANGFUSE_PUBLIC_KEY",
+client = FernElasticDash(
+    x_langfuse_sdk_name="YOUR_X_ELASTICDASH_SDK_NAME",
+    x_langfuse_sdk_version="YOUR_X_ELASTICDASH_SDK_VERSION",
+    x_langfuse_public_key="YOUR_X_ELASTICDASH_PUBLIC_KEY",
     username="YOUR_USERNAME",
     password="YOUR_PASSWORD",
     base_url="https://yourhost.com/path/to/api",
@@ -1043,12 +1043,12 @@ Delete a blob storage integration by ID (requires organization-scoped API key)
 <dd>
 
 ```python
-from langfuse.client import FernLangfuse
+from langfuse.client import FernElasticDash
 
-client = FernLangfuse(
-    x_langfuse_sdk_name="YOUR_X_LANGFUSE_SDK_NAME",
-    x_langfuse_sdk_version="YOUR_X_LANGFUSE_SDK_VERSION",
-    x_langfuse_public_key="YOUR_X_LANGFUSE_PUBLIC_KEY",
+client = FernElasticDash(
+    x_langfuse_sdk_name="YOUR_X_ELASTICDASH_SDK_NAME",
+    x_langfuse_sdk_version="YOUR_X_ELASTICDASH_SDK_VERSION",
+    x_langfuse_public_key="YOUR_X_ELASTICDASH_PUBLIC_KEY",
     username="YOUR_USERNAME",
     password="YOUR_PASSWORD",
     base_url="https://yourhost.com/path/to/api",
@@ -1120,12 +1120,12 @@ Create a comment. Comments may be attached to different object types (trace, obs
 
 ```python
 from langfuse import CreateCommentRequest
-from langfuse.client import FernLangfuse
+from langfuse.client import FernElasticDash
 
-client = FernLangfuse(
-    x_langfuse_sdk_name="YOUR_X_LANGFUSE_SDK_NAME",
-    x_langfuse_sdk_version="YOUR_X_LANGFUSE_SDK_VERSION",
-    x_langfuse_public_key="YOUR_X_LANGFUSE_PUBLIC_KEY",
+client = FernElasticDash(
+    x_langfuse_sdk_name="YOUR_X_ELASTICDASH_SDK_NAME",
+    x_langfuse_sdk_version="YOUR_X_ELASTICDASH_SDK_VERSION",
+    x_langfuse_public_key="YOUR_X_ELASTICDASH_PUBLIC_KEY",
     username="YOUR_USERNAME",
     password="YOUR_PASSWORD",
     base_url="https://yourhost.com/path/to/api",
@@ -1200,12 +1200,12 @@ Get all comments
 <dd>
 
 ```python
-from langfuse.client import FernLangfuse
+from langfuse.client import FernElasticDash
 
-client = FernLangfuse(
-    x_langfuse_sdk_name="YOUR_X_LANGFUSE_SDK_NAME",
-    x_langfuse_sdk_version="YOUR_X_LANGFUSE_SDK_VERSION",
-    x_langfuse_public_key="YOUR_X_LANGFUSE_PUBLIC_KEY",
+client = FernElasticDash(
+    x_langfuse_sdk_name="YOUR_X_ELASTICDASH_SDK_NAME",
+    x_langfuse_sdk_version="YOUR_X_ELASTICDASH_SDK_VERSION",
+    x_langfuse_public_key="YOUR_X_ELASTICDASH_PUBLIC_KEY",
     username="YOUR_USERNAME",
     password="YOUR_PASSWORD",
     base_url="https://yourhost.com/path/to/api",
@@ -1305,12 +1305,12 @@ Get a comment by id
 <dd>
 
 ```python
-from langfuse.client import FernLangfuse
+from langfuse.client import FernElasticDash
 
-client = FernLangfuse(
-    x_langfuse_sdk_name="YOUR_X_LANGFUSE_SDK_NAME",
-    x_langfuse_sdk_version="YOUR_X_LANGFUSE_SDK_VERSION",
-    x_langfuse_public_key="YOUR_X_LANGFUSE_PUBLIC_KEY",
+client = FernElasticDash(
+    x_langfuse_sdk_name="YOUR_X_ELASTICDASH_SDK_NAME",
+    x_langfuse_sdk_version="YOUR_X_ELASTICDASH_SDK_VERSION",
+    x_langfuse_public_key="YOUR_X_ELASTICDASH_PUBLIC_KEY",
     username="YOUR_USERNAME",
     password="YOUR_PASSWORD",
     base_url="https://yourhost.com/path/to/api",
@@ -1382,12 +1382,12 @@ Create a dataset item
 
 ```python
 from langfuse import CreateDatasetItemRequest
-from langfuse.client import FernLangfuse
+from langfuse.client import FernElasticDash
 
-client = FernLangfuse(
-    x_langfuse_sdk_name="YOUR_X_LANGFUSE_SDK_NAME",
-    x_langfuse_sdk_version="YOUR_X_LANGFUSE_SDK_VERSION",
-    x_langfuse_public_key="YOUR_X_LANGFUSE_PUBLIC_KEY",
+client = FernElasticDash(
+    x_langfuse_sdk_name="YOUR_X_ELASTICDASH_SDK_NAME",
+    x_langfuse_sdk_version="YOUR_X_ELASTICDASH_SDK_VERSION",
+    x_langfuse_public_key="YOUR_X_ELASTICDASH_PUBLIC_KEY",
     username="YOUR_USERNAME",
     password="YOUR_PASSWORD",
     base_url="https://yourhost.com/path/to/api",
@@ -1459,12 +1459,12 @@ Get a dataset item
 <dd>
 
 ```python
-from langfuse.client import FernLangfuse
+from langfuse.client import FernElasticDash
 
-client = FernLangfuse(
-    x_langfuse_sdk_name="YOUR_X_LANGFUSE_SDK_NAME",
-    x_langfuse_sdk_version="YOUR_X_LANGFUSE_SDK_VERSION",
-    x_langfuse_public_key="YOUR_X_LANGFUSE_PUBLIC_KEY",
+client = FernElasticDash(
+    x_langfuse_sdk_name="YOUR_X_ELASTICDASH_SDK_NAME",
+    x_langfuse_sdk_version="YOUR_X_ELASTICDASH_SDK_VERSION",
+    x_langfuse_public_key="YOUR_X_ELASTICDASH_PUBLIC_KEY",
     username="YOUR_USERNAME",
     password="YOUR_PASSWORD",
     base_url="https://yourhost.com/path/to/api",
@@ -1534,12 +1534,12 @@ Get dataset items
 <dd>
 
 ```python
-from langfuse.client import FernLangfuse
+from langfuse.client import FernElasticDash
 
-client = FernLangfuse(
-    x_langfuse_sdk_name="YOUR_X_LANGFUSE_SDK_NAME",
-    x_langfuse_sdk_version="YOUR_X_LANGFUSE_SDK_VERSION",
-    x_langfuse_public_key="YOUR_X_LANGFUSE_PUBLIC_KEY",
+client = FernElasticDash(
+    x_langfuse_sdk_name="YOUR_X_ELASTICDASH_SDK_NAME",
+    x_langfuse_sdk_version="YOUR_X_ELASTICDASH_SDK_VERSION",
+    x_langfuse_public_key="YOUR_X_ELASTICDASH_PUBLIC_KEY",
     username="YOUR_USERNAME",
     password="YOUR_PASSWORD",
     base_url="https://yourhost.com/path/to/api",
@@ -1639,12 +1639,12 @@ Delete a dataset item and all its run items. This action is irreversible.
 <dd>
 
 ```python
-from langfuse.client import FernLangfuse
+from langfuse.client import FernElasticDash
 
-client = FernLangfuse(
-    x_langfuse_sdk_name="YOUR_X_LANGFUSE_SDK_NAME",
-    x_langfuse_sdk_version="YOUR_X_LANGFUSE_SDK_VERSION",
-    x_langfuse_public_key="YOUR_X_LANGFUSE_PUBLIC_KEY",
+client = FernElasticDash(
+    x_langfuse_sdk_name="YOUR_X_ELASTICDASH_SDK_NAME",
+    x_langfuse_sdk_version="YOUR_X_ELASTICDASH_SDK_VERSION",
+    x_langfuse_public_key="YOUR_X_ELASTICDASH_PUBLIC_KEY",
     username="YOUR_USERNAME",
     password="YOUR_PASSWORD",
     base_url="https://yourhost.com/path/to/api",
@@ -1716,12 +1716,12 @@ Create a dataset run item
 
 ```python
 from langfuse import CreateDatasetRunItemRequest
-from langfuse.client import FernLangfuse
+from langfuse.client import FernElasticDash
 
-client = FernLangfuse(
-    x_langfuse_sdk_name="YOUR_X_LANGFUSE_SDK_NAME",
-    x_langfuse_sdk_version="YOUR_X_LANGFUSE_SDK_VERSION",
-    x_langfuse_public_key="YOUR_X_LANGFUSE_PUBLIC_KEY",
+client = FernElasticDash(
+    x_langfuse_sdk_name="YOUR_X_ELASTICDASH_SDK_NAME",
+    x_langfuse_sdk_version="YOUR_X_ELASTICDASH_SDK_VERSION",
+    x_langfuse_public_key="YOUR_X_ELASTICDASH_PUBLIC_KEY",
     username="YOUR_USERNAME",
     password="YOUR_PASSWORD",
     base_url="https://yourhost.com/path/to/api",
@@ -1794,12 +1794,12 @@ List dataset run items
 <dd>
 
 ```python
-from langfuse.client import FernLangfuse
+from langfuse.client import FernElasticDash
 
-client = FernLangfuse(
-    x_langfuse_sdk_name="YOUR_X_LANGFUSE_SDK_NAME",
-    x_langfuse_sdk_version="YOUR_X_LANGFUSE_SDK_VERSION",
-    x_langfuse_public_key="YOUR_X_LANGFUSE_PUBLIC_KEY",
+client = FernElasticDash(
+    x_langfuse_sdk_name="YOUR_X_ELASTICDASH_SDK_NAME",
+    x_langfuse_sdk_version="YOUR_X_ELASTICDASH_SDK_VERSION",
+    x_langfuse_public_key="YOUR_X_ELASTICDASH_PUBLIC_KEY",
     username="YOUR_USERNAME",
     password="YOUR_PASSWORD",
     base_url="https://yourhost.com/path/to/api",
@@ -1895,12 +1895,12 @@ Get all datasets
 <dd>
 
 ```python
-from langfuse.client import FernLangfuse
+from langfuse.client import FernElasticDash
 
-client = FernLangfuse(
-    x_langfuse_sdk_name="YOUR_X_LANGFUSE_SDK_NAME",
-    x_langfuse_sdk_version="YOUR_X_LANGFUSE_SDK_VERSION",
-    x_langfuse_public_key="YOUR_X_LANGFUSE_PUBLIC_KEY",
+client = FernElasticDash(
+    x_langfuse_sdk_name="YOUR_X_ELASTICDASH_SDK_NAME",
+    x_langfuse_sdk_version="YOUR_X_ELASTICDASH_SDK_VERSION",
+    x_langfuse_public_key="YOUR_X_ELASTICDASH_PUBLIC_KEY",
     username="YOUR_USERNAME",
     password="YOUR_PASSWORD",
     base_url="https://yourhost.com/path/to/api",
@@ -1976,12 +1976,12 @@ Get a dataset
 <dd>
 
 ```python
-from langfuse.client import FernLangfuse
+from langfuse.client import FernElasticDash
 
-client = FernLangfuse(
-    x_langfuse_sdk_name="YOUR_X_LANGFUSE_SDK_NAME",
-    x_langfuse_sdk_version="YOUR_X_LANGFUSE_SDK_VERSION",
-    x_langfuse_public_key="YOUR_X_LANGFUSE_PUBLIC_KEY",
+client = FernElasticDash(
+    x_langfuse_sdk_name="YOUR_X_ELASTICDASH_SDK_NAME",
+    x_langfuse_sdk_version="YOUR_X_ELASTICDASH_SDK_VERSION",
+    x_langfuse_public_key="YOUR_X_ELASTICDASH_PUBLIC_KEY",
     username="YOUR_USERNAME",
     password="YOUR_PASSWORD",
     base_url="https://yourhost.com/path/to/api",
@@ -2052,12 +2052,12 @@ Create a dataset
 
 ```python
 from langfuse import CreateDatasetRequest
-from langfuse.client import FernLangfuse
+from langfuse.client import FernElasticDash
 
-client = FernLangfuse(
-    x_langfuse_sdk_name="YOUR_X_LANGFUSE_SDK_NAME",
-    x_langfuse_sdk_version="YOUR_X_LANGFUSE_SDK_VERSION",
-    x_langfuse_public_key="YOUR_X_LANGFUSE_PUBLIC_KEY",
+client = FernElasticDash(
+    x_langfuse_sdk_name="YOUR_X_ELASTICDASH_SDK_NAME",
+    x_langfuse_sdk_version="YOUR_X_ELASTICDASH_SDK_VERSION",
+    x_langfuse_public_key="YOUR_X_ELASTICDASH_PUBLIC_KEY",
     username="YOUR_USERNAME",
     password="YOUR_PASSWORD",
     base_url="https://yourhost.com/path/to/api",
@@ -2129,12 +2129,12 @@ Get a dataset run and its items
 <dd>
 
 ```python
-from langfuse.client import FernLangfuse
+from langfuse.client import FernElasticDash
 
-client = FernLangfuse(
-    x_langfuse_sdk_name="YOUR_X_LANGFUSE_SDK_NAME",
-    x_langfuse_sdk_version="YOUR_X_LANGFUSE_SDK_VERSION",
-    x_langfuse_public_key="YOUR_X_LANGFUSE_PUBLIC_KEY",
+client = FernElasticDash(
+    x_langfuse_sdk_name="YOUR_X_ELASTICDASH_SDK_NAME",
+    x_langfuse_sdk_version="YOUR_X_ELASTICDASH_SDK_VERSION",
+    x_langfuse_public_key="YOUR_X_ELASTICDASH_PUBLIC_KEY",
     username="YOUR_USERNAME",
     password="YOUR_PASSWORD",
     base_url="https://yourhost.com/path/to/api",
@@ -2213,12 +2213,12 @@ Delete a dataset run and all its run items. This action is irreversible.
 <dd>
 
 ```python
-from langfuse.client import FernLangfuse
+from langfuse.client import FernElasticDash
 
-client = FernLangfuse(
-    x_langfuse_sdk_name="YOUR_X_LANGFUSE_SDK_NAME",
-    x_langfuse_sdk_version="YOUR_X_LANGFUSE_SDK_VERSION",
-    x_langfuse_public_key="YOUR_X_LANGFUSE_PUBLIC_KEY",
+client = FernElasticDash(
+    x_langfuse_sdk_name="YOUR_X_ELASTICDASH_SDK_NAME",
+    x_langfuse_sdk_version="YOUR_X_ELASTICDASH_SDK_VERSION",
+    x_langfuse_public_key="YOUR_X_ELASTICDASH_PUBLIC_KEY",
     username="YOUR_USERNAME",
     password="YOUR_PASSWORD",
     base_url="https://yourhost.com/path/to/api",
@@ -2297,12 +2297,12 @@ Get dataset runs
 <dd>
 
 ```python
-from langfuse.client import FernLangfuse
+from langfuse.client import FernElasticDash
 
-client = FernLangfuse(
-    x_langfuse_sdk_name="YOUR_X_LANGFUSE_SDK_NAME",
-    x_langfuse_sdk_version="YOUR_X_LANGFUSE_SDK_VERSION",
-    x_langfuse_public_key="YOUR_X_LANGFUSE_PUBLIC_KEY",
+client = FernElasticDash(
+    x_langfuse_sdk_name="YOUR_X_ELASTICDASH_SDK_NAME",
+    x_langfuse_sdk_version="YOUR_X_ELASTICDASH_SDK_VERSION",
+    x_langfuse_public_key="YOUR_X_ELASTICDASH_PUBLIC_KEY",
     username="YOUR_USERNAME",
     password="YOUR_PASSWORD",
     base_url="https://yourhost.com/path/to/api",
@@ -2389,12 +2389,12 @@ Check health of API and database
 <dd>
 
 ```python
-from langfuse.client import FernLangfuse
+from langfuse.client import FernElasticDash
 
-client = FernLangfuse(
-    x_langfuse_sdk_name="YOUR_X_LANGFUSE_SDK_NAME",
-    x_langfuse_sdk_version="YOUR_X_LANGFUSE_SDK_VERSION",
-    x_langfuse_public_key="YOUR_X_LANGFUSE_PUBLIC_KEY",
+client = FernElasticDash(
+    x_langfuse_sdk_name="YOUR_X_ELASTICDASH_SDK_NAME",
+    x_langfuse_sdk_version="YOUR_X_ELASTICDASH_SDK_VERSION",
+    x_langfuse_public_key="YOUR_X_ELASTICDASH_PUBLIC_KEY",
     username="YOUR_USERNAME",
     password="YOUR_PASSWORD",
     base_url="https://yourhost.com/path/to/api",
@@ -2440,7 +2440,7 @@ client.health.health()
 <dl>
 <dd>
 
-**Legacy endpoint for batch ingestion for Langfuse Observability.**
+**Legacy endpoint for batch ingestion for ElasticDash Observability.**
 
 -> Please use the OpenTelemetry endpoint (`/api/public/otel/v1/traces`). Learn more: https://langfuse.com/integrations/native/opentelemetry
 
@@ -2448,7 +2448,7 @@ Within each batch, there can be multiple events.
 Each event has a type, an id, a timestamp, metadata and a body.
 Internally, we refer to this as the "event envelope" as it tells us something about the event but not the trace.
 We use the event id within this envelope to deduplicate messages to avoid processing the same event twice, i.e. the event id should be unique per request.
-The event.body.id is the ID of the actual trace and will be used for updates and will be visible within the Langfuse App.
+The event.body.id is the ID of the actual trace and will be used for updates and will be visible within the ElasticDash App.
 I.e. if you want to update a trace, you'd use the same body id, but separate event IDs.
 
 Notes:
@@ -2470,12 +2470,12 @@ Notes:
 
 ```python
 from langfuse import IngestionEvent_ScoreCreate, ScoreBody
-from langfuse.client import FernLangfuse
+from langfuse.client import FernElasticDash
 
-client = FernLangfuse(
-    x_langfuse_sdk_name="YOUR_X_LANGFUSE_SDK_NAME",
-    x_langfuse_sdk_version="YOUR_X_LANGFUSE_SDK_VERSION",
-    x_langfuse_public_key="YOUR_X_LANGFUSE_PUBLIC_KEY",
+client = FernElasticDash(
+    x_langfuse_sdk_name="YOUR_X_ELASTICDASH_SDK_NAME",
+    x_langfuse_sdk_version="YOUR_X_ELASTICDASH_SDK_VERSION",
+    x_langfuse_public_key="YOUR_X_ELASTICDASH_PUBLIC_KEY",
     username="YOUR_USERNAME",
     password="YOUR_PASSWORD",
     base_url="https://yourhost.com/path/to/api",
@@ -2518,7 +2518,7 @@ client.ingestion.batch(
 <dl>
 <dd>
 
-**metadata:** `typing.Optional[typing.Any]` — Optional. Metadata field used by the Langfuse SDKs for debugging.
+**metadata:** `typing.Optional[typing.Any]` — Optional. Metadata field used by the ElasticDash SDKs for debugging.
     
 </dd>
 </dl>
@@ -2566,12 +2566,12 @@ Get all LLM connections in a project
 <dd>
 
 ```python
-from langfuse.client import FernLangfuse
+from langfuse.client import FernElasticDash
 
-client = FernLangfuse(
-    x_langfuse_sdk_name="YOUR_X_LANGFUSE_SDK_NAME",
-    x_langfuse_sdk_version="YOUR_X_LANGFUSE_SDK_VERSION",
-    x_langfuse_public_key="YOUR_X_LANGFUSE_PUBLIC_KEY",
+client = FernElasticDash(
+    x_langfuse_sdk_name="YOUR_X_ELASTICDASH_SDK_NAME",
+    x_langfuse_sdk_version="YOUR_X_ELASTICDASH_SDK_VERSION",
+    x_langfuse_public_key="YOUR_X_ELASTICDASH_PUBLIC_KEY",
     username="YOUR_USERNAME",
     password="YOUR_PASSWORD",
     base_url="https://yourhost.com/path/to/api",
@@ -2648,12 +2648,12 @@ Create or update an LLM connection. The connection is upserted on provider.
 
 ```python
 from langfuse import LlmAdapter, UpsertLlmConnectionRequest
-from langfuse.client import FernLangfuse
+from langfuse.client import FernElasticDash
 
-client = FernLangfuse(
-    x_langfuse_sdk_name="YOUR_X_LANGFUSE_SDK_NAME",
-    x_langfuse_sdk_version="YOUR_X_LANGFUSE_SDK_VERSION",
-    x_langfuse_public_key="YOUR_X_LANGFUSE_PUBLIC_KEY",
+client = FernElasticDash(
+    x_langfuse_sdk_name="YOUR_X_ELASTICDASH_SDK_NAME",
+    x_langfuse_sdk_version="YOUR_X_ELASTICDASH_SDK_VERSION",
+    x_langfuse_public_key="YOUR_X_ELASTICDASH_PUBLIC_KEY",
     username="YOUR_USERNAME",
     password="YOUR_PASSWORD",
     base_url="https://yourhost.com/path/to/api",
@@ -2728,12 +2728,12 @@ Get a media record
 <dd>
 
 ```python
-from langfuse.client import FernLangfuse
+from langfuse.client import FernElasticDash
 
-client = FernLangfuse(
-    x_langfuse_sdk_name="YOUR_X_LANGFUSE_SDK_NAME",
-    x_langfuse_sdk_version="YOUR_X_LANGFUSE_SDK_VERSION",
-    x_langfuse_public_key="YOUR_X_LANGFUSE_PUBLIC_KEY",
+client = FernElasticDash(
+    x_langfuse_sdk_name="YOUR_X_ELASTICDASH_SDK_NAME",
+    x_langfuse_sdk_version="YOUR_X_ELASTICDASH_SDK_VERSION",
+    x_langfuse_public_key="YOUR_X_ELASTICDASH_PUBLIC_KEY",
     username="YOUR_USERNAME",
     password="YOUR_PASSWORD",
     base_url="https://yourhost.com/path/to/api",
@@ -2806,12 +2806,12 @@ Patch a media record
 import datetime
 
 from langfuse import PatchMediaBody
-from langfuse.client import FernLangfuse
+from langfuse.client import FernElasticDash
 
-client = FernLangfuse(
-    x_langfuse_sdk_name="YOUR_X_LANGFUSE_SDK_NAME",
-    x_langfuse_sdk_version="YOUR_X_LANGFUSE_SDK_VERSION",
-    x_langfuse_public_key="YOUR_X_LANGFUSE_PUBLIC_KEY",
+client = FernElasticDash(
+    x_langfuse_sdk_name="YOUR_X_ELASTICDASH_SDK_NAME",
+    x_langfuse_sdk_version="YOUR_X_ELASTICDASH_SDK_VERSION",
+    x_langfuse_public_key="YOUR_X_ELASTICDASH_PUBLIC_KEY",
     username="YOUR_USERNAME",
     password="YOUR_PASSWORD",
     base_url="https://yourhost.com/path/to/api",
@@ -2896,12 +2896,12 @@ Get a presigned upload URL for a media record
 
 ```python
 from langfuse import GetMediaUploadUrlRequest, MediaContentType
-from langfuse.client import FernLangfuse
+from langfuse.client import FernElasticDash
 
-client = FernLangfuse(
-    x_langfuse_sdk_name="YOUR_X_LANGFUSE_SDK_NAME",
-    x_langfuse_sdk_version="YOUR_X_LANGFUSE_SDK_VERSION",
-    x_langfuse_public_key="YOUR_X_LANGFUSE_PUBLIC_KEY",
+client = FernElasticDash(
+    x_langfuse_sdk_name="YOUR_X_ELASTICDASH_SDK_NAME",
+    x_langfuse_sdk_version="YOUR_X_ELASTICDASH_SDK_VERSION",
+    x_langfuse_public_key="YOUR_X_ELASTICDASH_PUBLIC_KEY",
     username="YOUR_USERNAME",
     password="YOUR_PASSWORD",
     base_url="https://yourhost.com/path/to/api",
@@ -2963,7 +2963,7 @@ client.media.get_upload_url(
 <dl>
 <dd>
 
-Get metrics from the Langfuse project using a query object. V2 endpoint with optimized performance.
+Get metrics from the ElasticDash project using a query object. V2 endpoint with optimized performance.
 
 ## V2 Differences
 - Supports `observations`, `scores-numeric`, and `scores-categorical` views only (traces view not supported)
@@ -3078,12 +3078,12 @@ Available granularities for timeDimension: `auto`, `minute`, `hour`, `day`, `wee
 <dd>
 
 ```python
-from langfuse.client import FernLangfuse
+from langfuse.client import FernElasticDash
 
-client = FernLangfuse(
-    x_langfuse_sdk_name="YOUR_X_LANGFUSE_SDK_NAME",
-    x_langfuse_sdk_version="YOUR_X_LANGFUSE_SDK_VERSION",
-    x_langfuse_public_key="YOUR_X_LANGFUSE_PUBLIC_KEY",
+client = FernElasticDash(
+    x_langfuse_sdk_name="YOUR_X_ELASTICDASH_SDK_NAME",
+    x_langfuse_sdk_version="YOUR_X_ELASTICDASH_SDK_VERSION",
+    x_langfuse_public_key="YOUR_X_ELASTICDASH_PUBLIC_KEY",
     username="YOUR_USERNAME",
     password="YOUR_PASSWORD",
     base_url="https://yourhost.com/path/to/api",
@@ -3189,7 +3189,7 @@ JSON string containing the query parameters with the following structure:
 <dl>
 <dd>
 
-Get metrics from the Langfuse project using a query object.
+Get metrics from the ElasticDash project using a query object.
 
 Consider using the [v2 metrics endpoint](/api-reference#tag/metricsv2/GET/api/public/v2/metrics) for better performance.
 
@@ -3208,12 +3208,12 @@ For more details, see the [Metrics API documentation](https://langfuse.com/docs/
 <dd>
 
 ```python
-from langfuse.client import FernLangfuse
+from langfuse.client import FernElasticDash
 
-client = FernLangfuse(
-    x_langfuse_sdk_name="YOUR_X_LANGFUSE_SDK_NAME",
-    x_langfuse_sdk_version="YOUR_X_LANGFUSE_SDK_VERSION",
-    x_langfuse_public_key="YOUR_X_LANGFUSE_PUBLIC_KEY",
+client = FernElasticDash(
+    x_langfuse_sdk_name="YOUR_X_ELASTICDASH_SDK_NAME",
+    x_langfuse_sdk_version="YOUR_X_ELASTICDASH_SDK_VERSION",
+    x_langfuse_public_key="YOUR_X_ELASTICDASH_PUBLIC_KEY",
     username="YOUR_USERNAME",
     password="YOUR_PASSWORD",
     base_url="https://yourhost.com/path/to/api",
@@ -3327,12 +3327,12 @@ Create a model
 
 ```python
 from langfuse import CreateModelRequest
-from langfuse.client import FernLangfuse
+from langfuse.client import FernElasticDash
 
-client = FernLangfuse(
-    x_langfuse_sdk_name="YOUR_X_LANGFUSE_SDK_NAME",
-    x_langfuse_sdk_version="YOUR_X_LANGFUSE_SDK_VERSION",
-    x_langfuse_public_key="YOUR_X_LANGFUSE_PUBLIC_KEY",
+client = FernElasticDash(
+    x_langfuse_sdk_name="YOUR_X_ELASTICDASH_SDK_NAME",
+    x_langfuse_sdk_version="YOUR_X_ELASTICDASH_SDK_VERSION",
+    x_langfuse_public_key="YOUR_X_ELASTICDASH_PUBLIC_KEY",
     username="YOUR_USERNAME",
     password="YOUR_PASSWORD",
     base_url="https://yourhost.com/path/to/api",
@@ -3405,12 +3405,12 @@ Get all models
 <dd>
 
 ```python
-from langfuse.client import FernLangfuse
+from langfuse.client import FernElasticDash
 
-client = FernLangfuse(
-    x_langfuse_sdk_name="YOUR_X_LANGFUSE_SDK_NAME",
-    x_langfuse_sdk_version="YOUR_X_LANGFUSE_SDK_VERSION",
-    x_langfuse_public_key="YOUR_X_LANGFUSE_PUBLIC_KEY",
+client = FernElasticDash(
+    x_langfuse_sdk_name="YOUR_X_ELASTICDASH_SDK_NAME",
+    x_langfuse_sdk_version="YOUR_X_ELASTICDASH_SDK_VERSION",
+    x_langfuse_public_key="YOUR_X_ELASTICDASH_PUBLIC_KEY",
     username="YOUR_USERNAME",
     password="YOUR_PASSWORD",
     base_url="https://yourhost.com/path/to/api",
@@ -3486,12 +3486,12 @@ Get a model
 <dd>
 
 ```python
-from langfuse.client import FernLangfuse
+from langfuse.client import FernElasticDash
 
-client = FernLangfuse(
-    x_langfuse_sdk_name="YOUR_X_LANGFUSE_SDK_NAME",
-    x_langfuse_sdk_version="YOUR_X_LANGFUSE_SDK_VERSION",
-    x_langfuse_public_key="YOUR_X_LANGFUSE_PUBLIC_KEY",
+client = FernElasticDash(
+    x_langfuse_sdk_name="YOUR_X_ELASTICDASH_SDK_NAME",
+    x_langfuse_sdk_version="YOUR_X_ELASTICDASH_SDK_VERSION",
+    x_langfuse_public_key="YOUR_X_ELASTICDASH_PUBLIC_KEY",
     username="YOUR_USERNAME",
     password="YOUR_PASSWORD",
     base_url="https://yourhost.com/path/to/api",
@@ -3546,7 +3546,7 @@ client.models.get(
 <dl>
 <dd>
 
-Delete a model. Cannot delete models managed by Langfuse. You can create your own definition with the same modelName to override the definition though.
+Delete a model. Cannot delete models managed by ElasticDash. You can create your own definition with the same modelName to override the definition though.
 </dd>
 </dl>
 </dd>
@@ -3561,12 +3561,12 @@ Delete a model. Cannot delete models managed by Langfuse. You can create your ow
 <dd>
 
 ```python
-from langfuse.client import FernLangfuse
+from langfuse.client import FernElasticDash
 
-client = FernLangfuse(
-    x_langfuse_sdk_name="YOUR_X_LANGFUSE_SDK_NAME",
-    x_langfuse_sdk_version="YOUR_X_LANGFUSE_SDK_VERSION",
-    x_langfuse_public_key="YOUR_X_LANGFUSE_PUBLIC_KEY",
+client = FernElasticDash(
+    x_langfuse_sdk_name="YOUR_X_ELASTICDASH_SDK_NAME",
+    x_langfuse_sdk_version="YOUR_X_ELASTICDASH_SDK_VERSION",
+    x_langfuse_public_key="YOUR_X_ELASTICDASH_PUBLIC_KEY",
     username="YOUR_USERNAME",
     password="YOUR_PASSWORD",
     base_url="https://yourhost.com/path/to/api",
@@ -3660,12 +3660,12 @@ When using the `filter` parameter, it takes precedence over individual query par
 <dd>
 
 ```python
-from langfuse.client import FernLangfuse
+from langfuse.client import FernElasticDash
 
-client = FernLangfuse(
-    x_langfuse_sdk_name="YOUR_X_LANGFUSE_SDK_NAME",
-    x_langfuse_sdk_version="YOUR_X_LANGFUSE_SDK_VERSION",
-    x_langfuse_public_key="YOUR_X_LANGFUSE_PUBLIC_KEY",
+client = FernElasticDash(
+    x_langfuse_sdk_name="YOUR_X_ELASTICDASH_SDK_NAME",
+    x_langfuse_sdk_version="YOUR_X_ELASTICDASH_SDK_VERSION",
+    x_langfuse_public_key="YOUR_X_ELASTICDASH_PUBLIC_KEY",
     username="YOUR_USERNAME",
     password="YOUR_PASSWORD",
     base_url="https://yourhost.com/path/to/api",
@@ -3962,12 +3962,12 @@ Get a observation
 <dd>
 
 ```python
-from langfuse.client import FernLangfuse
+from langfuse.client import FernElasticDash
 
-client = FernLangfuse(
-    x_langfuse_sdk_name="YOUR_X_LANGFUSE_SDK_NAME",
-    x_langfuse_sdk_version="YOUR_X_LANGFUSE_SDK_VERSION",
-    x_langfuse_public_key="YOUR_X_LANGFUSE_PUBLIC_KEY",
+client = FernElasticDash(
+    x_langfuse_sdk_name="YOUR_X_ELASTICDASH_SDK_NAME",
+    x_langfuse_sdk_version="YOUR_X_ELASTICDASH_SDK_VERSION",
+    x_langfuse_public_key="YOUR_X_ELASTICDASH_PUBLIC_KEY",
     username="YOUR_USERNAME",
     password="YOUR_PASSWORD",
     base_url="https://yourhost.com/path/to/api",
@@ -4039,12 +4039,12 @@ Consider using the [v2 observations endpoint](/api-reference#tag/observationsv2/
 <dd>
 
 ```python
-from langfuse.client import FernLangfuse
+from langfuse.client import FernElasticDash
 
-client = FernLangfuse(
-    x_langfuse_sdk_name="YOUR_X_LANGFUSE_SDK_NAME",
-    x_langfuse_sdk_version="YOUR_X_LANGFUSE_SDK_VERSION",
-    x_langfuse_public_key="YOUR_X_LANGFUSE_PUBLIC_KEY",
+client = FernElasticDash(
+    x_langfuse_sdk_name="YOUR_X_ELASTICDASH_SDK_NAME",
+    x_langfuse_sdk_version="YOUR_X_ELASTICDASH_SDK_VERSION",
+    x_langfuse_public_key="YOUR_X_ELASTICDASH_PUBLIC_KEY",
     username="YOUR_USERNAME",
     password="YOUR_PASSWORD",
     base_url="https://yourhost.com/path/to/api",
@@ -4290,7 +4290,7 @@ Each filter condition has the following structure:
 
 **OpenTelemetry Traces Ingestion Endpoint**
 
-This endpoint implements the OTLP/HTTP specification for trace ingestion, providing native OpenTelemetry integration for Langfuse Observability.
+This endpoint implements the OTLP/HTTP specification for trace ingestion, providing native OpenTelemetry integration for ElasticDash Observability.
 
 **Supported Formats:**
 - Binary Protobuf: `Content-Type: application/x-protobuf`
@@ -4327,12 +4327,12 @@ from langfuse import (
     OtelScopeSpan,
     OtelSpan,
 )
-from langfuse.client import FernLangfuse
+from langfuse.client import FernElasticDash
 
-client = FernLangfuse(
-    x_langfuse_sdk_name="YOUR_X_LANGFUSE_SDK_NAME",
-    x_langfuse_sdk_version="YOUR_X_LANGFUSE_SDK_VERSION",
-    x_langfuse_public_key="YOUR_X_LANGFUSE_PUBLIC_KEY",
+client = FernElasticDash(
+    x_langfuse_sdk_name="YOUR_X_ELASTICDASH_SDK_NAME",
+    x_langfuse_sdk_version="YOUR_X_ELASTICDASH_SDK_VERSION",
+    x_langfuse_public_key="YOUR_X_ELASTICDASH_PUBLIC_KEY",
     username="YOUR_USERNAME",
     password="YOUR_PASSWORD",
     base_url="https://yourhost.com/path/to/api",
@@ -4449,12 +4449,12 @@ Get all memberships for the organization associated with the API key (requires o
 <dd>
 
 ```python
-from langfuse.client import FernLangfuse
+from langfuse.client import FernElasticDash
 
-client = FernLangfuse(
-    x_langfuse_sdk_name="YOUR_X_LANGFUSE_SDK_NAME",
-    x_langfuse_sdk_version="YOUR_X_LANGFUSE_SDK_VERSION",
-    x_langfuse_public_key="YOUR_X_LANGFUSE_PUBLIC_KEY",
+client = FernElasticDash(
+    x_langfuse_sdk_name="YOUR_X_ELASTICDASH_SDK_NAME",
+    x_langfuse_sdk_version="YOUR_X_ELASTICDASH_SDK_VERSION",
+    x_langfuse_public_key="YOUR_X_ELASTICDASH_PUBLIC_KEY",
     username="YOUR_USERNAME",
     password="YOUR_PASSWORD",
     base_url="https://yourhost.com/path/to/api",
@@ -4515,12 +4515,12 @@ Create or update a membership for the organization associated with the API key (
 
 ```python
 from langfuse import MembershipRequest, MembershipRole
-from langfuse.client import FernLangfuse
+from langfuse.client import FernElasticDash
 
-client = FernLangfuse(
-    x_langfuse_sdk_name="YOUR_X_LANGFUSE_SDK_NAME",
-    x_langfuse_sdk_version="YOUR_X_LANGFUSE_SDK_VERSION",
-    x_langfuse_public_key="YOUR_X_LANGFUSE_PUBLIC_KEY",
+client = FernElasticDash(
+    x_langfuse_sdk_name="YOUR_X_ELASTICDASH_SDK_NAME",
+    x_langfuse_sdk_version="YOUR_X_ELASTICDASH_SDK_VERSION",
+    x_langfuse_public_key="YOUR_X_ELASTICDASH_PUBLIC_KEY",
     username="YOUR_USERNAME",
     password="YOUR_PASSWORD",
     base_url="https://yourhost.com/path/to/api",
@@ -4594,12 +4594,12 @@ Delete a membership from the organization associated with the API key (requires 
 
 ```python
 from langfuse import DeleteMembershipRequest
-from langfuse.client import FernLangfuse
+from langfuse.client import FernElasticDash
 
-client = FernLangfuse(
-    x_langfuse_sdk_name="YOUR_X_LANGFUSE_SDK_NAME",
-    x_langfuse_sdk_version="YOUR_X_LANGFUSE_SDK_VERSION",
-    x_langfuse_public_key="YOUR_X_LANGFUSE_PUBLIC_KEY",
+client = FernElasticDash(
+    x_langfuse_sdk_name="YOUR_X_ELASTICDASH_SDK_NAME",
+    x_langfuse_sdk_version="YOUR_X_ELASTICDASH_SDK_VERSION",
+    x_langfuse_public_key="YOUR_X_ELASTICDASH_PUBLIC_KEY",
     username="YOUR_USERNAME",
     password="YOUR_PASSWORD",
     base_url="https://yourhost.com/path/to/api",
@@ -4671,12 +4671,12 @@ Get all memberships for a specific project (requires organization-scoped API key
 <dd>
 
 ```python
-from langfuse.client import FernLangfuse
+from langfuse.client import FernElasticDash
 
-client = FernLangfuse(
-    x_langfuse_sdk_name="YOUR_X_LANGFUSE_SDK_NAME",
-    x_langfuse_sdk_version="YOUR_X_LANGFUSE_SDK_VERSION",
-    x_langfuse_public_key="YOUR_X_LANGFUSE_PUBLIC_KEY",
+client = FernElasticDash(
+    x_langfuse_sdk_name="YOUR_X_ELASTICDASH_SDK_NAME",
+    x_langfuse_sdk_version="YOUR_X_ELASTICDASH_SDK_VERSION",
+    x_langfuse_public_key="YOUR_X_ELASTICDASH_PUBLIC_KEY",
     username="YOUR_USERNAME",
     password="YOUR_PASSWORD",
     base_url="https://yourhost.com/path/to/api",
@@ -4747,12 +4747,12 @@ Create or update a membership for a specific project (requires organization-scop
 
 ```python
 from langfuse import MembershipRequest, MembershipRole
-from langfuse.client import FernLangfuse
+from langfuse.client import FernElasticDash
 
-client = FernLangfuse(
-    x_langfuse_sdk_name="YOUR_X_LANGFUSE_SDK_NAME",
-    x_langfuse_sdk_version="YOUR_X_LANGFUSE_SDK_VERSION",
-    x_langfuse_public_key="YOUR_X_LANGFUSE_PUBLIC_KEY",
+client = FernElasticDash(
+    x_langfuse_sdk_name="YOUR_X_ELASTICDASH_SDK_NAME",
+    x_langfuse_sdk_version="YOUR_X_ELASTICDASH_SDK_VERSION",
+    x_langfuse_public_key="YOUR_X_ELASTICDASH_PUBLIC_KEY",
     username="YOUR_USERNAME",
     password="YOUR_PASSWORD",
     base_url="https://yourhost.com/path/to/api",
@@ -4835,12 +4835,12 @@ Delete a membership from a specific project (requires organization-scoped API ke
 
 ```python
 from langfuse import DeleteMembershipRequest
-from langfuse.client import FernLangfuse
+from langfuse.client import FernElasticDash
 
-client = FernLangfuse(
-    x_langfuse_sdk_name="YOUR_X_LANGFUSE_SDK_NAME",
-    x_langfuse_sdk_version="YOUR_X_LANGFUSE_SDK_VERSION",
-    x_langfuse_public_key="YOUR_X_LANGFUSE_PUBLIC_KEY",
+client = FernElasticDash(
+    x_langfuse_sdk_name="YOUR_X_ELASTICDASH_SDK_NAME",
+    x_langfuse_sdk_version="YOUR_X_ELASTICDASH_SDK_VERSION",
+    x_langfuse_public_key="YOUR_X_ELASTICDASH_PUBLIC_KEY",
     username="YOUR_USERNAME",
     password="YOUR_PASSWORD",
     base_url="https://yourhost.com/path/to/api",
@@ -4921,12 +4921,12 @@ Get all projects for the organization associated with the API key (requires orga
 <dd>
 
 ```python
-from langfuse.client import FernLangfuse
+from langfuse.client import FernElasticDash
 
-client = FernLangfuse(
-    x_langfuse_sdk_name="YOUR_X_LANGFUSE_SDK_NAME",
-    x_langfuse_sdk_version="YOUR_X_LANGFUSE_SDK_VERSION",
-    x_langfuse_public_key="YOUR_X_LANGFUSE_PUBLIC_KEY",
+client = FernElasticDash(
+    x_langfuse_sdk_name="YOUR_X_ELASTICDASH_SDK_NAME",
+    x_langfuse_sdk_version="YOUR_X_ELASTICDASH_SDK_VERSION",
+    x_langfuse_public_key="YOUR_X_ELASTICDASH_PUBLIC_KEY",
     username="YOUR_USERNAME",
     password="YOUR_PASSWORD",
     base_url="https://yourhost.com/path/to/api",
@@ -4986,12 +4986,12 @@ Get all API keys for the organization associated with the API key (requires orga
 <dd>
 
 ```python
-from langfuse.client import FernLangfuse
+from langfuse.client import FernElasticDash
 
-client = FernLangfuse(
-    x_langfuse_sdk_name="YOUR_X_LANGFUSE_SDK_NAME",
-    x_langfuse_sdk_version="YOUR_X_LANGFUSE_SDK_VERSION",
-    x_langfuse_public_key="YOUR_X_LANGFUSE_PUBLIC_KEY",
+client = FernElasticDash(
+    x_langfuse_sdk_name="YOUR_X_ELASTICDASH_SDK_NAME",
+    x_langfuse_sdk_version="YOUR_X_ELASTICDASH_SDK_VERSION",
+    x_langfuse_public_key="YOUR_X_ELASTICDASH_PUBLIC_KEY",
     username="YOUR_USERNAME",
     password="YOUR_PASSWORD",
     base_url="https://yourhost.com/path/to/api",
@@ -5052,12 +5052,12 @@ Get Project associated with API key (requires project-scoped API key). You can u
 <dd>
 
 ```python
-from langfuse.client import FernLangfuse
+from langfuse.client import FernElasticDash
 
-client = FernLangfuse(
-    x_langfuse_sdk_name="YOUR_X_LANGFUSE_SDK_NAME",
-    x_langfuse_sdk_version="YOUR_X_LANGFUSE_SDK_VERSION",
-    x_langfuse_public_key="YOUR_X_LANGFUSE_PUBLIC_KEY",
+client = FernElasticDash(
+    x_langfuse_sdk_name="YOUR_X_ELASTICDASH_SDK_NAME",
+    x_langfuse_sdk_version="YOUR_X_ELASTICDASH_SDK_VERSION",
+    x_langfuse_public_key="YOUR_X_ELASTICDASH_PUBLIC_KEY",
     username="YOUR_USERNAME",
     password="YOUR_PASSWORD",
     base_url="https://yourhost.com/path/to/api",
@@ -5117,12 +5117,12 @@ Create a new project (requires organization-scoped API key)
 <dd>
 
 ```python
-from langfuse.client import FernLangfuse
+from langfuse.client import FernElasticDash
 
-client = FernLangfuse(
-    x_langfuse_sdk_name="YOUR_X_LANGFUSE_SDK_NAME",
-    x_langfuse_sdk_version="YOUR_X_LANGFUSE_SDK_VERSION",
-    x_langfuse_public_key="YOUR_X_LANGFUSE_PUBLIC_KEY",
+client = FernElasticDash(
+    x_langfuse_sdk_name="YOUR_X_ELASTICDASH_SDK_NAME",
+    x_langfuse_sdk_version="YOUR_X_ELASTICDASH_SDK_VERSION",
+    x_langfuse_public_key="YOUR_X_ELASTICDASH_PUBLIC_KEY",
     username="YOUR_USERNAME",
     password="YOUR_PASSWORD",
     base_url="https://yourhost.com/path/to/api",
@@ -5209,12 +5209,12 @@ Update a project by ID (requires organization-scoped API key).
 <dd>
 
 ```python
-from langfuse.client import FernLangfuse
+from langfuse.client import FernElasticDash
 
-client = FernLangfuse(
-    x_langfuse_sdk_name="YOUR_X_LANGFUSE_SDK_NAME",
-    x_langfuse_sdk_version="YOUR_X_LANGFUSE_SDK_VERSION",
-    x_langfuse_public_key="YOUR_X_LANGFUSE_PUBLIC_KEY",
+client = FernElasticDash(
+    x_langfuse_sdk_name="YOUR_X_ELASTICDASH_SDK_NAME",
+    x_langfuse_sdk_version="YOUR_X_ELASTICDASH_SDK_VERSION",
+    x_langfuse_public_key="YOUR_X_ELASTICDASH_PUBLIC_KEY",
     username="YOUR_USERNAME",
     password="YOUR_PASSWORD",
     base_url="https://yourhost.com/path/to/api",
@@ -5314,12 +5314,12 @@ Delete a project by ID (requires organization-scoped API key). Project deletion 
 <dd>
 
 ```python
-from langfuse.client import FernLangfuse
+from langfuse.client import FernElasticDash
 
-client = FernLangfuse(
-    x_langfuse_sdk_name="YOUR_X_LANGFUSE_SDK_NAME",
-    x_langfuse_sdk_version="YOUR_X_LANGFUSE_SDK_VERSION",
-    x_langfuse_public_key="YOUR_X_LANGFUSE_PUBLIC_KEY",
+client = FernElasticDash(
+    x_langfuse_sdk_name="YOUR_X_ELASTICDASH_SDK_NAME",
+    x_langfuse_sdk_version="YOUR_X_ELASTICDASH_SDK_VERSION",
+    x_langfuse_public_key="YOUR_X_ELASTICDASH_PUBLIC_KEY",
     username="YOUR_USERNAME",
     password="YOUR_PASSWORD",
     base_url="https://yourhost.com/path/to/api",
@@ -5389,12 +5389,12 @@ Get all API keys for a project (requires organization-scoped API key)
 <dd>
 
 ```python
-from langfuse.client import FernLangfuse
+from langfuse.client import FernElasticDash
 
-client = FernLangfuse(
-    x_langfuse_sdk_name="YOUR_X_LANGFUSE_SDK_NAME",
-    x_langfuse_sdk_version="YOUR_X_LANGFUSE_SDK_VERSION",
-    x_langfuse_public_key="YOUR_X_LANGFUSE_PUBLIC_KEY",
+client = FernElasticDash(
+    x_langfuse_sdk_name="YOUR_X_ELASTICDASH_SDK_NAME",
+    x_langfuse_sdk_version="YOUR_X_ELASTICDASH_SDK_VERSION",
+    x_langfuse_public_key="YOUR_X_ELASTICDASH_PUBLIC_KEY",
     username="YOUR_USERNAME",
     password="YOUR_PASSWORD",
     base_url="https://yourhost.com/path/to/api",
@@ -5464,12 +5464,12 @@ Create a new API key for a project (requires organization-scoped API key)
 <dd>
 
 ```python
-from langfuse.client import FernLangfuse
+from langfuse.client import FernElasticDash
 
-client = FernLangfuse(
-    x_langfuse_sdk_name="YOUR_X_LANGFUSE_SDK_NAME",
-    x_langfuse_sdk_version="YOUR_X_LANGFUSE_SDK_VERSION",
-    x_langfuse_public_key="YOUR_X_LANGFUSE_PUBLIC_KEY",
+client = FernElasticDash(
+    x_langfuse_sdk_name="YOUR_X_ELASTICDASH_SDK_NAME",
+    x_langfuse_sdk_version="YOUR_X_ELASTICDASH_SDK_VERSION",
+    x_langfuse_public_key="YOUR_X_ELASTICDASH_PUBLIC_KEY",
     username="YOUR_USERNAME",
     password="YOUR_PASSWORD",
     base_url="https://yourhost.com/path/to/api",
@@ -5563,12 +5563,12 @@ Delete an API key for a project (requires organization-scoped API key)
 <dd>
 
 ```python
-from langfuse.client import FernLangfuse
+from langfuse.client import FernElasticDash
 
-client = FernLangfuse(
-    x_langfuse_sdk_name="YOUR_X_LANGFUSE_SDK_NAME",
-    x_langfuse_sdk_version="YOUR_X_LANGFUSE_SDK_VERSION",
-    x_langfuse_public_key="YOUR_X_LANGFUSE_PUBLIC_KEY",
+client = FernElasticDash(
+    x_langfuse_sdk_name="YOUR_X_ELASTICDASH_SDK_NAME",
+    x_langfuse_sdk_version="YOUR_X_ELASTICDASH_SDK_VERSION",
+    x_langfuse_public_key="YOUR_X_ELASTICDASH_PUBLIC_KEY",
     username="YOUR_USERNAME",
     password="YOUR_PASSWORD",
     base_url="https://yourhost.com/path/to/api",
@@ -5648,12 +5648,12 @@ Update labels for a specific prompt version
 <dd>
 
 ```python
-from langfuse.client import FernLangfuse
+from langfuse.client import FernElasticDash
 
-client = FernLangfuse(
-    x_langfuse_sdk_name="YOUR_X_LANGFUSE_SDK_NAME",
-    x_langfuse_sdk_version="YOUR_X_LANGFUSE_SDK_VERSION",
-    x_langfuse_public_key="YOUR_X_LANGFUSE_PUBLIC_KEY",
+client = FernElasticDash(
+    x_langfuse_sdk_name="YOUR_X_ELASTICDASH_SDK_NAME",
+    x_langfuse_sdk_version="YOUR_X_ELASTICDASH_SDK_VERSION",
+    x_langfuse_public_key="YOUR_X_ELASTICDASH_PUBLIC_KEY",
     username="YOUR_USERNAME",
     password="YOUR_PASSWORD",
     base_url="https://yourhost.com/path/to/api",
@@ -5697,7 +5697,7 @@ the folder path must be URL encoded.
 <dl>
 <dd>
 
-**new_labels:** `typing.Sequence[str]` — New labels for the prompt version. Labels are unique across versions. The "latest" label is reserved and managed by Langfuse.
+**new_labels:** `typing.Sequence[str]` — New labels for the prompt version. Labels are unique across versions. The "latest" label is reserved and managed by ElasticDash.
     
 </dd>
 </dl>
@@ -5745,12 +5745,12 @@ Get a prompt
 <dd>
 
 ```python
-from langfuse.client import FernLangfuse
+from langfuse.client import FernElasticDash
 
-client = FernLangfuse(
-    x_langfuse_sdk_name="YOUR_X_LANGFUSE_SDK_NAME",
-    x_langfuse_sdk_version="YOUR_X_LANGFUSE_SDK_VERSION",
-    x_langfuse_public_key="YOUR_X_LANGFUSE_PUBLIC_KEY",
+client = FernElasticDash(
+    x_langfuse_sdk_name="YOUR_X_ELASTICDASH_SDK_NAME",
+    x_langfuse_sdk_version="YOUR_X_ELASTICDASH_SDK_VERSION",
+    x_langfuse_public_key="YOUR_X_ELASTICDASH_PUBLIC_KEY",
     username="YOUR_USERNAME",
     password="YOUR_PASSWORD",
     base_url="https://yourhost.com/path/to/api",
@@ -5839,12 +5839,12 @@ Get a list of prompt names with versions and labels
 <dd>
 
 ```python
-from langfuse.client import FernLangfuse
+from langfuse.client import FernElasticDash
 
-client = FernLangfuse(
-    x_langfuse_sdk_name="YOUR_X_LANGFUSE_SDK_NAME",
-    x_langfuse_sdk_version="YOUR_X_LANGFUSE_SDK_VERSION",
-    x_langfuse_public_key="YOUR_X_LANGFUSE_PUBLIC_KEY",
+client = FernElasticDash(
+    x_langfuse_sdk_name="YOUR_X_ELASTICDASH_SDK_NAME",
+    x_langfuse_sdk_version="YOUR_X_ELASTICDASH_SDK_VERSION",
+    x_langfuse_public_key="YOUR_X_ELASTICDASH_PUBLIC_KEY",
     username="YOUR_USERNAME",
     password="YOUR_PASSWORD",
     base_url="https://yourhost.com/path/to/api",
@@ -5964,12 +5964,12 @@ from langfuse import (
     ChatMessageWithPlaceholders_Chatmessage,
     CreatePromptRequest_Chat,
 )
-from langfuse.client import FernLangfuse
+from langfuse.client import FernElasticDash
 
-client = FernLangfuse(
-    x_langfuse_sdk_name="YOUR_X_LANGFUSE_SDK_NAME",
-    x_langfuse_sdk_version="YOUR_X_LANGFUSE_SDK_VERSION",
-    x_langfuse_public_key="YOUR_X_LANGFUSE_PUBLIC_KEY",
+client = FernElasticDash(
+    x_langfuse_sdk_name="YOUR_X_ELASTICDASH_SDK_NAME",
+    x_langfuse_sdk_version="YOUR_X_ELASTICDASH_SDK_VERSION",
+    x_langfuse_public_key="YOUR_X_ELASTICDASH_PUBLIC_KEY",
     username="YOUR_USERNAME",
     password="YOUR_PASSWORD",
     base_url="https://yourhost.com/path/to/api",
@@ -6051,12 +6051,12 @@ Delete prompt versions. If neither version nor label is specified, all versions 
 <dd>
 
 ```python
-from langfuse.client import FernLangfuse
+from langfuse.client import FernElasticDash
 
-client = FernLangfuse(
-    x_langfuse_sdk_name="YOUR_X_LANGFUSE_SDK_NAME",
-    x_langfuse_sdk_version="YOUR_X_LANGFUSE_SDK_VERSION",
-    x_langfuse_public_key="YOUR_X_LANGFUSE_PUBLIC_KEY",
+client = FernElasticDash(
+    x_langfuse_sdk_name="YOUR_X_ELASTICDASH_SDK_NAME",
+    x_langfuse_sdk_version="YOUR_X_ELASTICDASH_SDK_VERSION",
+    x_langfuse_public_key="YOUR_X_ELASTICDASH_PUBLIC_KEY",
     username="YOUR_USERNAME",
     password="YOUR_PASSWORD",
     base_url="https://yourhost.com/path/to/api",
@@ -6143,12 +6143,12 @@ Get SCIM Service Provider Configuration (requires organization-scoped API key)
 <dd>
 
 ```python
-from langfuse.client import FernLangfuse
+from langfuse.client import FernElasticDash
 
-client = FernLangfuse(
-    x_langfuse_sdk_name="YOUR_X_LANGFUSE_SDK_NAME",
-    x_langfuse_sdk_version="YOUR_X_LANGFUSE_SDK_VERSION",
-    x_langfuse_public_key="YOUR_X_LANGFUSE_PUBLIC_KEY",
+client = FernElasticDash(
+    x_langfuse_sdk_name="YOUR_X_ELASTICDASH_SDK_NAME",
+    x_langfuse_sdk_version="YOUR_X_ELASTICDASH_SDK_VERSION",
+    x_langfuse_public_key="YOUR_X_ELASTICDASH_PUBLIC_KEY",
     username="YOUR_USERNAME",
     password="YOUR_PASSWORD",
     base_url="https://yourhost.com/path/to/api",
@@ -6208,12 +6208,12 @@ Get SCIM Resource Types (requires organization-scoped API key)
 <dd>
 
 ```python
-from langfuse.client import FernLangfuse
+from langfuse.client import FernElasticDash
 
-client = FernLangfuse(
-    x_langfuse_sdk_name="YOUR_X_LANGFUSE_SDK_NAME",
-    x_langfuse_sdk_version="YOUR_X_LANGFUSE_SDK_VERSION",
-    x_langfuse_public_key="YOUR_X_LANGFUSE_PUBLIC_KEY",
+client = FernElasticDash(
+    x_langfuse_sdk_name="YOUR_X_ELASTICDASH_SDK_NAME",
+    x_langfuse_sdk_version="YOUR_X_ELASTICDASH_SDK_VERSION",
+    x_langfuse_public_key="YOUR_X_ELASTICDASH_PUBLIC_KEY",
     username="YOUR_USERNAME",
     password="YOUR_PASSWORD",
     base_url="https://yourhost.com/path/to/api",
@@ -6273,12 +6273,12 @@ Get SCIM Schemas (requires organization-scoped API key)
 <dd>
 
 ```python
-from langfuse.client import FernLangfuse
+from langfuse.client import FernElasticDash
 
-client = FernLangfuse(
-    x_langfuse_sdk_name="YOUR_X_LANGFUSE_SDK_NAME",
-    x_langfuse_sdk_version="YOUR_X_LANGFUSE_SDK_VERSION",
-    x_langfuse_public_key="YOUR_X_LANGFUSE_PUBLIC_KEY",
+client = FernElasticDash(
+    x_langfuse_sdk_name="YOUR_X_ELASTICDASH_SDK_NAME",
+    x_langfuse_sdk_version="YOUR_X_ELASTICDASH_SDK_VERSION",
+    x_langfuse_public_key="YOUR_X_ELASTICDASH_PUBLIC_KEY",
     username="YOUR_USERNAME",
     password="YOUR_PASSWORD",
     base_url="https://yourhost.com/path/to/api",
@@ -6338,12 +6338,12 @@ List users in the organization (requires organization-scoped API key)
 <dd>
 
 ```python
-from langfuse.client import FernLangfuse
+from langfuse.client import FernElasticDash
 
-client = FernLangfuse(
-    x_langfuse_sdk_name="YOUR_X_LANGFUSE_SDK_NAME",
-    x_langfuse_sdk_version="YOUR_X_LANGFUSE_SDK_VERSION",
-    x_langfuse_public_key="YOUR_X_LANGFUSE_PUBLIC_KEY",
+client = FernElasticDash(
+    x_langfuse_sdk_name="YOUR_X_ELASTICDASH_SDK_NAME",
+    x_langfuse_sdk_version="YOUR_X_ELASTICDASH_SDK_VERSION",
+    x_langfuse_public_key="YOUR_X_ELASTICDASH_PUBLIC_KEY",
     username="YOUR_USERNAME",
     password="YOUR_PASSWORD",
     base_url="https://yourhost.com/path/to/api",
@@ -6428,12 +6428,12 @@ Create a new user in the organization (requires organization-scoped API key)
 
 ```python
 from langfuse import ScimName
-from langfuse.client import FernLangfuse
+from langfuse.client import FernElasticDash
 
-client = FernLangfuse(
-    x_langfuse_sdk_name="YOUR_X_LANGFUSE_SDK_NAME",
-    x_langfuse_sdk_version="YOUR_X_LANGFUSE_SDK_VERSION",
-    x_langfuse_public_key="YOUR_X_LANGFUSE_PUBLIC_KEY",
+client = FernElasticDash(
+    x_langfuse_sdk_name="YOUR_X_ELASTICDASH_SDK_NAME",
+    x_langfuse_sdk_version="YOUR_X_ELASTICDASH_SDK_VERSION",
+    x_langfuse_public_key="YOUR_X_ELASTICDASH_PUBLIC_KEY",
     username="YOUR_USERNAME",
     password="YOUR_PASSWORD",
     base_url="https://yourhost.com/path/to/api",
@@ -6536,12 +6536,12 @@ Get a specific user by ID (requires organization-scoped API key)
 <dd>
 
 ```python
-from langfuse.client import FernLangfuse
+from langfuse.client import FernElasticDash
 
-client = FernLangfuse(
-    x_langfuse_sdk_name="YOUR_X_LANGFUSE_SDK_NAME",
-    x_langfuse_sdk_version="YOUR_X_LANGFUSE_SDK_VERSION",
-    x_langfuse_public_key="YOUR_X_LANGFUSE_PUBLIC_KEY",
+client = FernElasticDash(
+    x_langfuse_sdk_name="YOUR_X_ELASTICDASH_SDK_NAME",
+    x_langfuse_sdk_version="YOUR_X_ELASTICDASH_SDK_VERSION",
+    x_langfuse_public_key="YOUR_X_ELASTICDASH_PUBLIC_KEY",
     username="YOUR_USERNAME",
     password="YOUR_PASSWORD",
     base_url="https://yourhost.com/path/to/api",
@@ -6611,12 +6611,12 @@ Remove a user from the organization (requires organization-scoped API key). Note
 <dd>
 
 ```python
-from langfuse.client import FernLangfuse
+from langfuse.client import FernElasticDash
 
-client = FernLangfuse(
-    x_langfuse_sdk_name="YOUR_X_LANGFUSE_SDK_NAME",
-    x_langfuse_sdk_version="YOUR_X_LANGFUSE_SDK_VERSION",
-    x_langfuse_public_key="YOUR_X_LANGFUSE_PUBLIC_KEY",
+client = FernElasticDash(
+    x_langfuse_sdk_name="YOUR_X_ELASTICDASH_SDK_NAME",
+    x_langfuse_sdk_version="YOUR_X_ELASTICDASH_SDK_VERSION",
+    x_langfuse_public_key="YOUR_X_ELASTICDASH_PUBLIC_KEY",
     username="YOUR_USERNAME",
     password="YOUR_PASSWORD",
     base_url="https://yourhost.com/path/to/api",
@@ -6688,12 +6688,12 @@ Create a score configuration (config). Score configs are used to define the stru
 
 ```python
 from langfuse import CreateScoreConfigRequest, ScoreConfigDataType
-from langfuse.client import FernLangfuse
+from langfuse.client import FernElasticDash
 
-client = FernLangfuse(
-    x_langfuse_sdk_name="YOUR_X_LANGFUSE_SDK_NAME",
-    x_langfuse_sdk_version="YOUR_X_LANGFUSE_SDK_VERSION",
-    x_langfuse_public_key="YOUR_X_LANGFUSE_PUBLIC_KEY",
+client = FernElasticDash(
+    x_langfuse_sdk_name="YOUR_X_ELASTICDASH_SDK_NAME",
+    x_langfuse_sdk_version="YOUR_X_ELASTICDASH_SDK_VERSION",
+    x_langfuse_public_key="YOUR_X_ELASTICDASH_PUBLIC_KEY",
     username="YOUR_USERNAME",
     password="YOUR_PASSWORD",
     base_url="https://yourhost.com/path/to/api",
@@ -6766,12 +6766,12 @@ Get all score configs
 <dd>
 
 ```python
-from langfuse.client import FernLangfuse
+from langfuse.client import FernElasticDash
 
-client = FernLangfuse(
-    x_langfuse_sdk_name="YOUR_X_LANGFUSE_SDK_NAME",
-    x_langfuse_sdk_version="YOUR_X_LANGFUSE_SDK_VERSION",
-    x_langfuse_public_key="YOUR_X_LANGFUSE_PUBLIC_KEY",
+client = FernElasticDash(
+    x_langfuse_sdk_name="YOUR_X_ELASTICDASH_SDK_NAME",
+    x_langfuse_sdk_version="YOUR_X_ELASTICDASH_SDK_VERSION",
+    x_langfuse_public_key="YOUR_X_ELASTICDASH_PUBLIC_KEY",
     username="YOUR_USERNAME",
     password="YOUR_PASSWORD",
     base_url="https://yourhost.com/path/to/api",
@@ -6847,12 +6847,12 @@ Get a score config
 <dd>
 
 ```python
-from langfuse.client import FernLangfuse
+from langfuse.client import FernElasticDash
 
-client = FernLangfuse(
-    x_langfuse_sdk_name="YOUR_X_LANGFUSE_SDK_NAME",
-    x_langfuse_sdk_version="YOUR_X_LANGFUSE_SDK_VERSION",
-    x_langfuse_public_key="YOUR_X_LANGFUSE_PUBLIC_KEY",
+client = FernElasticDash(
+    x_langfuse_sdk_name="YOUR_X_ELASTICDASH_SDK_NAME",
+    x_langfuse_sdk_version="YOUR_X_ELASTICDASH_SDK_VERSION",
+    x_langfuse_public_key="YOUR_X_ELASTICDASH_PUBLIC_KEY",
     username="YOUR_USERNAME",
     password="YOUR_PASSWORD",
     base_url="https://yourhost.com/path/to/api",
@@ -6923,12 +6923,12 @@ Update a score config
 
 ```python
 from langfuse import UpdateScoreConfigRequest
-from langfuse.client import FernLangfuse
+from langfuse.client import FernElasticDash
 
-client = FernLangfuse(
-    x_langfuse_sdk_name="YOUR_X_LANGFUSE_SDK_NAME",
-    x_langfuse_sdk_version="YOUR_X_LANGFUSE_SDK_VERSION",
-    x_langfuse_public_key="YOUR_X_LANGFUSE_PUBLIC_KEY",
+client = FernElasticDash(
+    x_langfuse_sdk_name="YOUR_X_ELASTICDASH_SDK_NAME",
+    x_langfuse_sdk_version="YOUR_X_ELASTICDASH_SDK_VERSION",
+    x_langfuse_public_key="YOUR_X_ELASTICDASH_PUBLIC_KEY",
     username="YOUR_USERNAME",
     password="YOUR_PASSWORD",
     base_url="https://yourhost.com/path/to/api",
@@ -7008,12 +7008,12 @@ Get a list of scores (supports both trace and session scores)
 <dd>
 
 ```python
-from langfuse.client import FernLangfuse
+from langfuse.client import FernElasticDash
 
-client = FernLangfuse(
-    x_langfuse_sdk_name="YOUR_X_LANGFUSE_SDK_NAME",
-    x_langfuse_sdk_version="YOUR_X_LANGFUSE_SDK_VERSION",
-    x_langfuse_public_key="YOUR_X_LANGFUSE_PUBLIC_KEY",
+client = FernElasticDash(
+    x_langfuse_sdk_name="YOUR_X_ELASTICDASH_SDK_NAME",
+    x_langfuse_sdk_version="YOUR_X_ELASTICDASH_SDK_VERSION",
+    x_langfuse_public_key="YOUR_X_ELASTICDASH_PUBLIC_KEY",
     username="YOUR_USERNAME",
     password="YOUR_PASSWORD",
     base_url="https://yourhost.com/path/to/api",
@@ -7225,12 +7225,12 @@ Get a score (supports both trace and session scores)
 <dd>
 
 ```python
-from langfuse.client import FernLangfuse
+from langfuse.client import FernElasticDash
 
-client = FernLangfuse(
-    x_langfuse_sdk_name="YOUR_X_LANGFUSE_SDK_NAME",
-    x_langfuse_sdk_version="YOUR_X_LANGFUSE_SDK_VERSION",
-    x_langfuse_public_key="YOUR_X_LANGFUSE_PUBLIC_KEY",
+client = FernElasticDash(
+    x_langfuse_sdk_name="YOUR_X_ELASTICDASH_SDK_NAME",
+    x_langfuse_sdk_version="YOUR_X_ELASTICDASH_SDK_VERSION",
+    x_langfuse_public_key="YOUR_X_ELASTICDASH_PUBLIC_KEY",
     username="YOUR_USERNAME",
     password="YOUR_PASSWORD",
     base_url="https://yourhost.com/path/to/api",
@@ -7302,12 +7302,12 @@ Create a score (supports both trace and session scores)
 
 ```python
 from langfuse import CreateScoreRequest
-from langfuse.client import FernLangfuse
+from langfuse.client import FernElasticDash
 
-client = FernLangfuse(
-    x_langfuse_sdk_name="YOUR_X_LANGFUSE_SDK_NAME",
-    x_langfuse_sdk_version="YOUR_X_LANGFUSE_SDK_VERSION",
-    x_langfuse_public_key="YOUR_X_LANGFUSE_PUBLIC_KEY",
+client = FernElasticDash(
+    x_langfuse_sdk_name="YOUR_X_ELASTICDASH_SDK_NAME",
+    x_langfuse_sdk_version="YOUR_X_ELASTICDASH_SDK_VERSION",
+    x_langfuse_public_key="YOUR_X_ELASTICDASH_PUBLIC_KEY",
     username="YOUR_USERNAME",
     password="YOUR_PASSWORD",
     base_url="https://yourhost.com/path/to/api",
@@ -7380,12 +7380,12 @@ Delete a score (supports both trace and session scores)
 <dd>
 
 ```python
-from langfuse.client import FernLangfuse
+from langfuse.client import FernElasticDash
 
-client = FernLangfuse(
-    x_langfuse_sdk_name="YOUR_X_LANGFUSE_SDK_NAME",
-    x_langfuse_sdk_version="YOUR_X_LANGFUSE_SDK_VERSION",
-    x_langfuse_public_key="YOUR_X_LANGFUSE_PUBLIC_KEY",
+client = FernElasticDash(
+    x_langfuse_sdk_name="YOUR_X_ELASTICDASH_SDK_NAME",
+    x_langfuse_sdk_version="YOUR_X_ELASTICDASH_SDK_VERSION",
+    x_langfuse_public_key="YOUR_X_ELASTICDASH_PUBLIC_KEY",
     username="YOUR_USERNAME",
     password="YOUR_PASSWORD",
     base_url="https://yourhost.com/path/to/api",
@@ -7456,12 +7456,12 @@ Get sessions
 <dd>
 
 ```python
-from langfuse.client import FernLangfuse
+from langfuse.client import FernElasticDash
 
-client = FernLangfuse(
-    x_langfuse_sdk_name="YOUR_X_LANGFUSE_SDK_NAME",
-    x_langfuse_sdk_version="YOUR_X_LANGFUSE_SDK_VERSION",
-    x_langfuse_public_key="YOUR_X_LANGFUSE_PUBLIC_KEY",
+client = FernElasticDash(
+    x_langfuse_sdk_name="YOUR_X_ELASTICDASH_SDK_NAME",
+    x_langfuse_sdk_version="YOUR_X_ELASTICDASH_SDK_VERSION",
+    x_langfuse_public_key="YOUR_X_ELASTICDASH_PUBLIC_KEY",
     username="YOUR_USERNAME",
     password="YOUR_PASSWORD",
     base_url="https://yourhost.com/path/to/api",
@@ -7561,12 +7561,12 @@ Get a session. Please note that `traces` on this endpoint are not paginated, if 
 <dd>
 
 ```python
-from langfuse.client import FernLangfuse
+from langfuse.client import FernElasticDash
 
-client = FernLangfuse(
-    x_langfuse_sdk_name="YOUR_X_LANGFUSE_SDK_NAME",
-    x_langfuse_sdk_version="YOUR_X_LANGFUSE_SDK_VERSION",
-    x_langfuse_public_key="YOUR_X_LANGFUSE_PUBLIC_KEY",
+client = FernElasticDash(
+    x_langfuse_sdk_name="YOUR_X_ELASTICDASH_SDK_NAME",
+    x_langfuse_sdk_version="YOUR_X_ELASTICDASH_SDK_VERSION",
+    x_langfuse_public_key="YOUR_X_ELASTICDASH_PUBLIC_KEY",
     username="YOUR_USERNAME",
     password="YOUR_PASSWORD",
     base_url="https://yourhost.com/path/to/api",
@@ -7637,12 +7637,12 @@ Get a specific trace
 <dd>
 
 ```python
-from langfuse.client import FernLangfuse
+from langfuse.client import FernElasticDash
 
-client = FernLangfuse(
-    x_langfuse_sdk_name="YOUR_X_LANGFUSE_SDK_NAME",
-    x_langfuse_sdk_version="YOUR_X_LANGFUSE_SDK_VERSION",
-    x_langfuse_public_key="YOUR_X_LANGFUSE_PUBLIC_KEY",
+client = FernElasticDash(
+    x_langfuse_sdk_name="YOUR_X_ELASTICDASH_SDK_NAME",
+    x_langfuse_sdk_version="YOUR_X_ELASTICDASH_SDK_VERSION",
+    x_langfuse_public_key="YOUR_X_ELASTICDASH_PUBLIC_KEY",
     username="YOUR_USERNAME",
     password="YOUR_PASSWORD",
     base_url="https://yourhost.com/path/to/api",
@@ -7712,12 +7712,12 @@ Delete a specific trace
 <dd>
 
 ```python
-from langfuse.client import FernLangfuse
+from langfuse.client import FernElasticDash
 
-client = FernLangfuse(
-    x_langfuse_sdk_name="YOUR_X_LANGFUSE_SDK_NAME",
-    x_langfuse_sdk_version="YOUR_X_LANGFUSE_SDK_VERSION",
-    x_langfuse_public_key="YOUR_X_LANGFUSE_PUBLIC_KEY",
+client = FernElasticDash(
+    x_langfuse_sdk_name="YOUR_X_ELASTICDASH_SDK_NAME",
+    x_langfuse_sdk_version="YOUR_X_ELASTICDASH_SDK_VERSION",
+    x_langfuse_public_key="YOUR_X_ELASTICDASH_PUBLIC_KEY",
     username="YOUR_USERNAME",
     password="YOUR_PASSWORD",
     base_url="https://yourhost.com/path/to/api",
@@ -7787,12 +7787,12 @@ Get list of traces
 <dd>
 
 ```python
-from langfuse.client import FernLangfuse
+from langfuse.client import FernElasticDash
 
-client = FernLangfuse(
-    x_langfuse_sdk_name="YOUR_X_LANGFUSE_SDK_NAME",
-    x_langfuse_sdk_version="YOUR_X_LANGFUSE_SDK_VERSION",
-    x_langfuse_public_key="YOUR_X_LANGFUSE_PUBLIC_KEY",
+client = FernElasticDash(
+    x_langfuse_sdk_name="YOUR_X_ELASTICDASH_SDK_NAME",
+    x_langfuse_sdk_version="YOUR_X_ELASTICDASH_SDK_VERSION",
+    x_langfuse_public_key="YOUR_X_ELASTICDASH_PUBLIC_KEY",
     username="YOUR_USERNAME",
     password="YOUR_PASSWORD",
     base_url="https://yourhost.com/path/to/api",
@@ -8070,12 +8070,12 @@ Delete multiple traces
 <dd>
 
 ```python
-from langfuse.client import FernLangfuse
+from langfuse.client import FernElasticDash
 
-client = FernLangfuse(
-    x_langfuse_sdk_name="YOUR_X_LANGFUSE_SDK_NAME",
-    x_langfuse_sdk_version="YOUR_X_LANGFUSE_SDK_VERSION",
-    x_langfuse_public_key="YOUR_X_LANGFUSE_PUBLIC_KEY",
+client = FernElasticDash(
+    x_langfuse_sdk_name="YOUR_X_ELASTICDASH_SDK_NAME",
+    x_langfuse_sdk_version="YOUR_X_ELASTICDASH_SDK_VERSION",
+    x_langfuse_public_key="YOUR_X_ELASTICDASH_PUBLIC_KEY",
     username="YOUR_USERNAME",
     password="YOUR_PASSWORD",
     base_url="https://yourhost.com/path/to/api",

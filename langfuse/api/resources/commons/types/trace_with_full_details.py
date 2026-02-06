@@ -13,7 +13,7 @@ from .trace import Trace
 class TraceWithFullDetails(Trace):
     html_path: str = pydantic_v1.Field(alias="htmlPath")
     """
-    Path of trace in Langfuse UI
+    Path of trace in ElasticDash UI
     """
 
     latency: typing.Optional[float] = pydantic_v1.Field(default=None)

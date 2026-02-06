@@ -275,13 +275,13 @@ jobs:
         with:
           payload: |
             {
-              "text": "✅ Langfuse Python SDK v${{ steps.new-version.outputs.version }} published to PyPI",
+              "text": "✅ ElasticDash Python SDK v${{ steps.new-version.outputs.version }} published to PyPI",
               "blocks": [
                 {
                   "type": "header",
                   "text": {
                     "type": "plain_text",
-                    "text": "✅ Langfuse Python SDK Released",
+                    "text": "✅ ElasticDash Python SDK Released",
                     "emoji": true
                   }
                 },
@@ -360,13 +360,13 @@ jobs:
         with:
           payload: |
             {
-              "text": "❌ Langfuse Python SDK release workflow failed",
+              "text": "❌ ElasticDash Python SDK release workflow failed",
               "blocks": [
                 {
                   "type": "header",
                   "text": {
                     "type": "plain_text",
-                    "text": "❌ Langfuse Python SDK Release Failed",
+                    "text": "❌ ElasticDash Python SDK Release Failed",
                     "emoji": true
                   }
                 },

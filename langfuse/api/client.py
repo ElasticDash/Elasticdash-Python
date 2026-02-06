@@ -57,7 +57,7 @@ from .resources.sessions.client import AsyncSessionsClient, SessionsClient
 from .resources.trace.client import AsyncTraceClient, TraceClient
 
 
-class FernLangfuse:
+class FernElasticDash:
     """
     Use this class to access the different functions within the SDK. You can instantiate any number of clients with different configuration that will propagate to these functions.
 
@@ -82,12 +82,12 @@ class FernLangfuse:
 
     Examples
     --------
-    from langfuse.client import FernLangfuse
+    from langfuse.client import FernElasticDash
 
-    client = FernLangfuse(
-        x_langfuse_sdk_name="YOUR_X_LANGFUSE_SDK_NAME",
-        x_langfuse_sdk_version="YOUR_X_LANGFUSE_SDK_VERSION",
-        x_langfuse_public_key="YOUR_X_LANGFUSE_PUBLIC_KEY",
+    client = FernElasticDash(
+        x_langfuse_sdk_name="YOUR_X_ELASTICDASH_SDK_NAME",
+        x_langfuse_sdk_version="YOUR_X_ELASTICDASH_SDK_VERSION",
+        x_langfuse_public_key="YOUR_X_ELASTICDASH_PUBLIC_KEY",
         username="YOUR_USERNAME",
         password="YOUR_PASSWORD",
         base_url="https://yourhost.com/path/to/api",
@@ -162,7 +162,7 @@ class FernLangfuse:
         self.trace = TraceClient(client_wrapper=self._client_wrapper)
 
 
-class AsyncFernLangfuse:
+class AsyncFernElasticDash:
     """
     Use this class to access the different functions within the SDK. You can instantiate any number of clients with different configuration that will propagate to these functions.
 
@@ -187,12 +187,12 @@ class AsyncFernLangfuse:
 
     Examples
     --------
-    from langfuse.client import AsyncFernLangfuse
+    from langfuse.client import AsyncFernElasticDash
 
-    client = AsyncFernLangfuse(
-        x_langfuse_sdk_name="YOUR_X_LANGFUSE_SDK_NAME",
-        x_langfuse_sdk_version="YOUR_X_LANGFUSE_SDK_VERSION",
-        x_langfuse_public_key="YOUR_X_LANGFUSE_PUBLIC_KEY",
+    client = AsyncFernElasticDash(
+        x_langfuse_sdk_name="YOUR_X_ELASTICDASH_SDK_NAME",
+        x_langfuse_sdk_version="YOUR_X_ELASTICDASH_SDK_VERSION",
+        x_langfuse_public_key="YOUR_X_ELASTICDASH_PUBLIC_KEY",
         username="YOUR_USERNAME",
         password="YOUR_PASSWORD",
         base_url="https://yourhost.com/path/to/api",

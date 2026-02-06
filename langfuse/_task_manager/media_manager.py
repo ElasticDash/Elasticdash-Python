@@ -8,13 +8,13 @@ import backoff
 import requests
 from typing_extensions import ParamSpec
 
-from langfuse._client.environment_variables import LANGFUSE_MEDIA_UPLOAD_ENABLED
+from langfuse._client.environment_variables import ELASTICDASH_MEDIA_UPLOAD_ENABLED
 from langfuse._utils import _get_timestamp
 from langfuse.api import GetMediaUploadUrlRequest, PatchMediaBody
-from langfuse.api.client import FernLangfuse
+from langfuse.api.client import FernElasticDash
 from langfuse.api.core import ApiError
 from langfuse.api.resources.media.types.media_content_type import MediaContentType
-from langfuse.media import LangfuseMedia
+from langfuse.media import ElasticDashMedia
 
 from .media_upload_queue import UploadMediaJob
 
@@ -28,7 +28,7 @@ class MediaManager:
     def __init__(
         self,
         *,
-        api_client: FernLangfuse,
+        api_client: FernElasticDash,
         media_upload_queue: Queue,
         max_retries: Optional[int] = 3,
     ):
@@ -36,7 +36,7 @@ class MediaManager:
         self._queue = media_upload_queue
         self._max_retries = max_retries
         self._enabled = os.environ.get(
-            LANGFUSE_MEDIA_UPLOAD_ENABLED, "True"
+            ELASTICDASH_MEDIA_UPLOAD_ENABLED, "True"
         ).lower() not in ("false", "0")
 
     def process_next_media_upload(self) -> None:
@@ -76,7 +76,7 @@ class MediaManager:
 
             seen.add(id(data))
 
-            if isinstance(data, LangfuseMedia):
+            if isinstance(data, ElasticDashMedia):
                 self._process_media(
                     media=data,
                     trace_id=trace_id,
@@ -87,7 +87,7 @@ class MediaManager:
                 return data
 
             if isinstance(data, str) and data.startswith("data:"):
-                media = LangfuseMedia(
+                media = ElasticDashMedia(
                     obj=data,
                     base64_data_uri=data,
                 )
@@ -109,7 +109,7 @@ class MediaManager:
                 and "media_type" in data
                 and "data" in data
             ):
-                media = LangfuseMedia(
+                media = ElasticDashMedia(
                     base64_data_uri=f"data:{data['media_type']};base64," + data["data"],
                 )
 
@@ -133,7 +133,7 @@ class MediaManager:
                 and "mime_type" in data
                 and "data" in data
             ):
-                media = LangfuseMedia(
+                media = ElasticDashMedia(
                     base64_data_uri=f"data:{data['mime_type']};base64," + data["data"],
                 )
 
@@ -165,7 +165,7 @@ class MediaManager:
     def _process_media(
         self,
         *,
-        media: LangfuseMedia,
+        media: ElasticDashMedia,
         trace_id: str,
         observation_id: Optional[str],
         field: str,

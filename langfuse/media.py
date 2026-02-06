@@ -1,4 +1,4 @@
-"""This module contains the LangfuseMedia class, which is used to wrap media objects for upload to Langfuse."""
+"""This module contains the ElasticDashMedia class, which is used to wrap media objects for upload to ElasticDash."""
 
 import base64
 import hashlib
@@ -10,7 +10,7 @@ from typing import TYPE_CHECKING, Any, Literal, Optional, Tuple, TypeVar, cast
 import requests
 
 if TYPE_CHECKING:
-    from langfuse._client.client import Langfuse
+    from langfuse._client.client import ElasticDash
 
 from langfuse.api import MediaContentType
 from langfuse.types import ParsedMediaReference
@@ -18,10 +18,10 @@ from langfuse.types import ParsedMediaReference
 T = TypeVar("T")
 
 
-class LangfuseMedia:
-    """A class for wrapping media objects for upload to Langfuse.
+class ElasticDashMedia:
+    """A class for wrapping media objects for upload to ElasticDash.
 
-    This class handles the preparation and formatting of media content for Langfuse,
+    This class handles the preparation and formatting of media content for ElasticDash,
     supporting both base64 data URIs and raw content bytes.
 
     Args:
@@ -55,7 +55,7 @@ class LangfuseMedia:
         content_bytes: Optional[bytes] = None,
         file_path: Optional[str] = None,
     ):
-        """Initialize a LangfuseMedia object.
+        """Initialize a ElasticDashMedia object.
 
         Args:
             obj: The object to wrap.
@@ -88,7 +88,7 @@ class LangfuseMedia:
             self._source = "file" if self._content_bytes else None
         else:
             self._log.error(
-                "base64_data_uri, or content_bytes and content_type, or file_path must be provided to LangfuseMedia"
+                "base64_data_uri, or content_bytes and content_type, or file_path must be provided to ElasticDashMedia"
             )
 
             self._content_bytes = None
@@ -226,7 +226,7 @@ class LangfuseMedia:
     def resolve_media_references(
         *,
         obj: T,
-        langfuse_client: "Langfuse",
+        langfuse_client: "ElasticDash",
         resolve_with: Literal["base64_data_uri"],
         max_depth: int = 10,
         content_fetch_timeout_seconds: int = 10,
@@ -235,7 +235,7 @@ class LangfuseMedia:
 
         This method recursively traverses an object (up to max_depth) looking for media reference strings
         in the format "@@@langfuseMedia:...@@@". When found, it (synchronously) fetches the actual media content using
-        the provided Langfuse client and replaces the reference string with a base64 data URI.
+        the provided ElasticDash client and replaces the reference string with a base64 data URI.
 
         If fetching media content fails for a reference string, a warning is logged and the reference
         string is left unchanged.
@@ -243,7 +243,7 @@ class LangfuseMedia:
         Args:
             obj: The object to process. Can be a primitive value, array, or nested object.
                 If the object has a __dict__ attribute, a dict will be returned instead of the original object type.
-            langfuse_client: Langfuse client instance used to fetch media content.
+            langfuse_client: ElasticDash client instance used to fetch media content.
             resolve_with: The representation of the media content to replace the media reference string with.
                 Currently only "base64_data_uri" is supported.
             max_depth: Optional. Default is 10. The maximum depth to traverse the object.
@@ -260,7 +260,7 @@ class LangfuseMedia:
                 }
             }
 
-            result = await LangfuseMedia.resolve_media_references(obj, langfuse_client)
+            result = await ElasticDashMedia.resolve_media_references(obj, langfuse_client)
 
             # Result:
             # {
@@ -287,7 +287,7 @@ class LangfuseMedia:
 
                 for reference_string in reference_string_matches:
                     try:
-                        parsed_media_reference = LangfuseMedia.parse_reference_string(
+                        parsed_media_reference = ElasticDashMedia.parse_reference_string(
                             reference_string
                         )
                         media_data = langfuse_client.api.media.get(
@@ -308,7 +308,7 @@ class LangfuseMedia:
                             base64_data_uri
                         )
                     except Exception as e:
-                        LangfuseMedia._log.warning(
+                        ElasticDashMedia._log.warning(
                             f"Error fetching media content for reference string {reference_string}: {e}"
                         )
                         # Do not replace the reference string if there's an error

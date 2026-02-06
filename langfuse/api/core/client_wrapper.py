@@ -34,11 +34,11 @@ class BaseClientWrapper:
         if username is not None and password is not None:
             headers["Authorization"] = httpx.BasicAuth(username, password)._auth_header
         if self._x_langfuse_sdk_name is not None:
-            headers["X-Langfuse-Sdk-Name"] = self._x_langfuse_sdk_name
+            headers["X-ElasticDash-Sdk-Name"] = self._x_langfuse_sdk_name
         if self._x_langfuse_sdk_version is not None:
-            headers["X-Langfuse-Sdk-Version"] = self._x_langfuse_sdk_version
+            headers["X-ElasticDash-Sdk-Version"] = self._x_langfuse_sdk_version
         if self._x_langfuse_public_key is not None:
-            headers["X-Langfuse-Public-Key"] = self._x_langfuse_public_key
+            headers["X-ElasticDash-Public-Key"] = self._x_langfuse_public_key
         return headers
 
     def _get_username(self) -> typing.Optional[str]:

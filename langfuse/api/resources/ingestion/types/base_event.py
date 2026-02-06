@@ -20,7 +20,7 @@ class BaseEvent(pydantic_v1.BaseModel):
 
     metadata: typing.Optional[typing.Any] = pydantic_v1.Field(default=None)
     """
-    Optional. Metadata field used by the Langfuse SDKs for debugging.
+    Optional. Metadata field used by the ElasticDash SDKs for debugging.
     """
 
     def json(self, **kwargs: typing.Any) -> str:

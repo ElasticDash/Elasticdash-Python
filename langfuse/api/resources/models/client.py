@@ -48,12 +48,12 @@ class ModelsClient:
         Examples
         --------
         from langfuse import CreateModelRequest
-        from langfuse.client import FernLangfuse
+        from langfuse.client import FernElasticDash
 
-        client = FernLangfuse(
-            x_langfuse_sdk_name="YOUR_X_LANGFUSE_SDK_NAME",
-            x_langfuse_sdk_version="YOUR_X_LANGFUSE_SDK_VERSION",
-            x_langfuse_public_key="YOUR_X_LANGFUSE_PUBLIC_KEY",
+        client = FernElasticDash(
+            x_langfuse_sdk_name="YOUR_X_ELASTICDASH_SDK_NAME",
+            x_langfuse_sdk_version="YOUR_X_ELASTICDASH_SDK_VERSION",
+            x_langfuse_public_key="YOUR_X_ELASTICDASH_PUBLIC_KEY",
             username="YOUR_USERNAME",
             password="YOUR_PASSWORD",
             base_url="https://yourhost.com/path/to/api",
@@ -125,12 +125,12 @@ class ModelsClient:
 
         Examples
         --------
-        from langfuse.client import FernLangfuse
+        from langfuse.client import FernElasticDash
 
-        client = FernLangfuse(
-            x_langfuse_sdk_name="YOUR_X_LANGFUSE_SDK_NAME",
-            x_langfuse_sdk_version="YOUR_X_LANGFUSE_SDK_VERSION",
-            x_langfuse_public_key="YOUR_X_LANGFUSE_PUBLIC_KEY",
+        client = FernElasticDash(
+            x_langfuse_sdk_name="YOUR_X_ELASTICDASH_SDK_NAME",
+            x_langfuse_sdk_version="YOUR_X_ELASTICDASH_SDK_VERSION",
+            x_langfuse_public_key="YOUR_X_ELASTICDASH_PUBLIC_KEY",
             username="YOUR_USERNAME",
             password="YOUR_PASSWORD",
             base_url="https://yourhost.com/path/to/api",
@@ -188,12 +188,12 @@ class ModelsClient:
 
         Examples
         --------
-        from langfuse.client import FernLangfuse
+        from langfuse.client import FernElasticDash
 
-        client = FernLangfuse(
-            x_langfuse_sdk_name="YOUR_X_LANGFUSE_SDK_NAME",
-            x_langfuse_sdk_version="YOUR_X_LANGFUSE_SDK_VERSION",
-            x_langfuse_public_key="YOUR_X_LANGFUSE_PUBLIC_KEY",
+        client = FernElasticDash(
+            x_langfuse_sdk_name="YOUR_X_ELASTICDASH_SDK_NAME",
+            x_langfuse_sdk_version="YOUR_X_ELASTICDASH_SDK_VERSION",
+            x_langfuse_public_key="YOUR_X_ELASTICDASH_PUBLIC_KEY",
             username="YOUR_USERNAME",
             password="YOUR_PASSWORD",
             base_url="https://yourhost.com/path/to/api",
@@ -237,7 +237,7 @@ class ModelsClient:
         self, id: str, *, request_options: typing.Optional[RequestOptions] = None
     ) -> None:
         """
-        Delete a model. Cannot delete models managed by Langfuse. You can create your own definition with the same modelName to override the definition though.
+        Delete a model. Cannot delete models managed by ElasticDash. You can create your own definition with the same modelName to override the definition though.
 
         Parameters
         ----------
@@ -252,12 +252,12 @@ class ModelsClient:
 
         Examples
         --------
-        from langfuse.client import FernLangfuse
+        from langfuse.client import FernElasticDash
 
-        client = FernLangfuse(
-            x_langfuse_sdk_name="YOUR_X_LANGFUSE_SDK_NAME",
-            x_langfuse_sdk_version="YOUR_X_LANGFUSE_SDK_VERSION",
-            x_langfuse_public_key="YOUR_X_LANGFUSE_PUBLIC_KEY",
+        client = FernElasticDash(
+            x_langfuse_sdk_name="YOUR_X_ELASTICDASH_SDK_NAME",
+            x_langfuse_sdk_version="YOUR_X_ELASTICDASH_SDK_VERSION",
+            x_langfuse_public_key="YOUR_X_ELASTICDASH_PUBLIC_KEY",
             username="YOUR_USERNAME",
             password="YOUR_PASSWORD",
             base_url="https://yourhost.com/path/to/api",
@@ -327,12 +327,12 @@ class AsyncModelsClient:
         import asyncio
 
         from langfuse import CreateModelRequest
-        from langfuse.client import AsyncFernLangfuse
+        from langfuse.client import AsyncFernElasticDash
 
-        client = AsyncFernLangfuse(
-            x_langfuse_sdk_name="YOUR_X_LANGFUSE_SDK_NAME",
-            x_langfuse_sdk_version="YOUR_X_LANGFUSE_SDK_VERSION",
-            x_langfuse_public_key="YOUR_X_LANGFUSE_PUBLIC_KEY",
+        client = AsyncFernElasticDash(
+            x_langfuse_sdk_name="YOUR_X_ELASTICDASH_SDK_NAME",
+            x_langfuse_sdk_version="YOUR_X_ELASTICDASH_SDK_VERSION",
+            x_langfuse_public_key="YOUR_X_ELASTICDASH_PUBLIC_KEY",
             username="YOUR_USERNAME",
             password="YOUR_PASSWORD",
             base_url="https://yourhost.com/path/to/api",
@@ -412,12 +412,12 @@ class AsyncModelsClient:
         --------
         import asyncio
 
-        from langfuse.client import AsyncFernLangfuse
+        from langfuse.client import AsyncFernElasticDash
 
-        client = AsyncFernLangfuse(
-            x_langfuse_sdk_name="YOUR_X_LANGFUSE_SDK_NAME",
-            x_langfuse_sdk_version="YOUR_X_LANGFUSE_SDK_VERSION",
-            x_langfuse_public_key="YOUR_X_LANGFUSE_PUBLIC_KEY",
+        client = AsyncFernElasticDash(
+            x_langfuse_sdk_name="YOUR_X_ELASTICDASH_SDK_NAME",
+            x_langfuse_sdk_version="YOUR_X_ELASTICDASH_SDK_VERSION",
+            x_langfuse_public_key="YOUR_X_ELASTICDASH_PUBLIC_KEY",
             username="YOUR_USERNAME",
             password="YOUR_PASSWORD",
             base_url="https://yourhost.com/path/to/api",
@@ -483,12 +483,12 @@ class AsyncModelsClient:
         --------
         import asyncio
 
-        from langfuse.client import AsyncFernLangfuse
+        from langfuse.client import AsyncFernElasticDash
 
-        client = AsyncFernLangfuse(
-            x_langfuse_sdk_name="YOUR_X_LANGFUSE_SDK_NAME",
-            x_langfuse_sdk_version="YOUR_X_LANGFUSE_SDK_VERSION",
-            x_langfuse_public_key="YOUR_X_LANGFUSE_PUBLIC_KEY",
+        client = AsyncFernElasticDash(
+            x_langfuse_sdk_name="YOUR_X_ELASTICDASH_SDK_NAME",
+            x_langfuse_sdk_version="YOUR_X_ELASTICDASH_SDK_VERSION",
+            x_langfuse_public_key="YOUR_X_ELASTICDASH_PUBLIC_KEY",
             username="YOUR_USERNAME",
             password="YOUR_PASSWORD",
             base_url="https://yourhost.com/path/to/api",
@@ -538,7 +538,7 @@ class AsyncModelsClient:
         self, id: str, *, request_options: typing.Optional[RequestOptions] = None
     ) -> None:
         """
-        Delete a model. Cannot delete models managed by Langfuse. You can create your own definition with the same modelName to override the definition though.
+        Delete a model. Cannot delete models managed by ElasticDash. You can create your own definition with the same modelName to override the definition though.
 
         Parameters
         ----------
@@ -555,12 +555,12 @@ class AsyncModelsClient:
         --------
         import asyncio
 
-        from langfuse.client import AsyncFernLangfuse
+        from langfuse.client import AsyncFernElasticDash
 
-        client = AsyncFernLangfuse(
-            x_langfuse_sdk_name="YOUR_X_LANGFUSE_SDK_NAME",
-            x_langfuse_sdk_version="YOUR_X_LANGFUSE_SDK_VERSION",
-            x_langfuse_public_key="YOUR_X_LANGFUSE_PUBLIC_KEY",
+        client = AsyncFernElasticDash(
+            x_langfuse_sdk_name="YOUR_X_ELASTICDASH_SDK_NAME",
+            x_langfuse_sdk_version="YOUR_X_ELASTICDASH_SDK_VERSION",
+            x_langfuse_public_key="YOUR_X_ELASTICDASH_PUBLIC_KEY",
             username="YOUR_USERNAME",
             password="YOUR_PASSWORD",
             base_url="https://yourhost.com/path/to/api",

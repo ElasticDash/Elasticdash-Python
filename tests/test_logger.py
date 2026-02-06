@@ -1,6 +1,6 @@
 import os
 
-from langfuse import Langfuse
+from langfuse import ElasticDash
 from langfuse.logger import langfuse_logger
 
 """
@@ -13,23 +13,23 @@ logging.ERROR	40
 
 
 def test_default_langfuse():
-    Langfuse()
+    ElasticDash()
 
     assert langfuse_logger.level == 30
 
 
 def test_via_env():
-    os.environ["LANGFUSE_DEBUG"] = "True"
+    os.environ["ELASTICDASH_DEBUG"] = "True"
 
-    Langfuse()
+    ElasticDash()
 
     assert langfuse_logger.level == 10
 
-    os.environ.pop("LANGFUSE_DEBUG")
+    os.environ.pop("ELASTICDASH_DEBUG")
 
 
 def test_debug_langfuse():
-    Langfuse(debug=True)
+    ElasticDash(debug=True)
     assert langfuse_logger.level == 10
 
     # Reset

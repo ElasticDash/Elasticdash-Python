@@ -18,14 +18,14 @@ from langfuse.model import (
     DatasetStatus,
 )
 
-from .span import LangfuseSpan
+from .span import ElasticDashSpan
 
 if TYPE_CHECKING:
-    from langfuse._client.client import Langfuse
+    from langfuse._client.client import ElasticDash
 
 
 class DatasetItemClient:
-    """Class for managing dataset items in Langfuse.
+    """Class for managing dataset items in ElasticDash.
 
     Args:
         id (str): Unique identifier of the dataset item.
@@ -39,13 +39,13 @@ class DatasetItemClient:
         dataset_name (str): Name of the dataset to which this item belongs.
         created_at (datetime): Timestamp of dataset item creation.
         updated_at (datetime): Timestamp of the last update to the dataset item.
-        langfuse (Langfuse): Instance of Langfuse client for API interactions.
+        langfuse (ElasticDash): Instance of ElasticDash client for API interactions.
 
     Example:
         ```python
-        from langfuse import Langfuse
+        from langfuse import ElasticDash
 
-        langfuse = Langfuse()
+        langfuse = ElasticDash()
 
         dataset = langfuse.get_dataset("<dataset_name>")
 
@@ -75,9 +75,9 @@ class DatasetItemClient:
     created_at: dt.datetime
     updated_at: dt.datetime
 
-    langfuse: "Langfuse"
+    langfuse: "ElasticDash"
 
-    def __init__(self, dataset_item: DatasetItem, langfuse: "Langfuse"):
+    def __init__(self, dataset_item: DatasetItem, langfuse: "ElasticDash"):
         """Initialize the DatasetItemClient."""
         self.id = dataset_item.id
         self.status = dataset_item.status
@@ -100,8 +100,8 @@ class DatasetItemClient:
         run_name: str,
         run_metadata: Optional[Any] = None,
         run_description: Optional[str] = None,
-    ) -> Generator[LangfuseSpan, None, None]:
-        """Create a context manager for the dataset item run that links the execution to a Langfuse trace.
+    ) -> Generator[ElasticDashSpan, None, None]:
+        """Create a context manager for the dataset item run that links the execution to a ElasticDash trace.
 
         This method is a context manager that creates a trace for the dataset run and yields a span
         that can be used to track the execution of the run.
@@ -112,7 +112,7 @@ class DatasetItemClient:
             run_description (Optional[str]): Description of the dataset run.
 
         Yields:
-            span: A LangfuseSpan that can be used to trace the execution of the run.
+            span: A ElasticDashSpan that can be used to trace the execution of the run.
         """
         trace_name = f"Dataset run: {run_name}"
 
@@ -144,7 +144,7 @@ class DatasetItemClient:
 
 
 class DatasetClient:
-    """Class for managing datasets in Langfuse.
+    """Class for managing datasets in ElasticDash.
 
     Attributes:
         id (str): Unique identifier of the dataset.
@@ -159,9 +159,9 @@ class DatasetClient:
     Example:
         Print the input of each dataset item in a dataset.
         ```python
-        from langfuse import Langfuse
+        from langfuse import ElasticDash
 
-        langfuse = Langfuse()
+        langfuse = ElasticDash()
 
         dataset = langfuse.get_dataset("<dataset_name>")
 
@@ -189,10 +189,10 @@ class DatasetClient:
         self.created_at = dataset.created_at
         self.updated_at = dataset.updated_at
         self.items = items
-        self._langfuse: Optional["Langfuse"] = None
+        self._langfuse: Optional["ElasticDash"] = None
 
-    def _get_langfuse_client(self) -> Optional["Langfuse"]:
-        """Get the Langfuse client from the first item."""
+    def _get_langfuse_client(self) -> Optional["ElasticDash"]:
+        """Get the ElasticDash client from the first item."""
         if self._langfuse is None and self.items:
             self._langfuse = self.items[0].langfuse
         return self._langfuse
@@ -210,27 +210,27 @@ class DatasetClient:
         max_concurrency: int = 50,
         metadata: Optional[Dict[str, Any]] = None,
     ) -> ExperimentResult:
-        """Run an experiment on this Langfuse dataset with automatic tracking.
+        """Run an experiment on this ElasticDash dataset with automatic tracking.
 
         This is a convenience method that runs an experiment using all items in this
-        dataset. It automatically creates a dataset run in Langfuse for tracking and
+        dataset. It automatically creates a dataset run in ElasticDash for tracking and
         comparison purposes, linking all experiment results to the dataset.
 
         Key benefits of using dataset.run_experiment():
-        - Automatic dataset run creation and linking in Langfuse UI
+        - Automatic dataset run creation and linking in ElasticDash UI
         - Built-in experiment tracking and versioning
         - Easy comparison between different experiment runs
         - Direct access to dataset items with their metadata and expected outputs
-        - Automatic URL generation for viewing results in Langfuse dashboard
+        - Automatic URL generation for viewing results in ElasticDash dashboard
 
         Args:
             name: Human-readable name for the experiment run. This will be used as
-                the dataset run name in Langfuse for tracking and identification.
+                the dataset run name in ElasticDash for tracking and identification.
             run_name: Optional exact name for the dataset run. If provided, this will be
-                used as the exact dataset run name in Langfuse. If not provided, this will
+                used as the exact dataset run name in ElasticDash. If not provided, this will
                 default to the experiment name appended with an ISO timestamp.
             description: Optional description of the experiment's purpose, methodology,
-                or what you're testing. Appears in the Langfuse UI for context.
+                or what you're testing. Appears in the ElasticDash UI for context.
             task: Function that processes each dataset item and returns output.
                 The function will receive DatasetItem objects with .input, .expected_output,
                 .metadata attributes. Signature should be: task(*, item, **kwargs) -> Any
@@ -254,8 +254,8 @@ class DatasetClient:
             - description: Optional experiment description.
             - item_results: Results for each dataset item with outputs and evaluations.
             - run_evaluations: Aggregate evaluation results for the entire run.
-            - dataset_run_id: ID of the created dataset run in Langfuse.
-            - dataset_run_url: Direct URL to view the experiment results in Langfuse UI.
+            - dataset_run_id: ID of the created dataset run in ElasticDash.
+            - dataset_run_url: Direct URL to view the experiment results in ElasticDash UI.
 
             The result object provides a format() method for human-readable output:
             ```python
@@ -265,7 +265,7 @@ class DatasetClient:
             ```
 
         Raises:
-            ValueError: If the dataset has no items or no Langfuse client is available.
+            ValueError: If the dataset has no items or no ElasticDash client is available.
 
         Examples:
             Basic dataset experiment:
@@ -362,8 +362,8 @@ class DatasetClient:
                 metadata={"model": "gpt-4", "temperature": 0.7}
             )
 
-            # Results are automatically linked to dataset in Langfuse
-            print(f"Experiment completed! View in Langfuse: {result['dataset_run_url']}")
+            # Results are automatically linked to dataset in ElasticDash
+            print(f"Experiment completed! View in ElasticDash: {result['dataset_run_url']}")
 
             # Access individual results
             for i, item_result in enumerate(result["item_results"]):
@@ -391,14 +391,14 @@ class DatasetClient:
                 evaluators=[accuracy_evaluator, fluency_evaluator]
             )
 
-            # Both experiments are now visible in Langfuse for easy comparison
-            print("Compare results in Langfuse:")
+            # Both experiments are now visible in ElasticDash for easy comparison
+            print("Compare results in ElasticDash:")
             print(f"GPT-4: {result_gpt4.dataset_run_url}")
             print(f"Custom: {result_custom.dataset_run_url}")
             ```
 
         Note:
-            - All experiment results are automatically tracked in Langfuse as dataset runs
+            - All experiment results are automatically tracked in ElasticDash as dataset runs
             - Dataset items provide .input, .expected_output, and .metadata attributes
             - Results can be easily compared across different experiment runs in the UI
             - The dataset_run_url provides direct access to detailed results and analysis
@@ -408,7 +408,7 @@ class DatasetClient:
         """
         langfuse_client = self._get_langfuse_client()
         if not langfuse_client:
-            raise ValueError("No Langfuse client available. Dataset items are empty.")
+            raise ValueError("No ElasticDash client available. Dataset items are empty.")
 
         return langfuse_client.run_experiment(
             name=name,

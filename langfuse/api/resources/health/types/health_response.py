@@ -21,7 +21,7 @@ class HealthResponse(pydantic_v1.BaseModel):
 
     version: str = pydantic_v1.Field()
     """
-    Langfuse server version
+    ElasticDash server version
     """
 
     status: str

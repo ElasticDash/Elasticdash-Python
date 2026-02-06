@@ -4,7 +4,7 @@ from unittest.mock import Mock, patch
 import openai
 import pytest
 
-from langfuse._client.client import Langfuse
+from langfuse._client.client import ElasticDash
 from langfuse._utils.prompt_cache import (
     DEFAULT_PROMPT_CACHE_TTL_SECONDS,
     PromptCache,
@@ -17,7 +17,7 @@ from tests.utils import create_uuid, get_api
 
 
 def test_create_prompt():
-    langfuse = Langfuse()
+    langfuse = ElasticDash()
     prompt_name = create_uuid()
     prompt_client = langfuse.create_prompt(
         name=prompt_name,
@@ -37,7 +37,7 @@ def test_create_prompt():
 
 
 def test_create_prompt_with_special_chars_in_name():
-    langfuse = Langfuse()
+    langfuse = ElasticDash()
     prompt_name = create_uuid() + "special chars !@#$%^&*() +"
     prompt_client = langfuse.create_prompt(
         name=prompt_name,
@@ -57,7 +57,7 @@ def test_create_prompt_with_special_chars_in_name():
 
 
 def test_create_chat_prompt():
-    langfuse = Langfuse()
+    langfuse = ElasticDash()
     prompt_name = create_uuid()
 
     prompt_client = langfuse.create_prompt(
@@ -93,7 +93,7 @@ def test_create_chat_prompt():
 
 
 def test_create_chat_prompt_with_placeholders():
-    langfuse = Langfuse()
+    langfuse = ElasticDash()
     prompt_name = create_uuid()
 
     prompt_client = langfuse.create_prompt(
@@ -143,7 +143,7 @@ def test_create_chat_prompt_with_placeholders():
 
 def test_create_prompt_with_placeholders():
     """Test creating a prompt with placeholder messages."""
-    langfuse = Langfuse()
+    langfuse = ElasticDash()
     prompt_name = create_uuid()
     prompt_client = langfuse.create_prompt(
         name=prompt_name,
@@ -173,7 +173,7 @@ def test_create_prompt_with_placeholders():
 
 def test_get_prompt_with_placeholders():
     """Test retrieving a prompt with placeholders."""
-    langfuse = Langfuse()
+    langfuse = ElasticDash()
     prompt_name = create_uuid()
 
     langfuse.create_prompt(
@@ -350,7 +350,7 @@ def test_warning_on_unresolved_placeholders():
     """Test that a warning is emitted when compiling with unresolved placeholders."""
     from unittest.mock import patch
 
-    langfuse = Langfuse()
+    langfuse = ElasticDash()
     prompt_name = create_uuid()
 
     langfuse.create_prompt(
@@ -383,7 +383,7 @@ def test_warning_on_unresolved_placeholders():
 
 
 def test_compiling_chat_prompt():
-    langfuse = Langfuse()
+    langfuse = ElasticDash()
     prompt_name = create_uuid()
 
     prompt_client = langfuse.create_prompt(
@@ -413,7 +413,7 @@ def test_compiling_chat_prompt():
 
 
 def test_compiling_prompt():
-    langfuse = Langfuse()
+    langfuse = ElasticDash()
     prompt_name = "test_compiling_prompt"
 
     prompt_client = langfuse.create_prompt(
@@ -440,7 +440,7 @@ def test_compiling_prompt():
 
 
 def test_compiling_prompt_without_character_escaping():
-    langfuse = Langfuse()
+    langfuse = ElasticDash()
     prompt_name = "test_compiling_prompt_without_character_escaping"
 
     prompt_client = langfuse.create_prompt(
@@ -461,7 +461,7 @@ def test_compiling_prompt_without_character_escaping():
 
 
 def test_compiling_prompt_with_content_as_variable_name():
-    langfuse = Langfuse()
+    langfuse = ElasticDash()
     prompt_name = "test_compiling_prompt_with_content_as_variable_name"
 
     prompt_client = langfuse.create_prompt(
@@ -483,7 +483,7 @@ def test_compiling_prompt_with_content_as_variable_name():
 
 
 def test_create_prompt_with_null_config():
-    langfuse = Langfuse(debug=False)
+    langfuse = ElasticDash(debug=False)
 
     langfuse.create_prompt(
         name="test_null_config",
@@ -498,7 +498,7 @@ def test_create_prompt_with_null_config():
 
 
 def test_create_prompt_with_tags():
-    langfuse = Langfuse(debug=False)
+    langfuse = ElasticDash(debug=False)
     prompt_name = create_uuid()
 
     langfuse.create_prompt(
@@ -513,7 +513,7 @@ def test_create_prompt_with_tags():
 
 
 def test_create_prompt_with_empty_tags():
-    langfuse = Langfuse(debug=False)
+    langfuse = ElasticDash(debug=False)
     prompt_name = create_uuid()
 
     langfuse.create_prompt(
@@ -528,7 +528,7 @@ def test_create_prompt_with_empty_tags():
 
 
 def test_create_prompt_with_previous_tags():
-    langfuse = Langfuse(debug=False)
+    langfuse = ElasticDash(debug=False)
     prompt_name = create_uuid()
 
     langfuse.create_prompt(
@@ -561,7 +561,7 @@ def test_create_prompt_with_previous_tags():
 
 
 def test_remove_prompt_tags():
-    langfuse = Langfuse(debug=False)
+    langfuse = ElasticDash(debug=False)
     prompt_name = create_uuid()
 
     langfuse.create_prompt(
@@ -584,7 +584,7 @@ def test_remove_prompt_tags():
 
 
 def test_update_prompt_tags():
-    langfuse = Langfuse(debug=False)
+    langfuse = ElasticDash(debug=False)
     prompt_name = create_uuid()
 
     langfuse.create_prompt(
@@ -609,7 +609,7 @@ def test_update_prompt_tags():
 
 
 def test_get_prompt_by_version_or_label():
-    langfuse = Langfuse()
+    langfuse = ElasticDash()
     prompt_name = create_uuid()
 
     for i in range(3):
@@ -641,7 +641,7 @@ def test_get_prompt_by_version_or_label():
 
 
 def test_prompt_end_to_end():
-    langfuse = Langfuse(debug=False)
+    langfuse = ElasticDash(debug=False)
 
     langfuse.create_prompt(
         name="test",
@@ -681,13 +681,13 @@ def test_prompt_end_to_end():
 
 @pytest.fixture
 def langfuse():
-    from langfuse._client.resource_manager import LangfuseResourceManager
+    from langfuse._client.resource_manager import ElasticDashResourceManager
 
-    langfuse_instance = Langfuse()
+    langfuse_instance = ElasticDash()
     langfuse_instance.api = Mock()
 
     if langfuse_instance._resources is None:
-        langfuse_instance._resources = Mock(spec=LangfuseResourceManager)
+        langfuse_instance._resources = Mock(spec=ElasticDashResourceManager)
         langfuse_instance._resources.prompt_cache = PromptCache()
 
     return langfuse_instance
@@ -914,7 +914,7 @@ def test_get_valid_cached_chat_prompt(langfuse):
 
 # Should refetch and return new prompt if cached one is expired according to custom TTL
 @patch.object(PromptCacheItem, "get_epoch_seconds")
-def test_get_fresh_prompt_when_expired_cache_custom_ttl(mock_time, langfuse: Langfuse):
+def test_get_fresh_prompt_when_expired_cache_custom_ttl(mock_time, langfuse: ElasticDash):
     mock_time.return_value = 0
     ttl_seconds = 20
 
@@ -960,7 +960,7 @@ def test_get_fresh_prompt_when_expired_cache_custom_ttl(mock_time, langfuse: Lan
 
 # Should disable caching when cache_ttl_seconds is set to 0
 @patch.object(PromptCacheItem, "get_epoch_seconds")
-def test_disable_caching_when_ttl_zero(mock_time, langfuse: Langfuse):
+def test_disable_caching_when_ttl_zero(mock_time, langfuse: ElasticDash):
     mock_time.return_value = 0
     prompt_name = "test_disable_caching_when_ttl_zero"
 
@@ -1019,7 +1019,7 @@ def test_disable_caching_when_ttl_zero(mock_time, langfuse: Langfuse):
 
 # Should return stale prompt immediately if cached one is expired according to default TTL and add to refresh promise map
 @patch.object(PromptCacheItem, "get_epoch_seconds")
-def test_get_stale_prompt_when_expired_cache_default_ttl(mock_time, langfuse: Langfuse):
+def test_get_stale_prompt_when_expired_cache_default_ttl(mock_time, langfuse: ElasticDash):
     import logging
 
     logging.basicConfig(level=logging.DEBUG)
@@ -1084,7 +1084,7 @@ def test_get_stale_prompt_when_expired_cache_default_ttl(mock_time, langfuse: La
 
 # Should refetch and return new prompt if cached one is expired according to default TTL
 @patch.object(PromptCacheItem, "get_epoch_seconds")
-def test_get_fresh_prompt_when_expired_cache_default_ttl(mock_time, langfuse: Langfuse):
+def test_get_fresh_prompt_when_expired_cache_default_ttl(mock_time, langfuse: ElasticDash):
     mock_time.return_value = 0
 
     prompt_name = "test_get_fresh_prompt_when_expired_cache_default_ttl"
@@ -1128,7 +1128,7 @@ def test_get_fresh_prompt_when_expired_cache_default_ttl(mock_time, langfuse: La
 
 # Should return expired prompt if refetch fails
 @patch.object(PromptCacheItem, "get_epoch_seconds")
-def test_get_expired_prompt_when_failing_fetch(mock_time, langfuse: Langfuse):
+def test_get_expired_prompt_when_failing_fetch(mock_time, langfuse: ElasticDash):
     mock_time.return_value = 0
 
     prompt_name = "test_get_expired_prompt_when_failing_fetch"
@@ -1167,7 +1167,7 @@ def test_get_expired_prompt_when_failing_fetch(mock_time, langfuse: Langfuse):
 
 @patch.object(PromptCacheItem, "get_epoch_seconds")
 def test_evict_prompt_cache_entry_when_refresh_returns_not_found(
-    mock_time, langfuse: Langfuse
+    mock_time, langfuse: ElasticDash
 ) -> None:
     mock_time.return_value = 0
 
@@ -1231,7 +1231,7 @@ def test_evict_prompt_cache_entry_when_refresh_returns_not_found(
 
 
 # Should fetch new prompt if version changes
-def test_get_fresh_prompt_when_version_changes(langfuse: Langfuse):
+def test_get_fresh_prompt_when_version_changes(langfuse: ElasticDash):
     prompt_name = "test_get_fresh_prompt_when_version_changes"
     prompt = Prompt_Text(
         name=prompt_name,
@@ -1269,7 +1269,7 @@ def test_get_fresh_prompt_when_version_changes(langfuse: Langfuse):
 
 
 def test_do_not_return_fallback_if_fetch_success():
-    langfuse = Langfuse()
+    langfuse = ElasticDash()
     prompt_name = create_uuid()
     prompt_client = langfuse.create_prompt(
         name=prompt_name,
@@ -1287,7 +1287,7 @@ def test_do_not_return_fallback_if_fetch_success():
 
 
 def test_fallback_text_prompt():
-    langfuse = Langfuse()
+    langfuse = ElasticDash()
 
     fallback_text_prompt = "this is a fallback text prompt with {{variable}}"
 
@@ -1304,7 +1304,7 @@ def test_fallback_text_prompt():
 
 
 def test_fallback_chat_prompt():
-    langfuse = Langfuse()
+    langfuse = ElasticDash()
     fallback_chat_prompt = [
         {"role": "system", "content": "fallback system"},
         {"role": "user", "content": "fallback user name {{name}}"},
@@ -1332,7 +1332,7 @@ def test_fallback_chat_prompt():
 
 
 def test_do_not_link_observation_if_fallback():
-    langfuse = Langfuse()
+    langfuse = ElasticDash()
 
     fallback_text_prompt = "this is a fallback text prompt with {{variable}}"
 
@@ -1355,7 +1355,7 @@ def test_do_not_link_observation_if_fallback():
 
 
 def test_variable_names_on_content_with_variable_names():
-    langfuse = Langfuse()
+    langfuse = ElasticDash()
 
     prompt_client = langfuse.create_prompt(
         name="test_variable_names_1",
@@ -1377,7 +1377,7 @@ def test_variable_names_on_content_with_variable_names():
 
 
 def test_variable_names_on_content_with_no_variable_names():
-    langfuse = Langfuse()
+    langfuse = ElasticDash()
 
     prompt_client = langfuse.create_prompt(
         name="test_variable_names_2",
@@ -1399,7 +1399,7 @@ def test_variable_names_on_content_with_no_variable_names():
 
 
 def test_variable_names_on_content_with_variable_names_chat_messages():
-    langfuse = Langfuse()
+    langfuse = ElasticDash()
 
     prompt_client = langfuse.create_prompt(
         name="test_variable_names_3",
@@ -1427,7 +1427,7 @@ def test_variable_names_on_content_with_variable_names_chat_messages():
 
 
 def test_variable_names_on_content_with_no_variable_names_chat_messages():
-    langfuse = Langfuse()
+    langfuse = ElasticDash()
     prompt_name = "test_variable_names_on_content_with_no_variable_names_chat_messages"
 
     prompt_client = langfuse.create_prompt(
@@ -1453,7 +1453,7 @@ def test_variable_names_on_content_with_no_variable_names_chat_messages():
 
 
 def test_update_prompt():
-    langfuse = Langfuse()
+    langfuse = ElasticDash()
     prompt_name = create_uuid()
 
     # Create initial prompt
@@ -1479,14 +1479,14 @@ def test_update_prompt():
     print(f"Fetched prompt labels: {fetched_prompt.labels}")
     print(f"Updated prompt labels: {updated_prompt.labels}")
 
-    # production was set by the first call, latest is managed and set by Langfuse
+    # production was set by the first call, latest is managed and set by ElasticDash
     expected_labels = sorted(["latest", "doe", "production", "john"])
     assert sorted(fetched_prompt.labels) == expected_labels
     assert sorted(updated_prompt.labels) == expected_labels
 
 
 def test_update_prompt_in_folder():
-    langfuse = Langfuse()
+    langfuse = ElasticDash()
     prompt_name = f"some-folder/{create_uuid()}"
 
     # Create initial prompt
@@ -1513,7 +1513,7 @@ def test_update_prompt_in_folder():
     print(f"Fetched prompt labels: {fetched_prompt.labels}")
     print(f"Updated prompt labels: {updated_prompt.labels}")
 
-    # production was set by the first call, latest is managed and set by Langfuse
+    # production was set by the first call, latest is managed and set by ElasticDash
     expected_labels = sorted(["latest", "doe", "production", "john"])
     assert sorted(fetched_prompt.labels) == expected_labels
     assert sorted(updated_prompt.labels) == expected_labels
