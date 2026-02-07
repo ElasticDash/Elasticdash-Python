@@ -33,26 +33,26 @@ from opentelemetry import trace as otel_trace_api
 from opentelemetry.trace.status import Status, StatusCode
 from opentelemetry.util._decorator import _AgnosticContextManager
 
-from langfuse.model import PromptClient
+from elasticdash.model import PromptClient
 
 if TYPE_CHECKING:
-    from langfuse._client.client import ElasticDash
+    from elasticdash._client.client import ElasticDash
 
-from langfuse._client.attributes import (
+from elasticdash._client.attributes import (
     ElasticDashOtelSpanAttributes,
     create_generation_attributes,
     create_span_attributes,
     create_trace_attributes,
 )
-from langfuse._client.constants import (
+from elasticdash._client.constants import (
     ObservationTypeGenerationLike,
     ObservationTypeLiteral,
     ObservationTypeLiteralNoEvent,
     ObservationTypeSpanLike,
     get_observation_types_list,
 )
-from langfuse.logger import langfuse_logger
-from langfuse.types import MapValue, ScoreDataType, SpanLevel
+from elasticdash.logger import elasticdash_logger
+from elasticdash.types import MapValue, ScoreDataType, SpanLevel
 
 # Factory mapping for observation classes
 # Note: "event" is handled separately due to special instantiation logic
@@ -69,7 +69,7 @@ class ElasticDashObservationWrapper:
 
     Attributes:
         _otel_span: The underlying OpenTelemetry span
-        _langfuse_client: Reference to the parent ElasticDash client
+        _elasticdash_client: Reference to the parent ElasticDash client
         trace_id: The trace ID for this span
         observation_id: The observation ID (span ID) for this span
     """
@@ -78,7 +78,7 @@ class ElasticDashObservationWrapper:
         self,
         *,
         otel_span: otel_trace_api.Span,
-        langfuse_client: "ElasticDash",
+        elasticdash_client: "ElasticDash",
         as_type: ObservationTypeLiteral,
         input: Optional[Any] = None,
         output: Optional[Any] = None,
@@ -98,7 +98,7 @@ class ElasticDashObservationWrapper:
 
         Args:
             otel_span: The OpenTelemetry span to wrap
-            langfuse_client: Reference to the parent ElasticDash client
+            elasticdash_client: Reference to the parent ElasticDash client
             as_type: The type of span ("span" or "generation")
             input: Input data for the span (any JSON-serializable object)
             output: Output data from the span (any JSON-serializable object)
@@ -118,13 +118,13 @@ class ElasticDashObservationWrapper:
         self._otel_span.set_attribute(
             ElasticDashOtelSpanAttributes.OBSERVATION_TYPE, as_type
         )
-        self._langfuse_client = langfuse_client
+        self._elasticdash_client = elasticdash_client
         self._observation_type = as_type
 
-        self.trace_id = self._langfuse_client._get_otel_trace_id(otel_span)
-        self.id = self._langfuse_client._get_otel_span_id(otel_span)
+        self.trace_id = self._elasticdash_client._get_otel_trace_id(otel_span)
+        self.id = self._elasticdash_client._get_otel_span_id(otel_span)
 
-        self._environment = environment or self._langfuse_client._environment
+        self._environment = environment or self._elasticdash_client._environment
         if self._environment is not None:
             self._otel_span.set_attribute(
                 ElasticDashOtelSpanAttributes.ENVIRONMENT, self._environment
@@ -235,7 +235,7 @@ class ElasticDashObservationWrapper:
             public: Whether the trace should be publicly accessible
 
         See Also:
-            :func:`langfuse.propagate_attributes`: Recommended replacement
+            :func:`elasticdash.propagate_attributes`: Recommended replacement
         """
         if not self._otel_span.is_recording():
             return self
@@ -323,7 +323,7 @@ class ElasticDashObservationWrapper:
 
         Example:
             ```python
-            with langfuse.start_as_current_span(name="process-query") as span:
+            with elasticdash.start_as_current_span(name="process-query") as span:
                 # Do work
                 result = process_data()
 
@@ -336,7 +336,7 @@ class ElasticDashObservationWrapper:
                 )
             ```
         """
-        self._langfuse_client.create_score(
+        self._elasticdash_client.create_score(
             name=name,
             value=cast(str, value),
             trace_id=self.trace_id,
@@ -407,7 +407,7 @@ class ElasticDashObservationWrapper:
 
         Example:
             ```python
-            with langfuse.start_as_current_span(name="handle-request") as span:
+            with elasticdash.start_as_current_span(name="handle-request") as span:
                 # Process the complete request
                 result = process_request()
 
@@ -420,7 +420,7 @@ class ElasticDashObservationWrapper:
                 )
             ```
         """
-        self._langfuse_client.create_score(
+        self._elasticdash_client.create_score(
             name=name,
             value=cast(str, value),
             trace_id=self.trace_id,
@@ -521,13 +521,13 @@ class ElasticDashObservationWrapper:
         Returns:
             The masked data, or the original data if no mask is configured
         """
-        if not self._langfuse_client._mask:
+        if not self._elasticdash_client._mask:
             return data
 
         try:
-            return self._langfuse_client._mask(data=data)
+            return self._elasticdash_client._mask(data=data)
         except Exception as e:
-            langfuse_logger.error(
+            elasticdash_logger.error(
                 f"Masking error: Custom mask function threw exception when processing data. Using fallback masking. Error: {e}"
             )
 
@@ -552,9 +552,9 @@ class ElasticDashObservationWrapper:
         Returns:
             The data with any media content processed
         """
-        if self._langfuse_client._resources is not None:
+        if self._elasticdash_client._resources is not None:
             return (
-                self._langfuse_client._resources._media_manager._find_and_process_media(
+                self._elasticdash_client._resources._media_manager._find_and_process_media(
                     data=data,
                     field=field,
                     trace_id=self.trace_id,
@@ -895,14 +895,14 @@ class ElasticDashObservationWrapper:
         """
         if as_type == "event":
             timestamp = time_ns()
-            event_span = self._langfuse_client._otel_tracer.start_span(
+            event_span = self._elasticdash_client._otel_tracer.start_span(
                 name=name, start_time=timestamp
             )
             return cast(
                 ElasticDashEvent,
                 ElasticDashEvent(
                     otel_span=event_span,
-                    langfuse_client=self._langfuse_client,
+                    elasticdash_client=self._elasticdash_client,
                     input=input,
                     output=output,
                     metadata=metadata,
@@ -915,17 +915,17 @@ class ElasticDashObservationWrapper:
 
         observation_class = _OBSERVATION_CLASS_MAP.get(as_type)
         if not observation_class:
-            langfuse_logger.warning(
+            elasticdash_logger.warning(
                 f"Unknown observation type: {as_type}, falling back to ElasticDashSpan"
             )
             observation_class = ElasticDashSpan
 
         with otel_trace_api.use_span(self._otel_span):
-            new_otel_span = self._langfuse_client._otel_tracer.start_span(name=name)
+            new_otel_span = self._elasticdash_client._otel_tracer.start_span(name=name)
 
         common_args = {
             "otel_span": new_otel_span,
-            "langfuse_client": self._langfuse_client,
+            "elasticdash_client": self._elasticdash_client,
             "environment": self._environment,
             "input": input,
             "output": output,
@@ -1142,7 +1142,7 @@ class ElasticDashObservationWrapper:
         Returns:
             A context manager that yields a new observation of the specified type
         """
-        return self._langfuse_client._create_span_with_parent_context(
+        return self._elasticdash_client._create_span_with_parent_context(
             name=name,
             as_type=as_type,
             remote_parent_span=None,
@@ -1176,7 +1176,7 @@ class ElasticDashSpan(ElasticDashObservationWrapper):
         self,
         *,
         otel_span: otel_trace_api.Span,
-        langfuse_client: "ElasticDash",
+        elasticdash_client: "ElasticDash",
         input: Optional[Any] = None,
         output: Optional[Any] = None,
         metadata: Optional[Any] = None,
@@ -1189,7 +1189,7 @@ class ElasticDashSpan(ElasticDashObservationWrapper):
 
         Args:
             otel_span: The OpenTelemetry span to wrap
-            langfuse_client: Reference to the parent ElasticDash client
+            elasticdash_client: Reference to the parent ElasticDash client
             input: Input data for the span (any JSON-serializable object)
             output: Output data from the span (any JSON-serializable object)
             metadata: Additional metadata to associate with the span
@@ -1201,7 +1201,7 @@ class ElasticDashSpan(ElasticDashObservationWrapper):
         super().__init__(
             otel_span=otel_span,
             as_type="span",
-            langfuse_client=langfuse_client,
+            elasticdash_client=elasticdash_client,
             input=input,
             output=output,
             metadata=metadata,
@@ -1241,7 +1241,7 @@ class ElasticDashSpan(ElasticDashObservationWrapper):
 
         Example:
             ```python
-            parent_span = langfuse.start_span(name="process-request")
+            parent_span = elasticdash.start_span(name="process-request")
             try:
                 # Create a child span
                 child_span = parent_span.start_span(name="validate-input")
@@ -1304,7 +1304,7 @@ class ElasticDashSpan(ElasticDashObservationWrapper):
 
         Example:
             ```python
-            with langfuse.start_as_current_span(name="process-request") as parent_span:
+            with elasticdash.start_as_current_span(name="process-request") as parent_span:
                 # Parent span is active here
 
                 # Create a child span with context management
@@ -1384,7 +1384,7 @@ class ElasticDashSpan(ElasticDashObservationWrapper):
 
         Example:
             ```python
-            span = langfuse.start_span(name="process-query")
+            span = elasticdash.start_span(name="process-query")
             try:
                 # Create a generation child span
                 generation = span.start_generation(
@@ -1481,7 +1481,7 @@ class ElasticDashSpan(ElasticDashObservationWrapper):
 
         Example:
             ```python
-            with langfuse.start_as_current_span(name="process-request") as span:
+            with elasticdash.start_as_current_span(name="process-request") as span:
                 # Prepare data
                 query = preprocess_user_query(user_input)
 
@@ -1557,13 +1557,13 @@ class ElasticDashSpan(ElasticDashObservationWrapper):
 
         Example:
             ```python
-            event = langfuse.create_event(name="process-event")
+            event = elasticdash.create_event(name="process-event")
             ```
         """
         timestamp = time_ns()
 
         with otel_trace_api.use_span(self._otel_span):
-            new_otel_span = self._langfuse_client._otel_tracer.start_span(
+            new_otel_span = self._elasticdash_client._otel_tracer.start_span(
                 name=name, start_time=timestamp
             )
 
@@ -1571,7 +1571,7 @@ class ElasticDashSpan(ElasticDashObservationWrapper):
             "ElasticDashEvent",
             ElasticDashEvent(
                 otel_span=new_otel_span,
-                langfuse_client=self._langfuse_client,
+                elasticdash_client=self._elasticdash_client,
                 input=input,
                 output=output,
                 metadata=metadata,
@@ -1595,7 +1595,7 @@ class ElasticDashGeneration(ElasticDashObservationWrapper):
         self,
         *,
         otel_span: otel_trace_api.Span,
-        langfuse_client: "ElasticDash",
+        elasticdash_client: "ElasticDash",
         input: Optional[Any] = None,
         output: Optional[Any] = None,
         metadata: Optional[Any] = None,
@@ -1614,7 +1614,7 @@ class ElasticDashGeneration(ElasticDashObservationWrapper):
 
         Args:
             otel_span: The OpenTelemetry span to wrap
-            langfuse_client: Reference to the parent ElasticDash client
+            elasticdash_client: Reference to the parent ElasticDash client
             input: Input data for the generation (e.g., prompts)
             output: Output from the generation (e.g., completions)
             metadata: Additional metadata to associate with the generation
@@ -1632,7 +1632,7 @@ class ElasticDashGeneration(ElasticDashObservationWrapper):
         super().__init__(
             as_type="generation",
             otel_span=otel_span,
-            langfuse_client=langfuse_client,
+            elasticdash_client=elasticdash_client,
             input=input,
             output=output,
             metadata=metadata,
@@ -1656,7 +1656,7 @@ class ElasticDashEvent(ElasticDashObservationWrapper):
         self,
         *,
         otel_span: otel_trace_api.Span,
-        langfuse_client: "ElasticDash",
+        elasticdash_client: "ElasticDash",
         input: Optional[Any] = None,
         output: Optional[Any] = None,
         metadata: Optional[Any] = None,
@@ -1669,7 +1669,7 @@ class ElasticDashEvent(ElasticDashObservationWrapper):
 
         Args:
             otel_span: The OpenTelemetry span to wrap
-            langfuse_client: Reference to the parent ElasticDash client
+            elasticdash_client: Reference to the parent ElasticDash client
             input: Input data for the event
             output: Output from the event
             metadata: Additional metadata to associate with the generation
@@ -1681,7 +1681,7 @@ class ElasticDashEvent(ElasticDashObservationWrapper):
         super().__init__(
             otel_span=otel_span,
             as_type="event",
-            langfuse_client=langfuse_client,
+            elasticdash_client=elasticdash_client,
             input=input,
             output=output,
             metadata=metadata,
@@ -1716,7 +1716,7 @@ class ElasticDashEvent(ElasticDashObservationWrapper):
         Returns:
             self: Returns the unchanged ElasticDashEvent instance
         """
-        langfuse_logger.warning(
+        elasticdash_logger.warning(
             "Attempted to update ElasticDashEvent observation. Events cannot be updated after creation."
         )
         return self

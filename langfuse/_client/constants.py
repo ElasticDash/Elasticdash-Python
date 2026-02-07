@@ -7,7 +7,7 @@ from typing import Any, List, Literal, Union, get_args
 
 from typing_extensions import TypeAlias
 
-ELASTICDASH_TRACER_NAME = "langfuse-sdk"
+ELASTICDASH_TRACER_NAME = "elasticdash-sdk"
 
 ELASTICDASH_SDK_EXPERIMENT_ENVIRONMENT = "sdk-experiment"
 

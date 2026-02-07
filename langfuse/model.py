@@ -4,40 +4,40 @@ import re
 from abc import ABC, abstractmethod
 from typing import Any, Dict, List, Literal, Optional, Sequence, Tuple, TypedDict, Union
 
-from langfuse.api.resources.commons.types.dataset import (
+from elasticdash.api.resources.commons.types.dataset import (
     Dataset,  # noqa: F401
 )
 
 # these imports need to stay here, otherwise imports from our clients wont work
-from langfuse.api.resources.commons.types.dataset_item import DatasetItem  # noqa: F401
+from elasticdash.api.resources.commons.types.dataset_item import DatasetItem  # noqa: F401
 
 # noqa: F401
-from langfuse.api.resources.commons.types.dataset_run import DatasetRun  # noqa: F401
+from elasticdash.api.resources.commons.types.dataset_run import DatasetRun  # noqa: F401
 
 # noqa: F401
-from langfuse.api.resources.commons.types.dataset_status import (  # noqa: F401
+from elasticdash.api.resources.commons.types.dataset_status import (  # noqa: F401
     DatasetStatus,
 )
-from langfuse.api.resources.commons.types.map_value import MapValue  # noqa: F401
-from langfuse.api.resources.commons.types.observation import Observation  # noqa: F401
-from langfuse.api.resources.commons.types.trace_with_full_details import (  # noqa: F401
+from elasticdash.api.resources.commons.types.map_value import MapValue  # noqa: F401
+from elasticdash.api.resources.commons.types.observation import Observation  # noqa: F401
+from elasticdash.api.resources.commons.types.trace_with_full_details import (  # noqa: F401
     TraceWithFullDetails,
 )
 
 # noqa: F401
-from langfuse.api.resources.dataset_items.types.create_dataset_item_request import (  # noqa: F401
+from elasticdash.api.resources.dataset_items.types.create_dataset_item_request import (  # noqa: F401
     CreateDatasetItemRequest,
 )
-from langfuse.api.resources.dataset_run_items.types.create_dataset_run_item_request import (  # noqa: F401
+from elasticdash.api.resources.dataset_run_items.types.create_dataset_run_item_request import (  # noqa: F401
     CreateDatasetRunItemRequest,
 )
 
 # noqa: F401
-from langfuse.api.resources.datasets.types.create_dataset_request import (  # noqa: F401
+from elasticdash.api.resources.datasets.types.create_dataset_request import (  # noqa: F401
     CreateDatasetRequest,
 )
-from langfuse.api.resources.prompts import Prompt, Prompt_Chat, Prompt_Text
-from langfuse.logger import langfuse_logger
+from elasticdash.api.resources.prompts import Prompt, Prompt_Chat, Prompt_Text
+from elasticdash.logger import elasticdash_logger
 
 
 class ModelUsage(TypedDict):
@@ -395,7 +395,7 @@ class ChatPromptClient(BasePromptClient):
                                     )
                                 )
                                 no_role_content_in_placeholder = f"Placeholder '{placeholder_name}' should contain a list of chat messages with 'role' and 'content' fields. Appended as string."
-                                langfuse_logger.warning(no_role_content_in_placeholder)
+                                elasticdash_logger.warning(no_role_content_in_placeholder)
                     else:
                         compiled_messages.append(
                             ChatMessageDict(
@@ -404,7 +404,7 @@ class ChatPromptClient(BasePromptClient):
                             ),
                         )
                         placeholder_not_a_list = f"Placeholder '{placeholder_name}' must contain a list of chat messages, got {type(placeholder_value)}"
-                        langfuse_logger.warning(placeholder_not_a_list)
+                        elasticdash_logger.warning(placeholder_not_a_list)
                 else:
                     # Keep unresolved placeholder in the compiled messages
                     compiled_messages.append(chat_message)
@@ -412,7 +412,7 @@ class ChatPromptClient(BasePromptClient):
 
         if unresolved_placeholders:
             unresolved_placeholders_message = f"Placeholders {unresolved_placeholders} have not been resolved. Pass them as keyword arguments to compile()."
-            langfuse_logger.warning(unresolved_placeholders_message)
+            elasticdash_logger.warning(unresolved_placeholders_message)
 
         return compiled_messages  # type: ignore
 

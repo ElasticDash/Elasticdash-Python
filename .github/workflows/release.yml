@@ -81,8 +81,8 @@ jobs:
         env:
           GH_ACCESS_TOKEN: ${{ secrets.GH_ACCESS_TOKEN }}
         run: |
-          git config user.name "langfuse-bot"
-          git config user.email "langfuse-bot@langfuse.com"
+          git config user.name "elasticdash-bot"
+          git config user.email "elasticdash-bot@elasticdash.com"
 
           echo "$GH_ACCESS_TOKEN" | gh auth login --with-token
           gh auth setup-git
@@ -172,23 +172,23 @@ jobs:
         run: |
           poetry version ${{ steps.new-version.outputs.version }}
 
-      - name: Update version in langfuse/version.py
+      - name: Update version in elasticdash/version.py
         run: |
           new_version="${{ steps.new-version.outputs.version }}"
-          sed -i "s/__version__ = \".*\"/__version__ = \"$new_version\"/" langfuse/version.py
-          echo "Updated langfuse/version.py:"
-          cat langfuse/version.py
+          sed -i "s/__version__ = \".*\"/__version__ = \"$new_version\"/" elasticdash/version.py
+          echo "Updated elasticdash/version.py:"
+          cat elasticdash/version.py
 
       - name: Verify version consistency
         run: |
           pyproject_version=$(poetry version -s)
-          file_version=$(grep -oP '__version__ = "\K[^"]+' langfuse/version.py)
+          file_version=$(grep -oP '__version__ = "\K[^"]+' elasticdash/version.py)
 
           echo "pyproject.toml version: $pyproject_version"
-          echo "langfuse/version.py version: $file_version"
+          echo "elasticdash/version.py version: $file_version"
 
           if [ "$pyproject_version" != "$file_version" ]; then
-            echo "❌ Error: Version mismatch between pyproject.toml and langfuse/version.py"
+            echo "❌ Error: Version mismatch between pyproject.toml and elasticdash/version.py"
             exit 1
           fi
 
@@ -239,7 +239,7 @@ jobs:
 
       - name: Commit version changes
         run: |
-          git add pyproject.toml langfuse/version.py
+          git add pyproject.toml elasticdash/version.py
           git commit -m "chore: release v${{ steps.new-version.outputs.version }}"
 
       - name: Create and push tag
@@ -302,7 +302,7 @@ jobs:
                     },
                     {
                       "type": "mrkdwn",
-                      "text": "*Package:*\n`langfuse`"
+                      "text": "*Package:*\n`elasticdash`"
                     }
                   ]
                 },
@@ -326,7 +326,7 @@ jobs:
                         "text": "📦 View on PyPI",
                         "emoji": true
                       },
-                      "url": "https://pypi.org/project/langfuse/${{ steps.new-version.outputs.version }}/"
+                      "url": "https://pypi.org/project/elasticdash/${{ steps.new-version.outputs.version }}/"
                     },
                     {
                       "type": "button",

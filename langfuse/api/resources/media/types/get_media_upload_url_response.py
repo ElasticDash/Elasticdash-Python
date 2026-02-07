@@ -17,7 +17,7 @@ class GetMediaUploadUrlResponse(pydantic_v1.BaseModel):
 
     media_id: str = pydantic_v1.Field(alias="mediaId")
     """
-    The unique langfuse identifier of a media record
+    The unique elasticdash identifier of a media record
     """
 
     def json(self, **kwargs: typing.Any) -> str:

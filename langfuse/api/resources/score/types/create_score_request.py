@@ -13,7 +13,7 @@ class CreateScoreRequest(pydantic_v1.BaseModel):
     """
     Examples
     --------
-    from langfuse import CreateScoreRequest
+    from elasticdash import CreateScoreRequest
 
     CreateScoreRequest(
         name="novelty",
@@ -43,7 +43,7 @@ class CreateScoreRequest(pydantic_v1.BaseModel):
     metadata: typing.Optional[typing.Dict[str, typing.Any]] = None
     environment: typing.Optional[str] = pydantic_v1.Field(default=None)
     """
-    The environment of the score. Can be any lowercase alphanumeric string with hyphens and underscores that does not start with 'langfuse'.
+    The environment of the score. Can be any lowercase alphanumeric string with hyphens and underscores that does not start with 'elasticdash'.
     """
 
     queue_id: typing.Optional[str] = pydantic_v1.Field(alias="queueId", default=None)
@@ -60,7 +60,7 @@ class CreateScoreRequest(pydantic_v1.BaseModel):
 
     config_id: typing.Optional[str] = pydantic_v1.Field(alias="configId", default=None)
     """
-    Reference a score config on a score. The unique langfuse identifier of a score config. When passing this field, the dataType and stringValue fields are automatically populated.
+    Reference a score config on a score. The unique elasticdash identifier of a score config. When passing this field, the dataType and stringValue fields are automatically populated.
     """
 
     def json(self, **kwargs: typing.Any) -> str:

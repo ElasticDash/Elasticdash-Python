@@ -35,7 +35,7 @@ class MediaClient:
         Parameters
         ----------
         media_id : str
-            The unique langfuse identifier of a media record
+            The unique elasticdash identifier of a media record
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -46,12 +46,12 @@ class MediaClient:
 
         Examples
         --------
-        from langfuse.client import FernElasticDash
+        from elasticdash.client import FernElasticDash
 
         client = FernElasticDash(
-            x_langfuse_sdk_name="YOUR_X_ELASTICDASH_SDK_NAME",
-            x_langfuse_sdk_version="YOUR_X_ELASTICDASH_SDK_VERSION",
-            x_langfuse_public_key="YOUR_X_ELASTICDASH_PUBLIC_KEY",
+            x_elasticdash_sdk_name="YOUR_X_ELASTICDASH_SDK_NAME",
+            x_elasticdash_sdk_version="YOUR_X_ELASTICDASH_SDK_VERSION",
+            x_elasticdash_public_key="YOUR_X_ELASTICDASH_PUBLIC_KEY",
             username="YOUR_USERNAME",
             password="YOUR_PASSWORD",
             base_url="https://yourhost.com/path/to/api",
@@ -104,7 +104,7 @@ class MediaClient:
         Parameters
         ----------
         media_id : str
-            The unique langfuse identifier of a media record
+            The unique elasticdash identifier of a media record
 
         request : PatchMediaBody
 
@@ -119,13 +119,13 @@ class MediaClient:
         --------
         import datetime
 
-        from langfuse import PatchMediaBody
-        from langfuse.client import FernElasticDash
+        from elasticdash import PatchMediaBody
+        from elasticdash.client import FernElasticDash
 
         client = FernElasticDash(
-            x_langfuse_sdk_name="YOUR_X_ELASTICDASH_SDK_NAME",
-            x_langfuse_sdk_version="YOUR_X_ELASTICDASH_SDK_VERSION",
-            x_langfuse_public_key="YOUR_X_ELASTICDASH_PUBLIC_KEY",
+            x_elasticdash_sdk_name="YOUR_X_ELASTICDASH_SDK_NAME",
+            x_elasticdash_sdk_version="YOUR_X_ELASTICDASH_SDK_VERSION",
+            x_elasticdash_public_key="YOUR_X_ELASTICDASH_PUBLIC_KEY",
             username="YOUR_USERNAME",
             password="YOUR_PASSWORD",
             base_url="https://yourhost.com/path/to/api",
@@ -195,13 +195,13 @@ class MediaClient:
 
         Examples
         --------
-        from langfuse import GetMediaUploadUrlRequest, MediaContentType
-        from langfuse.client import FernElasticDash
+        from elasticdash import GetMediaUploadUrlRequest, MediaContentType
+        from elasticdash.client import FernElasticDash
 
         client = FernElasticDash(
-            x_langfuse_sdk_name="YOUR_X_ELASTICDASH_SDK_NAME",
-            x_langfuse_sdk_version="YOUR_X_ELASTICDASH_SDK_VERSION",
-            x_langfuse_public_key="YOUR_X_ELASTICDASH_PUBLIC_KEY",
+            x_elasticdash_sdk_name="YOUR_X_ELASTICDASH_SDK_NAME",
+            x_elasticdash_sdk_version="YOUR_X_ELASTICDASH_SDK_VERSION",
+            x_elasticdash_public_key="YOUR_X_ELASTICDASH_PUBLIC_KEY",
             username="YOUR_USERNAME",
             password="YOUR_PASSWORD",
             base_url="https://yourhost.com/path/to/api",
@@ -265,7 +265,7 @@ class AsyncMediaClient:
         Parameters
         ----------
         media_id : str
-            The unique langfuse identifier of a media record
+            The unique elasticdash identifier of a media record
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -278,12 +278,12 @@ class AsyncMediaClient:
         --------
         import asyncio
 
-        from langfuse.client import AsyncFernElasticDash
+        from elasticdash.client import AsyncFernElasticDash
 
         client = AsyncFernElasticDash(
-            x_langfuse_sdk_name="YOUR_X_ELASTICDASH_SDK_NAME",
-            x_langfuse_sdk_version="YOUR_X_ELASTICDASH_SDK_VERSION",
-            x_langfuse_public_key="YOUR_X_ELASTICDASH_PUBLIC_KEY",
+            x_elasticdash_sdk_name="YOUR_X_ELASTICDASH_SDK_NAME",
+            x_elasticdash_sdk_version="YOUR_X_ELASTICDASH_SDK_VERSION",
+            x_elasticdash_public_key="YOUR_X_ELASTICDASH_PUBLIC_KEY",
             username="YOUR_USERNAME",
             password="YOUR_PASSWORD",
             base_url="https://yourhost.com/path/to/api",
@@ -342,7 +342,7 @@ class AsyncMediaClient:
         Parameters
         ----------
         media_id : str
-            The unique langfuse identifier of a media record
+            The unique elasticdash identifier of a media record
 
         request : PatchMediaBody
 
@@ -358,13 +358,13 @@ class AsyncMediaClient:
         import asyncio
         import datetime
 
-        from langfuse import PatchMediaBody
-        from langfuse.client import AsyncFernElasticDash
+        from elasticdash import PatchMediaBody
+        from elasticdash.client import AsyncFernElasticDash
 
         client = AsyncFernElasticDash(
-            x_langfuse_sdk_name="YOUR_X_ELASTICDASH_SDK_NAME",
-            x_langfuse_sdk_version="YOUR_X_ELASTICDASH_SDK_VERSION",
-            x_langfuse_public_key="YOUR_X_ELASTICDASH_PUBLIC_KEY",
+            x_elasticdash_sdk_name="YOUR_X_ELASTICDASH_SDK_NAME",
+            x_elasticdash_sdk_version="YOUR_X_ELASTICDASH_SDK_VERSION",
+            x_elasticdash_public_key="YOUR_X_ELASTICDASH_PUBLIC_KEY",
             username="YOUR_USERNAME",
             password="YOUR_PASSWORD",
             base_url="https://yourhost.com/path/to/api",
@@ -442,13 +442,13 @@ class AsyncMediaClient:
         --------
         import asyncio
 
-        from langfuse import GetMediaUploadUrlRequest, MediaContentType
-        from langfuse.client import AsyncFernElasticDash
+        from elasticdash import GetMediaUploadUrlRequest, MediaContentType
+        from elasticdash.client import AsyncFernElasticDash
 
         client = AsyncFernElasticDash(
-            x_langfuse_sdk_name="YOUR_X_ELASTICDASH_SDK_NAME",
-            x_langfuse_sdk_version="YOUR_X_ELASTICDASH_SDK_VERSION",
-            x_langfuse_public_key="YOUR_X_ELASTICDASH_PUBLIC_KEY",
+            x_elasticdash_sdk_name="YOUR_X_ELASTICDASH_SDK_NAME",
+            x_elasticdash_sdk_version="YOUR_X_ELASTICDASH_SDK_VERSION",
+            x_elasticdash_public_key="YOUR_X_ELASTICDASH_PUBLIC_KEY",
             username="YOUR_USERNAME",
             password="YOUR_PASSWORD",
             base_url="https://yourhost.com/path/to/api",

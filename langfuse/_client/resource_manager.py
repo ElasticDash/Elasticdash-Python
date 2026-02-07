@@ -27,26 +27,26 @@ from opentelemetry.sdk.trace import TracerProvider
 from opentelemetry.sdk.trace.sampling import Decision, TraceIdRatioBased
 from opentelemetry.trace import Tracer
 
-from langfuse._client.attributes import ElasticDashOtelSpanAttributes
-from langfuse._client.constants import ELASTICDASH_TRACER_NAME
-from langfuse._client.environment_variables import (
+from elasticdash._client.attributes import ElasticDashOtelSpanAttributes
+from elasticdash._client.constants import ELASTICDASH_TRACER_NAME
+from elasticdash._client.environment_variables import (
     ELASTICDASH_MEDIA_UPLOAD_ENABLED,
     ELASTICDASH_MEDIA_UPLOAD_THREAD_COUNT,
     ELASTICDASH_RELEASE,
     ELASTICDASH_TRACING_ENVIRONMENT,
 )
-from langfuse._client.span_processor import ElasticDashSpanProcessor
-from langfuse._task_manager.media_manager import MediaManager
-from langfuse._task_manager.media_upload_consumer import MediaUploadConsumer
-from langfuse._task_manager.score_ingestion_consumer import ScoreIngestionConsumer
-from langfuse._utils.environment import get_common_release_envs
-from langfuse._utils.prompt_cache import PromptCache
-from langfuse._utils.request import ElasticDashClient
-from langfuse.api.client import AsyncFernElasticDash, FernElasticDash
-from langfuse.logger import langfuse_logger
-from langfuse.types import MaskFunction
+from elasticdash._client.span_processor import ElasticDashSpanProcessor
+from elasticdash._task_manager.media_manager import MediaManager
+from elasticdash._task_manager.media_upload_consumer import MediaUploadConsumer
+from elasticdash._task_manager.score_ingestion_consumer import ScoreIngestionConsumer
+from elasticdash._utils.environment import get_common_release_envs
+from elasticdash._utils.prompt_cache import PromptCache
+from elasticdash._utils.request import ElasticDashClient
+from elasticdash.api.client import AsyncFernElasticDash, FernElasticDash
+from elasticdash.logger import elasticdash_logger
+from elasticdash.types import MaskFunction
 
-from ..version import __version__ as langfuse_version
+from ..version import __version__ as elasticdash_version
 
 
 class ElasticDashResourceManager:
@@ -108,7 +108,7 @@ class ElasticDashResourceManager:
                 # Initialize tracer (will be noop until init instance)
                 instance._otel_tracer = otel_trace_api.get_tracer(
                     ELASTICDASH_TRACER_NAME,
-                    langfuse_version,
+                    elasticdash_version,
                     attributes={"public_key": public_key},
                 )
 
@@ -182,7 +182,7 @@ class ElasticDashResourceManager:
             )
             self.tracer_provider = tracer_provider
 
-            langfuse_processor = ElasticDashSpanProcessor(
+            elasticdash_processor = ElasticDashSpanProcessor(
                 public_key=self.public_key,
                 secret_key=secret_key,
                 base_url=base_url,
@@ -192,11 +192,11 @@ class ElasticDashResourceManager:
                 blocked_instrumentation_scopes=blocked_instrumentation_scopes,
                 additional_headers=additional_headers,
             )
-            tracer_provider.add_span_processor(langfuse_processor)
+            tracer_provider.add_span_processor(elasticdash_processor)
 
             self._otel_tracer = tracer_provider.get_tracer(
                 ELASTICDASH_TRACER_NAME,
-                langfuse_version,
+                elasticdash_version,
                 attributes={"public_key": self.public_key},
             )
 
@@ -217,9 +217,9 @@ class ElasticDashResourceManager:
             base_url=base_url,
             username=self.public_key,
             password=secret_key,
-            x_langfuse_sdk_name="python",
-            x_langfuse_sdk_version=langfuse_version,
-            x_langfuse_public_key=self.public_key,
+            x_elasticdash_sdk_name="python",
+            x_elasticdash_sdk_version=elasticdash_version,
+            x_elasticdash_public_key=self.public_key,
             httpx_client=self.httpx_client,
             timeout=timeout,
         )
@@ -227,16 +227,16 @@ class ElasticDashResourceManager:
             base_url=base_url,
             username=self.public_key,
             password=secret_key,
-            x_langfuse_sdk_name="python",
-            x_langfuse_sdk_version=langfuse_version,
-            x_langfuse_public_key=self.public_key,
+            x_elasticdash_sdk_name="python",
+            x_elasticdash_sdk_version=elasticdash_version,
+            x_elasticdash_public_key=self.public_key,
             timeout=timeout,
         )
         score_ingestion_client = ElasticDashClient(
             public_key=self.public_key,
             secret_key=secret_key,
             base_url=base_url,
-            version=langfuse_version,
+            version=elasticdash_version,
             timeout=timeout or 20,
             session=self.httpx_client,
         )
@@ -289,7 +289,7 @@ class ElasticDashResourceManager:
         # Register shutdown handler
         atexit.register(self.shutdown)
 
-        langfuse_logger.info(
+        elasticdash_logger.info(
             f"Startup: ElasticDash tracer successfully initialized | "
             f"public_key={self.public_key} | "
             f"base_url={base_url} | "
@@ -333,19 +333,19 @@ class ElasticDashResourceManager:
             )
 
             if should_sample:
-                langfuse_logger.debug(
+                elasticdash_logger.debug(
                     f"Score: Enqueuing event type={event['type']} for trace_id={event['body'].trace_id} name={event['body'].name} value={event['body'].value}"
                 )
                 self._score_ingestion_queue.put(event, block=False)
 
         except Full:
-            langfuse_logger.warning(
+            elasticdash_logger.warning(
                 "System overload: Score ingestion queue has reached capacity (100,000 items). Score will be dropped. Consider increasing flush frequency or decreasing event volume."
             )
 
             return
         except Exception as e:
-            langfuse_logger.error(
+            elasticdash_logger.error(
                 f"Unexpected error: Failed to process score event. The score will be dropped. Error details: {e}"
             )
 
@@ -364,7 +364,7 @@ class ElasticDashResourceManager:
 
         Blocks execution until finished
         """
-        langfuse_logger.debug(
+        elasticdash_logger.debug(
             f"Shutdown: Waiting for {len(self._media_upload_consumers)} media upload thread(s) to complete processing"
         )
         for media_upload_consumer in self._media_upload_consumers:
@@ -377,11 +377,11 @@ class ElasticDashResourceManager:
                 # consumer thread has not started
                 pass
 
-            langfuse_logger.debug(
+            elasticdash_logger.debug(
                 f"Shutdown: Media upload thread #{media_upload_consumer._identifier} successfully terminated"
             )
 
-        langfuse_logger.debug(
+        elasticdash_logger.debug(
             f"Shutdown: Waiting for {len(self._ingestion_consumers)} score ingestion thread(s) to complete processing"
         )
         for score_ingestion_consumer in self._ingestion_consumers:
@@ -394,7 +394,7 @@ class ElasticDashResourceManager:
                 # consumer thread has not started
                 pass
 
-            langfuse_logger.debug(
+            elasticdash_logger.debug(
                 f"Shutdown: Score ingestion thread #{score_ingestion_consumer._identifier} successfully terminated"
             )
 
@@ -403,13 +403,13 @@ class ElasticDashResourceManager:
             self.tracer_provider, otel_trace_api.ProxyTracerProvider
         ):
             self.tracer_provider.force_flush()
-            langfuse_logger.debug("Successfully flushed OTEL tracer provider")
+            elasticdash_logger.debug("Successfully flushed OTEL tracer provider")
 
         self._score_ingestion_queue.join()
-        langfuse_logger.debug("Successfully flushed score ingestion queue")
+        elasticdash_logger.debug("Successfully flushed score ingestion queue")
 
         self._media_upload_queue.join()
-        langfuse_logger.debug("Successfully flushed media upload queue")
+        elasticdash_logger.debug("Successfully flushed media upload queue")
 
     def shutdown(self) -> None:
         # Unregister the atexit handler first

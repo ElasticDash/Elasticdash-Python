@@ -8,16 +8,16 @@ from typing import Any, List, Optional
 
 import backoff
 
-from ..version import __version__ as langfuse_version
+from ..version import __version__ as elasticdash_version
 
 try:
     import pydantic.v1 as pydantic
 except ImportError:
     import pydantic  # type: ignore
 
-from langfuse._utils.parse_error import handle_exception
-from langfuse._utils.request import APIError, ElasticDashClient
-from langfuse._utils.serializer import EventSerializer
+from elasticdash._utils.parse_error import handle_exception
+from elasticdash._utils.request import APIError, ElasticDashClient
+from elasticdash._utils.serializer import EventSerializer
 
 MAX_EVENT_SIZE_BYTES = int(os.environ.get("ELASTICDASH_MAX_EVENT_SIZE_BYTES", 1_000_000))
 MAX_BATCH_SIZE_BYTES = int(os.environ.get("ELASTICDASH_MAX_BATCH_SIZE_BYTES", 2_500_000))
@@ -31,7 +31,7 @@ class ScoreIngestionMetadata(pydantic.BaseModel):
 
 
 class ScoreIngestionConsumer(threading.Thread):
-    _log = logging.getLogger("langfuse")
+    _log = logging.getLogger("elasticdash")
 
     def __init__(
         self,
@@ -154,7 +154,7 @@ class ScoreIngestionConsumer(threading.Thread):
         metadata = ScoreIngestionMetadata(
             batch_size=len(batch),
             sdk_name="python",
-            sdk_version=langfuse_version,
+            sdk_version=elasticdash_version,
             public_key=self._public_key,
         ).dict()
 

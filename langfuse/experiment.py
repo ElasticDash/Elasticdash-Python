@@ -19,10 +19,10 @@ from typing import (
     Union,
 )
 
-from langfuse.api import ScoreDataType
+from elasticdash.api import ScoreDataType
 
 if TYPE_CHECKING:
-    from langfuse._client.datasets import DatasetItemClient
+    from elasticdash._client.datasets import DatasetItemClient
 
 
 class LocalExperimentItem(TypedDict, total=False):
@@ -120,7 +120,7 @@ class Evaluation:
     Examples:
         Basic accuracy evaluation:
         ```python
-        from langfuse import Evaluation
+        from elasticdash import Evaluation
 
         def accuracy_evaluator(*, input, output, expected_output=None, **kwargs):
             if not expected_output:
@@ -235,7 +235,7 @@ class ExperimentItemResult:
     Examples:
         Accessing item result data:
         ```python
-        result = langfuse.run_experiment(...)
+        result = elasticdash.run_experiment(...)
         for item_result in result.item_results:
             print(f"Input: {item_result.item}")
             print(f"Output: {item_result.output}")
@@ -313,7 +313,7 @@ class ExperimentResult:
     Examples:
         Basic usage with local dataset:
         ```python
-        result = langfuse.run_experiment(
+        result = elasticdash.run_experiment(
             name="Capital Cities Test",
             data=local_data,
             task=generate_capital,
@@ -332,7 +332,7 @@ class ExperimentResult:
 
         Usage with ElasticDash datasets:
         ```python
-        dataset = langfuse.get_dataset("qa-eval-set")
+        dataset = elasticdash.get_dataset("qa-eval-set")
         result = dataset.run_experiment(
             name="GPT-4 QA Evaluation",
             task=answer_question,
@@ -422,7 +422,7 @@ class ExperimentResult:
         Examples:
             Basic usage showing aggregate results only:
             ```python
-            result = langfuse.run_experiment(
+            result = elasticdash.run_experiment(
                 name="Capital Cities",
                 data=dataset,
                 task=generate_capital,
@@ -998,7 +998,7 @@ async def _run_evaluator(
 
     except Exception as e:
         evaluator_name = getattr(evaluator, "__name__", "unknown_evaluator")
-        logging.getLogger("langfuse").error(f"Evaluator {evaluator_name} failed: {e}")
+        logging.getLogger("elasticdash").error(f"Evaluator {evaluator_name} failed: {e}")
         return []
 
 
@@ -1026,13 +1026,13 @@ def create_evaluator_from_autoevals(
         A ElasticDash-compatible evaluator function
     """
 
-    def langfuse_evaluator(
+    def elasticdash_evaluator(
         *,
         input: Any,
         output: Any,
         expected_output: Any,
         metadata: Optional[Dict[str, Any]],
-        **langfuse_kwargs: Dict[str, Any],
+        **elasticdash_kwargs: Dict[str, Any],
     ) -> Evaluation:
         evaluation = autoevals_evaluator(
             input=input, output=output, expected=expected_output, **kwargs
@@ -1045,4 +1045,4 @@ def create_evaluator_from_autoevals(
             metadata=evaluation.metadata,
         )
 
-    return langfuse_evaluator
+    return elasticdash_evaluator

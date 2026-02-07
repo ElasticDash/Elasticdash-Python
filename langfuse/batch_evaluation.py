@@ -23,16 +23,16 @@ from typing import (
     cast,
 )
 
-from langfuse.api.resources.commons.types import (
+from elasticdash.api.resources.commons.types import (
     ObservationsView,
     TraceWithFullDetails,
 )
-from langfuse.experiment import Evaluation, EvaluatorFunction
+from elasticdash.experiment import Evaluation, EvaluatorFunction
 
 if TYPE_CHECKING:
-    from langfuse._client.client import ElasticDash
+    from elasticdash._client.client import ElasticDash
 
-logger = logging.getLogger("langfuse")
+logger = logging.getLogger("elasticdash")
 
 
 class EvaluatorInputs:
@@ -60,7 +60,7 @@ class EvaluatorInputs:
     Examples:
         Simple mapper for traces:
         ```python
-        from langfuse import EvaluatorInputs
+        from elasticdash import EvaluatorInputs
 
         def trace_mapper(trace):
             return EvaluatorInputs(

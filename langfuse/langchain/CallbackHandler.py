@@ -17,10 +17,10 @@ import pydantic
 from opentelemetry import context, trace
 from opentelemetry.context import _RUNTIME_CONTEXT
 
-from langfuse._client.attributes import ElasticDashOtelSpanAttributes
-from langfuse._client.client import ElasticDash
-from langfuse._client.get_client import get_client
-from langfuse._client.span import (
+from elasticdash._client.attributes import ElasticDashOtelSpanAttributes
+from elasticdash._client.client import ElasticDash
+from elasticdash._client.get_client import get_client
+from elasticdash._client.span import (
     ElasticDashAgent,
     ElasticDashChain,
     ElasticDashGeneration,
@@ -28,10 +28,10 @@ from langfuse._client.span import (
     ElasticDashSpan,
     ElasticDashTool,
 )
-from langfuse._utils import _get_timestamp
-from langfuse.langchain.utils import _extract_model_name
-from langfuse.logger import langfuse_logger
-from langfuse.types import TraceContext
+from elasticdash._utils import _get_timestamp
+from elasticdash.langchain.utils import _extract_model_name
+from elasticdash.logger import elasticdash_logger
+from elasticdash.types import TraceContext
 
 try:
     import langchain
@@ -113,7 +113,7 @@ class LangchainCallbackHandler(LangchainBaseCallbackHandler):
             Use a custom trace id without context managers:
 
             ```python
-            from langfuse.langchain import CallbackHandler
+            from elasticdash.langchain import CallbackHandler
 
             handler = CallbackHandler(trace_context={"trace_id": "my-trace-id"})
             ```
@@ -150,7 +150,7 @@ class LangchainCallbackHandler(LangchainBaseCallbackHandler):
         **kwargs: Any,
     ) -> Any:
         """Run on new LLM token. Only available when streaming is enabled."""
-        langfuse_logger.debug(
+        elasticdash_logger.debug(
             f"on llm new token: run_id: {run_id} parent_run_id: {parent_run_id}"
         )
         if (
@@ -266,9 +266,9 @@ class LangchainCallbackHandler(LangchainBaseCallbackHandler):
                 ).end()
 
         except Exception as e:
-            langfuse_logger.exception(e)
+            elasticdash_logger.exception(e)
 
-    def _parse_langfuse_trace_attributes_from_metadata(
+    def _parse_elasticdash_trace_attributes_from_metadata(
         self,
         metadata: Optional[Dict[str, Any]],
     ) -> Dict[str, Any]:
@@ -277,18 +277,18 @@ class LangchainCallbackHandler(LangchainBaseCallbackHandler):
         if metadata is None:
             return attributes
 
-        if "langfuse_session_id" in metadata and isinstance(
-            metadata["langfuse_session_id"], str
+        if "elasticdash_session_id" in metadata and isinstance(
+            metadata["elasticdash_session_id"], str
         ):
-            attributes["session_id"] = metadata["langfuse_session_id"]
+            attributes["session_id"] = metadata["elasticdash_session_id"]
 
-        if "langfuse_user_id" in metadata and isinstance(
-            metadata["langfuse_user_id"], str
+        if "elasticdash_user_id" in metadata and isinstance(
+            metadata["elasticdash_user_id"], str
         ):
-            attributes["user_id"] = metadata["langfuse_user_id"]
+            attributes["user_id"] = metadata["elasticdash_user_id"]
 
-        if "langfuse_tags" in metadata and isinstance(metadata["langfuse_tags"], list):
-            attributes["tags"] = [str(tag) for tag in metadata["langfuse_tags"]]
+        if "elasticdash_tags" in metadata and isinstance(metadata["elasticdash_tags"], list):
+            attributes["tags"] = [str(tag) for tag in metadata["elasticdash_tags"]]
 
         return attributes
 
@@ -309,7 +309,7 @@ class LangchainCallbackHandler(LangchainBaseCallbackHandler):
             self._log_debug_event(
                 "on_chain_start", run_id, parent_run_id, inputs=inputs
             )
-            self._register_langfuse_prompt(
+            self._register_elasticdash_prompt(
                 run_id=run_id, parent_run_id=parent_run_id, metadata=metadata
             )
 
@@ -362,15 +362,15 @@ class LangchainCallbackHandler(LangchainBaseCallbackHandler):
                         if self.update_trace
                         else {}
                     ),
-                    **self._parse_langfuse_trace_attributes_from_metadata(metadata),
+                    **self._parse_elasticdash_trace_attributes_from_metadata(metadata),
                 )
 
             self.last_trace_id = self.runs[run_id].trace_id
 
         except Exception as e:
-            langfuse_logger.exception(e)
+            elasticdash_logger.exception(e)
 
-    def _register_langfuse_prompt(
+    def _register_elasticdash_prompt(
         self,
         *,
         run_id: UUID,
@@ -385,10 +385,10 @@ class LangchainCallbackHandler(LangchainBaseCallbackHandler):
         if not parent_run_id or not run_id:
             return
 
-        langfuse_prompt = metadata and metadata.get("langfuse_prompt", None)
+        elasticdash_prompt = metadata and metadata.get("elasticdash_prompt", None)
 
-        if langfuse_prompt:
-            self.prompt_to_parent_run_map[parent_run_id] = langfuse_prompt
+        if elasticdash_prompt:
+            self.prompt_to_parent_run_map[parent_run_id] = elasticdash_prompt
 
         # If we have a registered prompt that has not been linked to a generation yet, we need to allow _children_ of that chain to link to it.
         # Otherwise, we only allow generations on the same level of the prompt rendering to be linked, not if they are nested.
@@ -396,7 +396,7 @@ class LangchainCallbackHandler(LangchainBaseCallbackHandler):
             registered_prompt = self.prompt_to_parent_run_map[parent_run_id]
             self.prompt_to_parent_run_map[run_id] = registered_prompt
 
-    def _deregister_langfuse_prompt(self, run_id: Optional[UUID]) -> None:
+    def _deregister_elasticdash_prompt(self, run_id: Optional[UUID]) -> None:
         if run_id is not None and run_id in self.prompt_to_parent_run_map:
             del self.prompt_to_parent_run_map[run_id]
 
@@ -503,7 +503,7 @@ class LangchainCallbackHandler(LangchainBaseCallbackHandler):
                 )
 
         except Exception as e:
-            langfuse_logger.exception(e)
+            elasticdash_logger.exception(e)
 
     def on_agent_finish(
         self,
@@ -532,7 +532,7 @@ class LangchainCallbackHandler(LangchainBaseCallbackHandler):
                 )
 
         except Exception as e:
-            langfuse_logger.exception(e)
+            elasticdash_logger.exception(e)
 
     def on_chain_end(
         self,
@@ -560,10 +560,10 @@ class LangchainCallbackHandler(LangchainBaseCallbackHandler):
 
                 span.end()
 
-                self._deregister_langfuse_prompt(run_id)
+                self._deregister_elasticdash_prompt(run_id)
 
         except Exception as e:
-            langfuse_logger.exception(e)
+            elasticdash_logger.exception(e)
 
         finally:
             if parent_run_id is None:
@@ -599,7 +599,7 @@ class LangchainCallbackHandler(LangchainBaseCallbackHandler):
                 ).end()
 
         except Exception as e:
-            langfuse_logger.exception(e)
+            elasticdash_logger.exception(e)
 
     def on_chat_model_start(
         self,
@@ -633,7 +633,7 @@ class LangchainCallbackHandler(LangchainBaseCallbackHandler):
                 **kwargs,
             )
         except Exception as e:
-            langfuse_logger.exception(e)
+            elasticdash_logger.exception(e)
 
     def on_llm_start(
         self,
@@ -662,7 +662,7 @@ class LangchainCallbackHandler(LangchainBaseCallbackHandler):
                 **kwargs,
             )
         except Exception as e:
-            langfuse_logger.exception(e)
+            elasticdash_logger.exception(e)
 
     def on_tool_start(
         self,
@@ -706,7 +706,7 @@ class LangchainCallbackHandler(LangchainBaseCallbackHandler):
             self._attach_observation(run_id, span)
 
         except Exception as e:
-            langfuse_logger.exception(e)
+            elasticdash_logger.exception(e)
 
     def on_retriever_start(
         self,
@@ -746,7 +746,7 @@ class LangchainCallbackHandler(LangchainBaseCallbackHandler):
             self._attach_observation(run_id, span)
 
         except Exception as e:
-            langfuse_logger.exception(e)
+            elasticdash_logger.exception(e)
 
     def on_retriever_end(
         self,
@@ -769,7 +769,7 @@ class LangchainCallbackHandler(LangchainBaseCallbackHandler):
                 ).end()
 
         except Exception as e:
-            langfuse_logger.exception(e)
+            elasticdash_logger.exception(e)
 
     def on_tool_end(
         self,
@@ -791,7 +791,7 @@ class LangchainCallbackHandler(LangchainBaseCallbackHandler):
                 ).end()
 
         except Exception as e:
-            langfuse_logger.exception(e)
+            elasticdash_logger.exception(e)
 
     def on_tool_error(
         self,
@@ -814,7 +814,7 @@ class LangchainCallbackHandler(LangchainBaseCallbackHandler):
                 ).end()
 
         except Exception as e:
-            langfuse_logger.exception(e)
+            elasticdash_logger.exception(e)
 
     def __on_llm_action(
         self,
@@ -847,7 +847,7 @@ class LangchainCallbackHandler(LangchainBaseCallbackHandler):
                 )
 
                 if registered_prompt:
-                    self._deregister_langfuse_prompt(current_parent_run_id)
+                    self._deregister_elasticdash_prompt(current_parent_run_id)
                     break
                 else:
                     current_parent_run_id = self._child_to_parent_run_id_map.get(
@@ -861,7 +861,7 @@ class LangchainCallbackHandler(LangchainBaseCallbackHandler):
                     tags,
                     metadata,
                     # If llm is run isolated and outside chain, keep trace attributes
-                    keep_langfuse_trace_attributes=True
+                    keep_elasticdash_trace_attributes=True
                     if parent_run_id is None
                     else False,
                 ),
@@ -878,7 +878,7 @@ class LangchainCallbackHandler(LangchainBaseCallbackHandler):
             self.last_trace_id = self.runs[run_id].trace_id
 
         except Exception as e:
-            langfuse_logger.exception(e)
+            elasticdash_logger.exception(e)
 
     @staticmethod
     def _parse_model_parameters(kwargs: Dict[str, Any]) -> Dict[str, Any]:
@@ -930,15 +930,15 @@ class LangchainCallbackHandler(LangchainBaseCallbackHandler):
                 return model_name
 
         except Exception as e:
-            langfuse_logger.exception(e)
+            elasticdash_logger.exception(e)
 
         self._log_model_parse_warning()
         return None
 
     def _log_model_parse_warning(self) -> None:
         if not hasattr(self, "_model_parse_warning_logged"):
-            langfuse_logger.warning(
-                "ElasticDash was not able to parse the LLM model. The LLM call will be recorded without model name. Please create an issue: https://github.com/langfuse/langfuse/issues/new/choose"
+            elasticdash_logger.warning(
+                "ElasticDash was not able to parse the LLM model. The LLM call will be recorded without model name. Please create an issue: https://github.com/elasticdash/elasticdash/issues/new/choose"
             )
 
             self._model_parse_warning_logged = True
@@ -979,7 +979,7 @@ class LangchainCallbackHandler(LangchainBaseCallbackHandler):
                 ).end()
 
         except Exception as e:
-            langfuse_logger.exception(e)
+            elasticdash_logger.exception(e)
 
         finally:
             self.updated_completion_start_time_memo.discard(run_id)
@@ -1009,7 +1009,7 @@ class LangchainCallbackHandler(LangchainBaseCallbackHandler):
                 ).end()
 
         except Exception as e:
-            langfuse_logger.exception(e)
+            elasticdash_logger.exception(e)
 
     def _reset(self) -> None:
         self._child_to_parent_run_id_map = {}
@@ -1018,7 +1018,7 @@ class LangchainCallbackHandler(LangchainBaseCallbackHandler):
         self,
         tags: Optional[List[str]] = None,
         metadata: Optional[Dict[str, Any]] = None,
-        keep_langfuse_trace_attributes: bool = False,
+        keep_elasticdash_trace_attributes: bool = False,
     ) -> Optional[Dict[str, Any]]:
         final_dict = {}
         if tags is not None and len(tags) > 0:
@@ -1027,7 +1027,7 @@ class LangchainCallbackHandler(LangchainBaseCallbackHandler):
             final_dict.update(metadata)
 
         return (
-            _strip_langfuse_keys_from_dict(final_dict, keep_langfuse_trace_attributes)
+            _strip_elasticdash_keys_from_dict(final_dict, keep_elasticdash_trace_attributes)
             if final_dict != {}
             else None
         )
@@ -1080,7 +1080,7 @@ class LangchainCallbackHandler(LangchainBaseCallbackHandler):
         parent_run_id: Optional[UUID] = None,
         **kwargs: Any,
     ) -> None:
-        langfuse_logger.debug(
+        elasticdash_logger.debug(
             f"Event: {event_name}, run_id: {run_id}, parent_run_id: {parent_run_id}"
         )
 
@@ -1159,7 +1159,7 @@ def _parse_usage_model(usage: Union[pydantic.BaseModel, dict]) -> Any:
     ):
         return usage_model
 
-    for model_key, langfuse_key in conversion_list:
+    for model_key, elasticdash_key in conversion_list:
         if model_key in usage_model:
             captured_count = usage_model.pop(model_key)
             final_count = (
@@ -1168,7 +1168,7 @@ def _parse_usage_model(usage: Union[pydantic.BaseModel, dict]) -> Any:
                 else captured_count
             )  # For Bedrock, the token count is a list when streamed
 
-            usage_model[langfuse_key] = final_count  # Translate key and keep the value
+            usage_model[elasticdash_key] = final_count  # Translate key and keep the value
 
     if isinstance(usage_model, dict):
         if "input_token_details" in usage_model:
@@ -1322,29 +1322,29 @@ def _parse_model_name_from_metadata(metadata: Optional[Dict[str, Any]]) -> Any:
     return metadata.get("ls_model_name", None)
 
 
-def _strip_langfuse_keys_from_dict(
-    metadata: Optional[Dict[str, Any]], keep_langfuse_trace_attributes: bool
+def _strip_elasticdash_keys_from_dict(
+    metadata: Optional[Dict[str, Any]], keep_elasticdash_trace_attributes: bool
 ) -> Any:
     if metadata is None or not isinstance(metadata, dict):
         return metadata
 
-    langfuse_metadata_keys = [
-        "langfuse_prompt",
+    elasticdash_metadata_keys = [
+        "elasticdash_prompt",
     ]
 
-    langfuse_trace_attribute_keys = [
-        "langfuse_session_id",
-        "langfuse_user_id",
-        "langfuse_tags",
+    elasticdash_trace_attribute_keys = [
+        "elasticdash_session_id",
+        "elasticdash_user_id",
+        "elasticdash_tags",
     ]
 
     metadata_copy = metadata.copy()
 
-    for key in langfuse_metadata_keys:
+    for key in elasticdash_metadata_keys:
         metadata_copy.pop(key, None)
 
-    if not keep_langfuse_trace_attributes:
-        for key in langfuse_trace_attribute_keys:
+    if not keep_elasticdash_trace_attributes:
+        for key in elasticdash_trace_attribute_keys:
             metadata_copy.pop(key, None)
 
     return metadata_copy

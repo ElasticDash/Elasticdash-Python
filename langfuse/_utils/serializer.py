@@ -14,8 +14,8 @@ from uuid import UUID
 
 from pydantic import BaseModel
 
-from langfuse.api.core import pydantic_utilities, serialize_datetime
-from langfuse.media import ElasticDashMedia
+from elasticdash.api.core import pydantic_utilities, serialize_datetime
+from elasticdash.media import ElasticDashMedia
 
 # Attempt to import Serializable
 try:

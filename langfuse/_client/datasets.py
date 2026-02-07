@@ -4,14 +4,14 @@ from typing import TYPE_CHECKING, Any, Dict, Generator, List, Optional
 
 from opentelemetry.util._decorator import _agnosticcontextmanager
 
-from langfuse.batch_evaluation import CompositeEvaluatorFunction
-from langfuse.experiment import (
+from elasticdash.batch_evaluation import CompositeEvaluatorFunction
+from elasticdash.experiment import (
     EvaluatorFunction,
     ExperimentResult,
     RunEvaluatorFunction,
     TaskFunction,
 )
-from langfuse.model import (
+from elasticdash.model import (
     CreateDatasetRunItemRequest,
     Dataset,
     DatasetItem,
@@ -21,7 +21,7 @@ from langfuse.model import (
 from .span import ElasticDashSpan
 
 if TYPE_CHECKING:
-    from langfuse._client.client import ElasticDash
+    from elasticdash._client.client import ElasticDash
 
 
 class DatasetItemClient:
@@ -39,15 +39,15 @@ class DatasetItemClient:
         dataset_name (str): Name of the dataset to which this item belongs.
         created_at (datetime): Timestamp of dataset item creation.
         updated_at (datetime): Timestamp of the last update to the dataset item.
-        langfuse (ElasticDash): Instance of ElasticDash client for API interactions.
+        elasticdash (ElasticDash): Instance of ElasticDash client for API interactions.
 
     Example:
         ```python
-        from langfuse import ElasticDash
+        from elasticdash import ElasticDash
 
-        langfuse = ElasticDash()
+        elasticdash = ElasticDash()
 
-        dataset = langfuse.get_dataset("<dataset_name>")
+        dataset = elasticdash.get_dataset("<dataset_name>")
 
         for item in dataset.items:
             # Generate a completion using the input of every item
@@ -61,7 +61,7 @@ class DatasetItemClient:
         ```
     """
 
-    log = logging.getLogger("langfuse")
+    log = logging.getLogger("elasticdash")
 
     id: str
     status: DatasetStatus
@@ -75,9 +75,9 @@ class DatasetItemClient:
     created_at: dt.datetime
     updated_at: dt.datetime
 
-    langfuse: "ElasticDash"
+    elasticdash: "ElasticDash"
 
-    def __init__(self, dataset_item: DatasetItem, langfuse: "ElasticDash"):
+    def __init__(self, dataset_item: DatasetItem, elasticdash: "ElasticDash"):
         """Initialize the DatasetItemClient."""
         self.id = dataset_item.id
         self.status = dataset_item.status
@@ -91,7 +91,7 @@ class DatasetItemClient:
         self.created_at = dataset_item.created_at
         self.updated_at = dataset_item.updated_at
 
-        self.langfuse = langfuse
+        self.elasticdash = elasticdash
 
     @_agnosticcontextmanager
     def run(
@@ -116,7 +116,7 @@ class DatasetItemClient:
         """
         trace_name = f"Dataset run: {run_name}"
 
-        with self.langfuse.start_as_current_span(name=trace_name) as span:
+        with self.elasticdash.start_as_current_span(name=trace_name) as span:
             span.update_trace(
                 name=trace_name,
                 metadata={
@@ -130,7 +130,7 @@ class DatasetItemClient:
                 f"Creating dataset run item: run_name={run_name} id={self.id} trace_id={span.trace_id}"
             )
 
-            self.langfuse.api.dataset_run_items.create(
+            self.elasticdash.api.dataset_run_items.create(
                 request=CreateDatasetRunItemRequest(
                     runName=run_name,
                     datasetItemId=self.id,
@@ -159,11 +159,11 @@ class DatasetClient:
     Example:
         Print the input of each dataset item in a dataset.
         ```python
-        from langfuse import ElasticDash
+        from elasticdash import ElasticDash
 
-        langfuse = ElasticDash()
+        elasticdash = ElasticDash()
 
-        dataset = langfuse.get_dataset("<dataset_name>")
+        dataset = elasticdash.get_dataset("<dataset_name>")
 
         for item in dataset.items:
             print(item.input)
@@ -189,13 +189,13 @@ class DatasetClient:
         self.created_at = dataset.created_at
         self.updated_at = dataset.updated_at
         self.items = items
-        self._langfuse: Optional["ElasticDash"] = None
+        self._elasticdash: Optional["ElasticDash"] = None
 
-    def _get_langfuse_client(self) -> Optional["ElasticDash"]:
+    def _get_elasticdash_client(self) -> Optional["ElasticDash"]:
         """Get the ElasticDash client from the first item."""
-        if self._langfuse is None and self.items:
-            self._langfuse = self.items[0].langfuse
-        return self._langfuse
+        if self._elasticdash is None and self.items:
+            self._elasticdash = self.items[0].elasticdash
+        return self._elasticdash
 
     def run_experiment(
         self,
@@ -270,7 +270,7 @@ class DatasetClient:
         Examples:
             Basic dataset experiment:
             ```python
-            dataset = langfuse.get_dataset("qa-evaluation-set")
+            dataset = elasticdash.get_dataset("qa-evaluation-set")
 
             def answer_questions(*, item, **kwargs):
                 # item is a DatasetItem with .input, .expected_output, .metadata
@@ -301,7 +301,7 @@ class DatasetClient:
 
             Advanced experiment with multiple evaluators and run-level analysis:
             ```python
-            dataset = langfuse.get_dataset("content-generation-benchmark")
+            dataset = elasticdash.get_dataset("content-generation-benchmark")
 
             async def generate_content(*, item, **kwargs):
                 prompt = item.input
@@ -373,7 +373,7 @@ class DatasetClient:
             Comparing different model versions:
             ```python
             # Run multiple experiments on the same dataset for comparison
-            dataset = langfuse.get_dataset("model-benchmark")
+            dataset = elasticdash.get_dataset("model-benchmark")
 
             # Experiment 1: GPT-4
             result_gpt4 = dataset.run_experiment(
@@ -406,11 +406,11 @@ class DatasetClient:
             - This method works in both sync and async contexts (Jupyter notebooks, web apps, etc.)
             - Async execution is handled automatically with smart event loop detection
         """
-        langfuse_client = self._get_langfuse_client()
-        if not langfuse_client:
+        elasticdash_client = self._get_elasticdash_client()
+        if not elasticdash_client:
             raise ValueError("No ElasticDash client available. Dataset items are empty.")
 
-        return langfuse_client.run_experiment(
+        return elasticdash_client.run_experiment(
             name=name,
             run_name=run_name,
             description=description,

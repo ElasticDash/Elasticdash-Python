@@ -23,15 +23,15 @@ from typing import (
 from opentelemetry.util._decorator import _AgnosticContextManager
 from typing_extensions import ParamSpec
 
-from langfuse._client.constants import (
+from elasticdash._client.constants import (
     ObservationTypeLiteralNoEvent,
     get_observation_types_list,
 )
-from langfuse._client.environment_variables import (
+from elasticdash._client.environment_variables import (
     ELASTICDASH_OBSERVE_DECORATOR_IO_CAPTURE_ENABLED,
 )
-from langfuse._client.get_client import _set_current_public_key, get_client
-from langfuse._client.span import (
+from elasticdash._client.get_client import _set_current_public_key, get_client
+from elasticdash._client.span import (
     ElasticDashAgent,
     ElasticDashChain,
     ElasticDashEmbedding,
@@ -42,7 +42,7 @@ from langfuse._client.span import (
     ElasticDashSpan,
     ElasticDashTool,
 )
-from langfuse.types import TraceContext
+from elasticdash.types import TraceContext
 
 F = TypeVar("F", bound=Callable[..., Any])
 P = ParamSpec("P")
@@ -69,7 +69,7 @@ class ElasticDashDecorator:
     - Thread-safe client resolution when multiple ElasticDash projects are used
     """
 
-    _log = logging.getLogger("langfuse")
+    _log = logging.getLogger("elasticdash")
 
     @overload
     def observe(self, func: F) -> F: ...
@@ -158,9 +158,9 @@ class ElasticDashDecorator:
             - The decorator preserves the original function's signature, docstring, and return type.
             - Proper parent-child relationships between spans are automatically maintained.
             - Special keyword arguments can be passed to control tracing:
-              - langfuse_trace_id: Explicitly set the trace ID for this function call
-              - langfuse_parent_observation_id: Explicitly set the parent span ID
-              - langfuse_public_key: Use a specific ElasticDash project (when multiple clients exist)
+              - elasticdash_trace_id: Explicitly set the trace ID for this function call
+              - elasticdash_parent_observation_id: Explicitly set the parent span ID
+              - elasticdash_public_key: Use a specific ElasticDash project (when multiple clients exist)
             - For async functions, the decorator returns an async function wrapper.
             - For sync functions, the decorator returns a synchronous wrapper.
         """
@@ -233,9 +233,9 @@ class ElasticDashDecorator:
     ) -> F:
         @wraps(func)
         async def async_wrapper(*args: Tuple[Any], **kwargs: Dict[str, Any]) -> Any:
-            trace_id = cast(str, kwargs.pop("langfuse_trace_id", None))
+            trace_id = cast(str, kwargs.pop("elasticdash_trace_id", None))
             parent_observation_id = cast(
-                str, kwargs.pop("langfuse_parent_observation_id", None)
+                str, kwargs.pop("elasticdash_parent_observation_id", None)
             )
             trace_context: Optional[TraceContext] = (
                 {
@@ -255,11 +255,11 @@ class ElasticDashDecorator:
                 if capture_input
                 else None
             )
-            public_key = cast(str, kwargs.pop("langfuse_public_key", None))
+            public_key = cast(str, kwargs.pop("elasticdash_public_key", None))
 
             # Set public key in execution context for nested decorated functions
             with _set_current_public_key(public_key):
-                langfuse_client = get_client(public_key=public_key)
+                elasticdash_client = get_client(public_key=public_key)
                 context_manager: Optional[
                     Union[
                         _AgnosticContextManager[ElasticDashGeneration],
@@ -273,21 +273,21 @@ class ElasticDashDecorator:
                         _AgnosticContextManager[ElasticDashGuardrail],
                     ]
                 ] = (
-                    langfuse_client.start_as_current_observation(
+                    elasticdash_client.start_as_current_observation(
                         name=final_name,
                         as_type=as_type or "span",
                         trace_context=trace_context,
                         input=input,
                         end_on_exit=False,  # when returning a generator, closing on exit would be to early
                     )
-                    if langfuse_client
+                    if elasticdash_client
                     else None
                 )
 
                 if context_manager is None:
                     return await func(*args, **kwargs)
 
-                with context_manager as langfuse_span_or_generation:
+                with context_manager as elasticdash_span_or_generation:
                     is_return_type_generator = False
 
                     try:
@@ -298,7 +298,7 @@ class ElasticDashDecorator:
                                 is_return_type_generator = True
 
                                 return self._wrap_sync_generator_result(
-                                    langfuse_span_or_generation,
+                                    elasticdash_span_or_generation,
                                     result,
                                     transform_to_string,
                                 )
@@ -307,7 +307,7 @@ class ElasticDashDecorator:
                                 is_return_type_generator = True
 
                                 return self._wrap_async_generator_result(
-                                    langfuse_span_or_generation,
+                                    elasticdash_span_or_generation,
                                     result,
                                     transform_to_string,
                                 )
@@ -320,24 +320,24 @@ class ElasticDashDecorator:
 
                                 result.body_iterator = (
                                     self._wrap_async_generator_result(
-                                        langfuse_span_or_generation,
+                                        elasticdash_span_or_generation,
                                         result.body_iterator,
                                         transform_to_string,
                                     )
                                 )
 
-                            langfuse_span_or_generation.update(output=result)
+                            elasticdash_span_or_generation.update(output=result)
 
                         return result
                     except Exception as e:
-                        langfuse_span_or_generation.update(
+                        elasticdash_span_or_generation.update(
                             level="ERROR", status_message=str(e) or type(e).__name__
                         )
 
                         raise e
                     finally:
                         if not is_return_type_generator:
-                            langfuse_span_or_generation.end()
+                            elasticdash_span_or_generation.end()
 
         return cast(F, async_wrapper)
 
@@ -353,8 +353,8 @@ class ElasticDashDecorator:
     ) -> F:
         @wraps(func)
         def sync_wrapper(*args: Any, **kwargs: Any) -> Any:
-            trace_id = kwargs.pop("langfuse_trace_id", None)
-            parent_observation_id = kwargs.pop("langfuse_parent_observation_id", None)
+            trace_id = kwargs.pop("elasticdash_trace_id", None)
+            parent_observation_id = kwargs.pop("elasticdash_parent_observation_id", None)
             trace_context: Optional[TraceContext] = (
                 {
                     "trace_id": trace_id,
@@ -373,11 +373,11 @@ class ElasticDashDecorator:
                 if capture_input
                 else None
             )
-            public_key = kwargs.pop("langfuse_public_key", None)
+            public_key = kwargs.pop("elasticdash_public_key", None)
 
             # Set public key in execution context for nested decorated functions
             with _set_current_public_key(public_key):
-                langfuse_client = get_client(public_key=public_key)
+                elasticdash_client = get_client(public_key=public_key)
                 context_manager: Optional[
                     Union[
                         _AgnosticContextManager[ElasticDashGeneration],
@@ -391,21 +391,21 @@ class ElasticDashDecorator:
                         _AgnosticContextManager[ElasticDashGuardrail],
                     ]
                 ] = (
-                    langfuse_client.start_as_current_observation(
+                    elasticdash_client.start_as_current_observation(
                         name=final_name,
                         as_type=as_type or "span",
                         trace_context=trace_context,
                         input=input,
                         end_on_exit=False,  # when returning a generator, closing on exit would be to early
                     )
-                    if langfuse_client
+                    if elasticdash_client
                     else None
                 )
 
                 if context_manager is None:
                     return func(*args, **kwargs)
 
-                with context_manager as langfuse_span_or_generation:
+                with context_manager as elasticdash_span_or_generation:
                     is_return_type_generator = False
 
                     try:
@@ -416,7 +416,7 @@ class ElasticDashDecorator:
                                 is_return_type_generator = True
 
                                 return self._wrap_sync_generator_result(
-                                    langfuse_span_or_generation,
+                                    elasticdash_span_or_generation,
                                     result,
                                     transform_to_string,
                                 )
@@ -425,7 +425,7 @@ class ElasticDashDecorator:
                                 is_return_type_generator = True
 
                                 return self._wrap_async_generator_result(
-                                    langfuse_span_or_generation,
+                                    elasticdash_span_or_generation,
                                     result,
                                     transform_to_string,
                                 )
@@ -438,24 +438,24 @@ class ElasticDashDecorator:
 
                                 result.body_iterator = (
                                     self._wrap_async_generator_result(
-                                        langfuse_span_or_generation,
+                                        elasticdash_span_or_generation,
                                         result.body_iterator,
                                         transform_to_string,
                                     )
                                 )
 
-                            langfuse_span_or_generation.update(output=result)
+                            elasticdash_span_or_generation.update(output=result)
 
                         return result
                     except Exception as e:
-                        langfuse_span_or_generation.update(
+                        elasticdash_span_or_generation.update(
                             level="ERROR", status_message=str(e) or type(e).__name__
                         )
 
                         raise e
                     finally:
                         if not is_return_type_generator:
-                            langfuse_span_or_generation.end()
+                            elasticdash_span_or_generation.end()
 
         return cast(F, sync_wrapper)
 
@@ -483,7 +483,7 @@ class ElasticDashDecorator:
 
     def _wrap_sync_generator_result(
         self,
-        langfuse_span_or_generation: Union[
+        elasticdash_span_or_generation: Union[
             ElasticDashSpan,
             ElasticDashGeneration,
             ElasticDashAgent,
@@ -502,13 +502,13 @@ class ElasticDashDecorator:
         return _ContextPreservedSyncGeneratorWrapper(
             generator,
             preserved_context,
-            langfuse_span_or_generation,
+            elasticdash_span_or_generation,
             transform_to_string,
         )
 
     def _wrap_async_generator_result(
         self,
-        langfuse_span_or_generation: Union[
+        elasticdash_span_or_generation: Union[
             ElasticDashSpan,
             ElasticDashGeneration,
             ElasticDashAgent,
@@ -527,7 +527,7 @@ class ElasticDashDecorator:
         return _ContextPreservedAsyncGeneratorWrapper(
             generator,
             preserved_context,
-            langfuse_span_or_generation,
+            elasticdash_span_or_generation,
             transform_to_string,
         )
 

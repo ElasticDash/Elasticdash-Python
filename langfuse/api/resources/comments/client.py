@@ -48,13 +48,13 @@ class CommentsClient:
 
         Examples
         --------
-        from langfuse import CreateCommentRequest
-        from langfuse.client import FernElasticDash
+        from elasticdash import CreateCommentRequest
+        from elasticdash.client import FernElasticDash
 
         client = FernElasticDash(
-            x_langfuse_sdk_name="YOUR_X_ELASTICDASH_SDK_NAME",
-            x_langfuse_sdk_version="YOUR_X_ELASTICDASH_SDK_VERSION",
-            x_langfuse_public_key="YOUR_X_ELASTICDASH_PUBLIC_KEY",
+            x_elasticdash_sdk_name="YOUR_X_ELASTICDASH_SDK_NAME",
+            x_elasticdash_sdk_version="YOUR_X_ELASTICDASH_SDK_VERSION",
+            x_elasticdash_public_key="YOUR_X_ELASTICDASH_PUBLIC_KEY",
             username="YOUR_USERNAME",
             password="YOUR_PASSWORD",
             base_url="https://yourhost.com/path/to/api",
@@ -140,12 +140,12 @@ class CommentsClient:
 
         Examples
         --------
-        from langfuse.client import FernElasticDash
+        from elasticdash.client import FernElasticDash
 
         client = FernElasticDash(
-            x_langfuse_sdk_name="YOUR_X_ELASTICDASH_SDK_NAME",
-            x_langfuse_sdk_version="YOUR_X_ELASTICDASH_SDK_VERSION",
-            x_langfuse_public_key="YOUR_X_ELASTICDASH_PUBLIC_KEY",
+            x_elasticdash_sdk_name="YOUR_X_ELASTICDASH_SDK_NAME",
+            x_elasticdash_sdk_version="YOUR_X_ELASTICDASH_SDK_VERSION",
+            x_elasticdash_public_key="YOUR_X_ELASTICDASH_PUBLIC_KEY",
             username="YOUR_USERNAME",
             password="YOUR_PASSWORD",
             base_url="https://yourhost.com/path/to/api",
@@ -202,7 +202,7 @@ class CommentsClient:
         Parameters
         ----------
         comment_id : str
-            The unique langfuse identifier of a comment
+            The unique elasticdash identifier of a comment
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -213,12 +213,12 @@ class CommentsClient:
 
         Examples
         --------
-        from langfuse.client import FernElasticDash
+        from elasticdash.client import FernElasticDash
 
         client = FernElasticDash(
-            x_langfuse_sdk_name="YOUR_X_ELASTICDASH_SDK_NAME",
-            x_langfuse_sdk_version="YOUR_X_ELASTICDASH_SDK_VERSION",
-            x_langfuse_public_key="YOUR_X_ELASTICDASH_PUBLIC_KEY",
+            x_elasticdash_sdk_name="YOUR_X_ELASTICDASH_SDK_NAME",
+            x_elasticdash_sdk_version="YOUR_X_ELASTICDASH_SDK_VERSION",
+            x_elasticdash_public_key="YOUR_X_ELASTICDASH_PUBLIC_KEY",
             username="YOUR_USERNAME",
             password="YOUR_PASSWORD",
             base_url="https://yourhost.com/path/to/api",
@@ -287,13 +287,13 @@ class AsyncCommentsClient:
         --------
         import asyncio
 
-        from langfuse import CreateCommentRequest
-        from langfuse.client import AsyncFernElasticDash
+        from elasticdash import CreateCommentRequest
+        from elasticdash.client import AsyncFernElasticDash
 
         client = AsyncFernElasticDash(
-            x_langfuse_sdk_name="YOUR_X_ELASTICDASH_SDK_NAME",
-            x_langfuse_sdk_version="YOUR_X_ELASTICDASH_SDK_VERSION",
-            x_langfuse_public_key="YOUR_X_ELASTICDASH_PUBLIC_KEY",
+            x_elasticdash_sdk_name="YOUR_X_ELASTICDASH_SDK_NAME",
+            x_elasticdash_sdk_version="YOUR_X_ELASTICDASH_SDK_VERSION",
+            x_elasticdash_public_key="YOUR_X_ELASTICDASH_PUBLIC_KEY",
             username="YOUR_USERNAME",
             password="YOUR_PASSWORD",
             base_url="https://yourhost.com/path/to/api",
@@ -387,12 +387,12 @@ class AsyncCommentsClient:
         --------
         import asyncio
 
-        from langfuse.client import AsyncFernElasticDash
+        from elasticdash.client import AsyncFernElasticDash
 
         client = AsyncFernElasticDash(
-            x_langfuse_sdk_name="YOUR_X_ELASTICDASH_SDK_NAME",
-            x_langfuse_sdk_version="YOUR_X_ELASTICDASH_SDK_VERSION",
-            x_langfuse_public_key="YOUR_X_ELASTICDASH_PUBLIC_KEY",
+            x_elasticdash_sdk_name="YOUR_X_ELASTICDASH_SDK_NAME",
+            x_elasticdash_sdk_version="YOUR_X_ELASTICDASH_SDK_VERSION",
+            x_elasticdash_public_key="YOUR_X_ELASTICDASH_PUBLIC_KEY",
             username="YOUR_USERNAME",
             password="YOUR_PASSWORD",
             base_url="https://yourhost.com/path/to/api",
@@ -455,7 +455,7 @@ class AsyncCommentsClient:
         Parameters
         ----------
         comment_id : str
-            The unique langfuse identifier of a comment
+            The unique elasticdash identifier of a comment
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -468,12 +468,12 @@ class AsyncCommentsClient:
         --------
         import asyncio
 
-        from langfuse.client import AsyncFernElasticDash
+        from elasticdash.client import AsyncFernElasticDash
 
         client = AsyncFernElasticDash(
-            x_langfuse_sdk_name="YOUR_X_ELASTICDASH_SDK_NAME",
-            x_langfuse_sdk_version="YOUR_X_ELASTICDASH_SDK_VERSION",
-            x_langfuse_public_key="YOUR_X_ELASTICDASH_PUBLIC_KEY",
+            x_elasticdash_sdk_name="YOUR_X_ELASTICDASH_SDK_NAME",
+            x_elasticdash_sdk_version="YOUR_X_ELASTICDASH_SDK_VERSION",
+            x_elasticdash_public_key="YOUR_X_ELASTICDASH_PUBLIC_KEY",
             username="YOUR_USERNAME",
             password="YOUR_PASSWORD",
             base_url="https://yourhost.com/path/to/api",

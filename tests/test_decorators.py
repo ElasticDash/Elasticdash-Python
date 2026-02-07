@@ -11,11 +11,11 @@ from langchain_core.prompts import ChatPromptTemplate
 from langchain_openai import ChatOpenAI
 from opentelemetry import trace
 
-from langfuse import ElasticDash, get_client, observe
-from langfuse._client.environment_variables import ELASTICDASH_PUBLIC_KEY
-from langfuse._client.resource_manager import ElasticDashResourceManager
-from langfuse.langchain import CallbackHandler
-from langfuse.media import ElasticDashMedia
+from elasticdash import ElasticDash, get_client, observe
+from elasticdash._client.environment_variables import ELASTICDASH_PUBLIC_KEY
+from elasticdash._client.resource_manager import ElasticDashResourceManager
+from elasticdash.langchain import CallbackHandler
+from elasticdash.media import ElasticDashMedia
 from tests.utils import get_api
 
 mock_metadata = {"key": "metadata"}
@@ -34,22 +34,22 @@ def removeMockResourceManagerInstances():
 
 def test_nested_observations():
     mock_name = "test_nested_observations"
-    langfuse = get_client()
-    mock_trace_id = langfuse.create_trace_id()
+    elasticdash = get_client()
+    mock_trace_id = elasticdash.create_trace_id()
 
     @observe(as_type="generation", name="level_3", capture_output=False)
     def level_3_function():
-        langfuse.update_current_generation(metadata=mock_metadata)
-        langfuse.update_current_generation(
+        elasticdash.update_current_generation(metadata=mock_metadata)
+        elasticdash.update_current_generation(
             metadata=mock_deep_metadata,
             usage_details={"input": 150, "output": 50, "total": 300},
             model="gpt-3.5-turbo",
             output="mock_output",
         )
-        langfuse.update_current_generation(version="version-1")
-        langfuse.update_current_trace(session_id=mock_session_id, name=mock_name)
+        elasticdash.update_current_generation(version="version-1")
+        elasticdash.update_current_trace(session_id=mock_session_id, name=mock_name)
 
-        langfuse.update_current_trace(
+        elasticdash.update_current_trace(
             user_id="user_id",
         )
 
@@ -58,7 +58,7 @@ def test_nested_observations():
     @observe(name="level_2_manually_set")
     def level_2_function():
         level_3_function()
-        langfuse.update_current_span(metadata=mock_metadata)
+        elasticdash.update_current_span(metadata=mock_metadata)
 
         return "level_2"
 
@@ -69,9 +69,9 @@ def test_nested_observations():
         return "level_1"
 
     result = level_1_function(
-        *mock_args, **mock_kwargs, langfuse_trace_id=mock_trace_id
+        *mock_args, **mock_kwargs, elasticdash_trace_id=mock_trace_id
     )
-    langfuse.flush()
+    elasticdash.flush()
 
     assert result == "level_1"  # Wrapped function returns correctly
 
@@ -116,23 +116,23 @@ def test_nested_observations():
 
 def test_nested_observations_with_non_parentheses_decorator():
     mock_name = "test_nested_observations"
-    langfuse = get_client()
-    mock_trace_id = langfuse.create_trace_id()
+    elasticdash = get_client()
+    mock_trace_id = elasticdash.create_trace_id()
 
     @observe(as_type="generation", name="level_3", capture_output=False)
     def level_3_function():
-        langfuse.update_current_generation(metadata=mock_metadata)
-        langfuse.update_current_generation(
+        elasticdash.update_current_generation(metadata=mock_metadata)
+        elasticdash.update_current_generation(
             metadata=mock_deep_metadata,
             usage_details={"input": 150, "output": 50, "total": 300},
             model="gpt-3.5-turbo",
             output="mock_output",
         )
-        langfuse.update_current_generation(version="version-1")
+        elasticdash.update_current_generation(version="version-1")
 
-        langfuse.update_current_trace(session_id=mock_session_id, name=mock_name)
+        elasticdash.update_current_trace(session_id=mock_session_id, name=mock_name)
 
-        langfuse.update_current_trace(
+        elasticdash.update_current_trace(
             user_id="user_id",
         )
 
@@ -141,7 +141,7 @@ def test_nested_observations_with_non_parentheses_decorator():
     @observe
     def level_2_function():
         level_3_function()
-        langfuse.update_current_span(metadata=mock_metadata)
+        elasticdash.update_current_span(metadata=mock_metadata)
 
         return "level_2"
 
@@ -152,9 +152,9 @@ def test_nested_observations_with_non_parentheses_decorator():
         return "level_1"
 
     result = level_1_function(
-        *mock_args, **mock_kwargs, langfuse_trace_id=mock_trace_id
+        *mock_args, **mock_kwargs, elasticdash_trace_id=mock_trace_id
     )
-    langfuse.flush()
+    elasticdash.flush()
 
     assert result == "level_1"  # Wrapped function returns correctly
 
@@ -200,25 +200,25 @@ def test_nested_observations_with_non_parentheses_decorator():
 # behavior on exceptions
 def test_exception_in_wrapped_function():
     mock_name = "test_exception_in_wrapped_function"
-    langfuse = get_client()
-    mock_trace_id = langfuse.create_trace_id()
+    elasticdash = get_client()
+    mock_trace_id = elasticdash.create_trace_id()
 
     @observe(as_type="generation", capture_output=False)
     def level_3_function():
-        langfuse.update_current_generation(metadata=mock_metadata)
-        langfuse.update_current_generation(
+        elasticdash.update_current_generation(metadata=mock_metadata)
+        elasticdash.update_current_generation(
             metadata=mock_deep_metadata,
             usage_details={"input": 150, "output": 50, "total": 300},
             model="gpt-3.5-turbo",
         )
-        langfuse.update_current_trace(session_id=mock_session_id, name=mock_name)
+        elasticdash.update_current_trace(session_id=mock_session_id, name=mock_name)
 
         raise ValueError("Mock exception")
 
     @observe()
     def level_2_function():
         level_3_function()
-        langfuse.update_current_generation(metadata=mock_metadata)
+        elasticdash.update_current_generation(metadata=mock_metadata)
 
         return "level_2"
 
@@ -232,9 +232,9 @@ def test_exception_in_wrapped_function():
 
     # Check that the exception is raised
     with pytest.raises(ValueError):
-        level_1_function(*mock_args, **mock_kwargs, langfuse_trace_id=mock_trace_id)
+        level_1_function(*mock_args, **mock_kwargs, elasticdash_trace_id=mock_trace_id)
 
-    langfuse.flush()
+    elasticdash.flush()
 
     trace_data = get_api().trace.get(mock_trace_id)
 
@@ -271,27 +271,27 @@ def test_exception_in_wrapped_function():
 # behavior on concurrency
 def test_concurrent_decorator_executions():
     mock_name = "test_concurrent_decorator_executions"
-    langfuse = get_client()
-    mock_trace_id_1 = langfuse.create_trace_id()
-    mock_trace_id_2 = langfuse.create_trace_id()
+    elasticdash = get_client()
+    mock_trace_id_1 = elasticdash.create_trace_id()
+    mock_trace_id_2 = elasticdash.create_trace_id()
 
     @observe(as_type="generation", capture_output=False)
     def level_3_function():
-        langfuse.update_current_generation(metadata=mock_metadata)
-        langfuse.update_current_generation(metadata=mock_deep_metadata)
-        langfuse.update_current_generation(
+        elasticdash.update_current_generation(metadata=mock_metadata)
+        elasticdash.update_current_generation(metadata=mock_deep_metadata)
+        elasticdash.update_current_generation(
             metadata=mock_deep_metadata,
             usage_details={"input": 150, "output": 50, "total": 300},
             model="gpt-3.5-turbo",
         )
-        langfuse.update_current_trace(name=mock_name, session_id=mock_session_id)
+        elasticdash.update_current_trace(name=mock_name, session_id=mock_session_id)
 
         return "level_3"
 
     @observe()
     def level_2_function():
         level_3_function()
-        langfuse.update_current_generation(metadata=mock_metadata)
+        elasticdash.update_current_generation(metadata=mock_metadata)
 
         return "level_2"
 
@@ -308,20 +308,20 @@ def test_concurrent_decorator_executions():
             *mock_args,
             mock_trace_id_1,
             **mock_kwargs,
-            langfuse_trace_id=mock_trace_id_1,
+            elasticdash_trace_id=mock_trace_id_1,
         )
         future2 = executor.submit(
             level_1_function,
             *mock_args,
             mock_trace_id_2,
             **mock_kwargs,
-            langfuse_trace_id=mock_trace_id_2,
+            elasticdash_trace_id=mock_trace_id_2,
         )
 
         future1.result()
         future2.result()
 
-    langfuse.flush()
+    elasticdash.flush()
 
     for mock_id in [mock_trace_id_1, mock_trace_id_2]:
         trace_data = get_api().trace.get(mock_id)
@@ -362,12 +362,12 @@ def test_concurrent_decorator_executions():
 
 def test_decorators_langchain():
     mock_name = "test_decorators_langchain"
-    langfuse = get_client()
-    mock_trace_id = langfuse.create_trace_id()
+    elasticdash = get_client()
+    mock_trace_id = elasticdash.create_trace_id()
 
     @observe()
     def langchain_operations(*args, **kwargs):
-        # Get langfuse callback handler for LangChain
+        # Get elasticdash callback handler for LangChain
         handler = CallbackHandler()
         prompt = ChatPromptTemplate.from_template("tell me a short joke about {topic}")
         model = ChatOpenAI(temperature=0)
@@ -383,15 +383,15 @@ def test_decorators_langchain():
 
     @observe()
     def level_3_function(*args, **kwargs):
-        langfuse.update_current_span(metadata=mock_metadata)
-        langfuse.update_current_span(metadata=mock_deep_metadata)
-        langfuse.update_current_trace(session_id=mock_session_id, name=mock_name)
+        elasticdash.update_current_span(metadata=mock_metadata)
+        elasticdash.update_current_span(metadata=mock_deep_metadata)
+        elasticdash.update_current_trace(session_id=mock_session_id, name=mock_name)
 
         return langchain_operations(*args, **kwargs)
 
     @observe()
     def level_2_function(*args, **kwargs):
-        langfuse.update_current_span(metadata=mock_metadata)
+        elasticdash.update_current_span(metadata=mock_metadata)
 
         return level_3_function(*args, **kwargs)
 
@@ -399,9 +399,9 @@ def test_decorators_langchain():
     def level_1_function(*args, **kwargs):
         return level_2_function(*args, **kwargs)
 
-    level_1_function(topic="socks", langfuse_trace_id=mock_trace_id)
+    level_1_function(topic="socks", elasticdash_trace_id=mock_trace_id)
 
-    langfuse.flush()
+    elasticdash.flush()
 
     trace_data = get_api().trace.get(mock_trace_id)
     assert len(trace_data.observations) > 2
@@ -439,12 +439,12 @@ def test_decorators_langchain():
 
 
 def test_get_current_trace_url():
-    langfuse = get_client()
-    mock_trace_id = langfuse.create_trace_id()
+    elasticdash = get_client()
+    mock_trace_id = elasticdash.create_trace_id()
 
     @observe()
     def level_3_function():
-        return langfuse.get_trace_url(trace_id=langfuse.get_current_trace_id())
+        return elasticdash.get_trace_url(trace_id=elasticdash.get_current_trace_id())
 
     @observe()
     def level_2_function():
@@ -455,9 +455,9 @@ def test_get_current_trace_url():
         return level_2_function()
 
     result = level_1_function(
-        *mock_args, **mock_kwargs, langfuse_trace_id=mock_trace_id
+        *mock_args, **mock_kwargs, elasticdash_trace_id=mock_trace_id
     )
-    langfuse.flush()
+    elasticdash.flush()
 
     expected_url = f"http://localhost:3000/project/7a88fb47-b4e2-43b8-a06c-a5ce950dc53a/traces/{mock_trace_id}"
     assert result == expected_url
@@ -465,13 +465,13 @@ def test_get_current_trace_url():
 
 def test_scoring_observations():
     mock_name = "test_scoring_observations"
-    langfuse = get_client()
-    mock_trace_id = langfuse.create_trace_id()
+    elasticdash = get_client()
+    mock_trace_id = elasticdash.create_trace_id()
 
     @observe(as_type="generation", capture_output=False)
     def level_3_function():
-        langfuse.score_current_span(name="test-observation-score", value=1)
-        langfuse.score_current_trace(name="another-test-trace-score", value="my_value")
+        elasticdash.score_current_span(name="test-observation-score", value=1)
+        elasticdash.score_current_trace(name="another-test-trace-score", value="my_value")
 
         return "level_3"
 
@@ -481,14 +481,14 @@ def test_scoring_observations():
 
     @observe()
     def level_1_function(*args, **kwargs):
-        langfuse.score_current_trace(name="test-trace-score", value=3)
-        langfuse.update_current_trace(name=mock_name)
+        elasticdash.score_current_trace(name="test-trace-score", value=3)
+        elasticdash.update_current_trace(name=mock_name)
         return level_2_function()
 
     result = level_1_function(
-        *mock_args, **mock_kwargs, langfuse_trace_id=mock_trace_id
+        *mock_args, **mock_kwargs, elasticdash_trace_id=mock_trace_id
     )
-    langfuse.flush()
+    elasticdash.flush()
     sleep(1)
 
     assert result == "level_3"  # Wrapped function returns correctly
@@ -533,8 +533,8 @@ def test_scoring_observations():
 
 
 def test_circular_reference_handling():
-    langfuse = get_client()
-    mock_trace_id = langfuse.create_trace_id()
+    elasticdash = get_client()
+    mock_trace_id = elasticdash.create_trace_id()
 
     # Define a class that will contain a circular reference
     class CircularRefObject:
@@ -552,9 +552,9 @@ def test_circular_reference_handling():
     circular_obj.reference = circular_obj
 
     # Call the decorated function, passing the circularly-referenced object
-    result = function_with_circular_arg(circular_obj, langfuse_trace_id=mock_trace_id)
+    result = function_with_circular_arg(circular_obj, elasticdash_trace_id=mock_trace_id)
 
-    langfuse.flush()
+    elasticdash.flush()
 
     # Validate that the function executed as expected
     assert result == "function response"
@@ -567,8 +567,8 @@ def test_circular_reference_handling():
 
 
 def test_disabled_io_capture():
-    langfuse = get_client()
-    mock_trace_id = langfuse.create_trace_id()
+    elasticdash = get_client()
+    mock_trace_id = elasticdash.create_trace_id()
 
     class Node:
         def __init__(self, value: tuple):
@@ -576,7 +576,7 @@ def test_disabled_io_capture():
 
     @observe(capture_input=False, capture_output=False)
     def nested(*args, **kwargs):
-        langfuse.update_current_span(
+        elasticdash.update_current_span(
             input=Node(("manually set tuple", 1)), output="manually set output"
         )
         return "nested response"
@@ -586,9 +586,9 @@ def test_disabled_io_capture():
         nested(*args, **kwargs)
         return "function response"
 
-    result = main("Hello, World!", name="John", langfuse_trace_id=mock_trace_id)
+    result = main("Hello, World!", name="John", elasticdash_trace_id=mock_trace_id)
 
-    langfuse.flush()
+    elasticdash.flush()
 
     assert result == "function response"
 
@@ -613,27 +613,27 @@ def test_disabled_io_capture():
 
 def test_decorated_class_and_instance_methods():
     mock_name = "test_decorated_class_and_instance_methods"
-    langfuse = get_client()
-    mock_trace_id = langfuse.create_trace_id()
+    elasticdash = get_client()
+    mock_trace_id = elasticdash.create_trace_id()
 
     class TestClass:
         @classmethod
         @observe(name="class-method")
         def class_method(cls, *args, **kwargs):
-            langfuse.update_current_span()
+            elasticdash.update_current_span()
             return "class_method"
 
         @observe(as_type="generation", capture_output=False)
         def level_3_function(self):
-            langfuse.update_current_generation(metadata=mock_metadata)
-            langfuse.update_current_generation(
+            elasticdash.update_current_generation(metadata=mock_metadata)
+            elasticdash.update_current_generation(
                 metadata=mock_deep_metadata,
                 usage_details={"input": 150, "output": 50, "total": 300},
                 model="gpt-3.5-turbo",
                 output="mock_output",
             )
 
-            langfuse.update_current_trace(session_id=mock_session_id, name=mock_name)
+            elasticdash.update_current_trace(session_id=mock_session_id, name=mock_name)
 
             return "level_3"
 
@@ -642,7 +642,7 @@ def test_decorated_class_and_instance_methods():
             TestClass.class_method()
 
             self.level_3_function()
-            langfuse.update_current_span(metadata=mock_metadata)
+            elasticdash.update_current_span(metadata=mock_metadata)
 
             return "level_2"
 
@@ -653,10 +653,10 @@ def test_decorated_class_and_instance_methods():
             return "level_1"
 
     result = TestClass().level_1_function(
-        *mock_args, **mock_kwargs, langfuse_trace_id=mock_trace_id
+        *mock_args, **mock_kwargs, elasticdash_trace_id=mock_trace_id
     )
 
-    langfuse.flush()
+    elasticdash.flush()
 
     assert result == "level_1"  # Wrapped function returns correctly
 
@@ -707,8 +707,8 @@ def test_decorated_class_and_instance_methods():
 
 
 def test_generator_as_return_value():
-    langfuse = get_client()
-    mock_trace_id = langfuse.create_trace_id()
+    elasticdash = get_client()
+    mock_trace_id = elasticdash.create_trace_id()
     mock_output = "Hello, World!"
 
     def custom_transform_to_string(x):
@@ -733,8 +733,8 @@ def test_generator_as_return_value():
 
         return result
 
-    result = main(langfuse_trace_id=mock_trace_id)
-    langfuse.flush()
+    result = main(elasticdash_trace_id=mock_trace_id)
+    elasticdash.flush()
 
     assert result == mock_output
 
@@ -761,8 +761,8 @@ def test_generator_as_return_value():
 
 @pytest.mark.asyncio
 async def test_async_generator_as_return_value():
-    langfuse = get_client()
-    mock_trace_id = langfuse.create_trace_id()
+    elasticdash = get_client()
+    mock_trace_id = elasticdash.create_trace_id()
     mock_output = "Hello, async World!"
 
     def custom_transform_to_string(x):
@@ -787,8 +787,8 @@ async def test_async_generator_as_return_value():
 
         return result
 
-    result = await main_async(langfuse_trace_id=mock_trace_id)
-    langfuse.flush()
+    result = await main_async(elasticdash_trace_id=mock_trace_id)
+    elasticdash.flush()
 
     assert result == mock_output
 
@@ -815,11 +815,11 @@ async def test_async_generator_as_return_value():
 
 @pytest.mark.asyncio
 async def test_async_nested_openai_chat_stream():
-    from langfuse.openai import AsyncOpenAI
+    from elasticdash.openai import AsyncOpenAI
 
     mock_name = "test_async_nested_openai_chat_stream"
-    langfuse = get_client()
-    mock_trace_id = langfuse.create_trace_id()
+    elasticdash = get_client()
+    mock_trace_id = elasticdash.create_trace_id()
     mock_tags = ["tag1", "tag2"]
     mock_session_id = "session-id-1"
     mock_user_id = "user-id-1"
@@ -834,7 +834,7 @@ async def test_async_nested_openai_chat_stream():
             stream=True,
         )
 
-        langfuse.update_current_trace(
+        elasticdash.update_current_trace(
             session_id=mock_session_id,
             user_id=mock_user_id,
             tags=mock_tags,
@@ -843,8 +843,8 @@ async def test_async_nested_openai_chat_stream():
         async for c in gen:
             print(c)
 
-        langfuse.update_current_span(metadata=mock_metadata)
-        langfuse.update_current_trace(name=mock_name)
+        elasticdash.update_current_span(metadata=mock_metadata)
+        elasticdash.update_current_trace(name=mock_name)
 
         return "level_2"
 
@@ -855,9 +855,9 @@ async def test_async_nested_openai_chat_stream():
         return "level_1"
 
     result = await level_1_function(
-        *mock_args, **mock_kwargs, langfuse_trace_id=mock_trace_id
+        *mock_args, **mock_kwargs, elasticdash_trace_id=mock_trace_id
     )
-    langfuse.flush()
+    elasticdash.flush()
 
     assert result == "level_1"  # Wrapped function returns correctly
 
@@ -911,8 +911,8 @@ async def test_async_nested_openai_chat_stream():
 
 
 def test_generator_as_function_input():
-    langfuse = get_client()
-    mock_trace_id = langfuse.create_trace_id()
+    elasticdash = get_client()
+    mock_trace_id = elasticdash.create_trace_id()
     mock_output = "Hello, World!"
 
     def generator_function():
@@ -934,8 +934,8 @@ def test_generator_as_function_input():
 
         return nested(gen)
 
-    result = main(langfuse_trace_id=mock_trace_id)
-    langfuse.flush()
+    result = main(elasticdash_trace_id=mock_trace_id)
+    elasticdash.flush()
 
     assert result == mock_output
 
@@ -955,8 +955,8 @@ def test_generator_as_function_input():
 
 
 def test_nest_list_of_generator_as_function_IO():
-    langfuse = get_client()
-    mock_trace_id = langfuse.create_trace_id()
+    elasticdash = get_client()
+    mock_trace_id = elasticdash.create_trace_id()
 
     def generator_function():
         yield "Hello"
@@ -973,8 +973,8 @@ def test_nest_list_of_generator_as_function_IO():
 
         return nested([(gen, gen)])
 
-    main(langfuse_trace_id=mock_trace_id)
-    langfuse.flush()
+    main(elasticdash_trace_id=mock_trace_id)
+    elasticdash.flush()
 
     trace_data = get_api().trace.get(mock_trace_id)
 
@@ -996,16 +996,16 @@ def test_nest_list_of_generator_as_function_IO():
 
 
 def test_return_dict_for_output():
-    langfuse = get_client()
-    mock_trace_id = langfuse.create_trace_id()
+    elasticdash = get_client()
+    mock_trace_id = elasticdash.create_trace_id()
     mock_output = {"key": "value"}
 
     @observe()
     def function():
         return mock_output
 
-    result = function(langfuse_trace_id=mock_trace_id)
-    langfuse.flush()
+    result = function(elasticdash_trace_id=mock_trace_id)
+    elasticdash.flush()
 
     assert result == mock_output
 
@@ -1014,8 +1014,8 @@ def test_return_dict_for_output():
 
 
 def test_media():
-    langfuse = get_client()
-    mock_trace_id = langfuse.create_trace_id()
+    elasticdash = get_client()
+    mock_trace_id = elasticdash.create_trace_id()
 
     with open("static/bitcoin.pdf", "rb") as pdf_file:
         pdf_bytes = pdf_file.read()
@@ -1025,7 +1025,7 @@ def test_media():
     @observe()
     def main():
         sleep(1)
-        langfuse.update_current_trace(
+        elasticdash.update_current_trace(
             input={
                 "context": {
                     "nested": media,
@@ -1043,22 +1043,22 @@ def test_media():
             },
         )
 
-    main(langfuse_trace_id=mock_trace_id)
+    main(elasticdash_trace_id=mock_trace_id)
 
-    langfuse.flush()
+    elasticdash.flush()
 
     trace_data = get_api().trace.get(mock_trace_id)
 
     assert (
-        "@@@langfuseMedia:type=application/pdf|id="
+        "@@@elasticdashMedia:type=application/pdf|id="
         in trace_data.input["context"]["nested"]
     )
     assert (
-        "@@@langfuseMedia:type=application/pdf|id="
+        "@@@elasticdashMedia:type=application/pdf|id="
         in trace_data.output["context"]["nested"]
     )
     assert (
-        "@@@langfuseMedia:type=application/pdf|id="
+        "@@@elasticdashMedia:type=application/pdf|id="
         in trace_data.metadata["context"]["nested"]
     )
     parsed_reference_string = ElasticDashMedia.parse_reference_string(
@@ -1070,22 +1070,22 @@ def test_media():
 
 
 def test_merge_metadata_and_tags():
-    langfuse = get_client()
-    mock_trace_id = langfuse.create_trace_id()
+    elasticdash = get_client()
+    mock_trace_id = elasticdash.create_trace_id()
 
     @observe
     def nested():
-        langfuse.update_current_trace(metadata={"key2": "value2"}, tags=["tag2"])
+        elasticdash.update_current_trace(metadata={"key2": "value2"}, tags=["tag2"])
 
     @observe
     def main():
-        langfuse.update_current_trace(metadata={"key1": "value1"}, tags=["tag1"])
+        elasticdash.update_current_trace(metadata={"key1": "value1"}, tags=["tag1"])
 
         nested()
 
-    main(langfuse_trace_id=mock_trace_id)
+    main(elasticdash_trace_id=mock_trace_id)
 
-    langfuse.flush()
+    elasticdash.flush()
 
     trace_data = get_api().trace.get(mock_trace_id)
 
@@ -1097,7 +1097,7 @@ def test_merge_metadata_and_tags():
 
 # Multi-project context propagation tests
 def test_multiproject_context_propagation_basic():
-    """Test that nested decorated functions inherit langfuse_public_key from parent in multi-project setup"""
+    """Test that nested decorated functions inherit elasticdash_public_key from parent in multi-project setup"""
     client1 = ElasticDash()  # Reads from environment
     ElasticDash(public_key="pk-test-project2", secret_key="sk-test-project2")
 
@@ -1108,39 +1108,39 @@ def test_multiproject_context_propagation_basic():
     # Use known public key from environment
     env_public_key = os.environ[ELASTICDASH_PUBLIC_KEY]
     # In multi-project setup, must specify which client to use
-    langfuse = get_client(public_key=env_public_key)
-    mock_trace_id = langfuse.create_trace_id()
+    elasticdash = get_client(public_key=env_public_key)
+    mock_trace_id = elasticdash.create_trace_id()
 
     @observe(as_type="generation", capture_output=False)
     def level_3_function():
         # This function should inherit the public key from level_1_function
-        # and NOT need langfuse_public_key parameter
-        langfuse_client = get_client()
-        langfuse_client.update_current_generation(metadata={"level": "3"})
-        langfuse_client.update_current_trace(name=mock_name)
+        # and NOT need elasticdash_public_key parameter
+        elasticdash_client = get_client()
+        elasticdash_client.update_current_generation(metadata={"level": "3"})
+        elasticdash_client.update_current_trace(name=mock_name)
         return "level_3"
 
     @observe()
     def level_2_function():
         # This function should also inherit the public key
         level_3_function()
-        langfuse_client = get_client()
-        langfuse_client.update_current_span(metadata={"level": "2"})
+        elasticdash_client = get_client()
+        elasticdash_client.update_current_span(metadata={"level": "2"})
         return "level_2"
 
     @observe()
     def level_1_function(*args, **kwargs):
-        # Only this top-level function receives langfuse_public_key
+        # Only this top-level function receives elasticdash_public_key
         level_2_function()
-        langfuse_client = get_client()
-        langfuse_client.update_current_span(metadata={"level": "1"})
+        elasticdash_client = get_client()
+        elasticdash_client.update_current_span(metadata={"level": "1"})
         return "level_1"
 
     result = level_1_function(
         *mock_args,
         **mock_kwargs,
-        langfuse_trace_id=mock_trace_id,
-        langfuse_public_key=env_public_key,  # Only provided to top-level function
+        elasticdash_trace_id=mock_trace_id,
+        elasticdash_public_key=env_public_key,  # Only provided to top-level function
     )
 
     # Use the correct client for flushing
@@ -1166,39 +1166,39 @@ def test_multiproject_context_propagation_deep_nesting():
 
     mock_name = "test_multiproject_context_propagation_deep_nesting"
     env_public_key = os.environ[ELASTICDASH_PUBLIC_KEY]
-    langfuse = get_client(public_key=env_public_key)
-    mock_trace_id = langfuse.create_trace_id()
+    elasticdash = get_client(public_key=env_public_key)
+    mock_trace_id = elasticdash.create_trace_id()
 
     @observe(as_type="generation")
     def level_4_function():
-        langfuse_client = get_client()
-        langfuse_client.update_current_generation(metadata={"level": "4"})
+        elasticdash_client = get_client()
+        elasticdash_client.update_current_generation(metadata={"level": "4"})
         return "level_4"
 
     @observe()
     def level_3_function():
         result = level_4_function()
-        langfuse_client = get_client()
-        langfuse_client.update_current_span(metadata={"level": "3"})
+        elasticdash_client = get_client()
+        elasticdash_client.update_current_span(metadata={"level": "3"})
         return result
 
     @observe()
     def level_2_function():
         result = level_3_function()
-        langfuse_client = get_client()
-        langfuse_client.update_current_span(metadata={"level": "2"})
+        elasticdash_client = get_client()
+        elasticdash_client.update_current_span(metadata={"level": "2"})
         return result
 
     @observe()
     def level_1_function(*args, **kwargs):
-        langfuse_client = get_client()
-        langfuse_client.update_current_trace(name=mock_name)
+        elasticdash_client = get_client()
+        elasticdash_client.update_current_trace(name=mock_name)
         result = level_2_function()
-        langfuse_client.update_current_span(metadata={"level": "1"})
+        elasticdash_client.update_current_span(metadata={"level": "1"})
         return result
 
     result = level_1_function(
-        langfuse_trace_id=mock_trace_id, langfuse_public_key=env_public_key
+        elasticdash_trace_id=mock_trace_id, elasticdash_public_key=env_public_key
     )
     client1.flush()
 
@@ -1230,8 +1230,8 @@ def test_multiproject_context_propagation_override():
 
     mock_name = "test_multiproject_context_propagation_override"
     env_public_key = os.environ[ELASTICDASH_PUBLIC_KEY]
-    langfuse = get_client(public_key=env_public_key)
-    mock_trace_id = langfuse.create_trace_id()
+    elasticdash = get_client(public_key=env_public_key)
+    mock_trace_id = elasticdash.create_trace_id()
 
     primary_public_key = env_public_key
     override_public_key = "pk-test-project2"
@@ -1239,27 +1239,27 @@ def test_multiproject_context_propagation_override():
     @observe(as_type="generation")
     def level_3_function():
         # This function explicitly overrides the inherited public key
-        langfuse_client = get_client(public_key=override_public_key)
-        langfuse_client.update_current_generation(metadata={"used_override": "true"})
+        elasticdash_client = get_client(public_key=override_public_key)
+        elasticdash_client.update_current_generation(metadata={"used_override": "true"})
         return "level_3"
 
     @observe()
     def level_2_function():
         # This function should use the overridden key when calling level_3
-        level_3_function(langfuse_public_key=override_public_key)
-        langfuse_client = get_client(public_key=primary_public_key)
-        langfuse_client.update_current_span(metadata={"level": "2"})
+        level_3_function(elasticdash_public_key=override_public_key)
+        elasticdash_client = get_client(public_key=primary_public_key)
+        elasticdash_client.update_current_span(metadata={"level": "2"})
         return "level_2"
 
     @observe()
     def level_1_function(*args, **kwargs):
-        langfuse_client = get_client(public_key=primary_public_key)
-        langfuse_client.update_current_trace(name=mock_name)
+        elasticdash_client = get_client(public_key=primary_public_key)
+        elasticdash_client.update_current_trace(name=mock_name)
         level_2_function()
         return "level_1"
 
     result = level_1_function(
-        langfuse_trace_id=mock_trace_id, langfuse_public_key=primary_public_key
+        elasticdash_trace_id=mock_trace_id, elasticdash_public_key=primary_public_key
     )
     client1.flush()
     client2.flush()
@@ -1284,33 +1284,33 @@ def test_multiproject_context_propagation_no_public_key():
 
     mock_name = "test_multiproject_context_propagation_no_public_key"
     env_public_key = os.environ[ELASTICDASH_PUBLIC_KEY]
-    langfuse = get_client(public_key=env_public_key)
-    mock_trace_id = langfuse.create_trace_id()
+    elasticdash = get_client(public_key=env_public_key)
+    mock_trace_id = elasticdash.create_trace_id()
 
     @observe(as_type="generation")
     def level_3_function():
         # Should use default client since no public key provided
-        langfuse_client = get_client()
-        langfuse_client.update_current_generation(metadata={"level": "3"})
+        elasticdash_client = get_client()
+        elasticdash_client.update_current_generation(metadata={"level": "3"})
         return "level_3"
 
     @observe()
     def level_2_function():
         result = level_3_function()
-        langfuse_client = get_client()
-        langfuse_client.update_current_span(metadata={"level": "2"})
+        elasticdash_client = get_client()
+        elasticdash_client.update_current_span(metadata={"level": "2"})
         return result
 
     @observe()
     def level_1_function(*args, **kwargs):
-        langfuse_client = get_client()
-        langfuse_client.update_current_trace(name=mock_name)
+        elasticdash_client = get_client()
+        elasticdash_client.update_current_trace(name=mock_name)
         result = level_2_function()
-        langfuse_client.update_current_span(metadata={"level": "1"})
+        elasticdash_client.update_current_span(metadata={"level": "1"})
         return result
 
-    # No langfuse_public_key provided - should use default client
-    result = level_1_function(langfuse_trace_id=mock_trace_id)
+    # No elasticdash_public_key provided - should use default client
+    result = level_1_function(elasticdash_trace_id=mock_trace_id)
     client1.flush()
 
     assert result == "level_3"
@@ -1331,7 +1331,7 @@ def test_multiproject_context_propagation_no_public_key():
 
 @pytest.mark.asyncio
 async def test_multiproject_async_context_propagation_basic():
-    """Test that nested async decorated functions inherit langfuse_public_key from parent in multi-project setup"""
+    """Test that nested async decorated functions inherit elasticdash_public_key from parent in multi-project setup"""
     client1 = ElasticDash()  # Reads from environment
     ElasticDash(public_key="pk-test-project2", secret_key="sk-test-project2")
 
@@ -1340,42 +1340,42 @@ async def test_multiproject_async_context_propagation_basic():
 
     mock_name = "test_multiproject_async_context_propagation_basic"
     env_public_key = os.environ[ELASTICDASH_PUBLIC_KEY]
-    langfuse = get_client(public_key=env_public_key)
-    mock_trace_id = langfuse.create_trace_id()
+    elasticdash = get_client(public_key=env_public_key)
+    mock_trace_id = elasticdash.create_trace_id()
 
     @observe(as_type="generation", capture_output=False)
     async def async_level_3_function():
         # This function should inherit the public key from level_1_function
-        # and NOT need langfuse_public_key parameter
+        # and NOT need elasticdash_public_key parameter
         await asyncio.sleep(0.01)  # Simulate async work
-        langfuse_client = get_client()
-        langfuse_client.update_current_generation(
+        elasticdash_client = get_client()
+        elasticdash_client.update_current_generation(
             metadata={"level": "3", "async": True}
         )
-        langfuse_client.update_current_trace(name=mock_name)
+        elasticdash_client.update_current_trace(name=mock_name)
         return "async_level_3"
 
     @observe()
     async def async_level_2_function():
         # This function should also inherit the public key
         result = await async_level_3_function()
-        langfuse_client = get_client()
-        langfuse_client.update_current_span(metadata={"level": "2", "async": True})
+        elasticdash_client = get_client()
+        elasticdash_client.update_current_span(metadata={"level": "2", "async": True})
         return result
 
     @observe()
     async def async_level_1_function(*args, **kwargs):
-        # Only this top-level function receives langfuse_public_key
+        # Only this top-level function receives elasticdash_public_key
         result = await async_level_2_function()
-        langfuse_client = get_client()
-        langfuse_client.update_current_span(metadata={"level": "1", "async": True})
+        elasticdash_client = get_client()
+        elasticdash_client.update_current_span(metadata={"level": "1", "async": True})
         return result
 
     result = await async_level_1_function(
         *mock_args,
         **mock_kwargs,
-        langfuse_trace_id=mock_trace_id,
-        langfuse_public_key=env_public_key,  # Only provided to top-level function
+        elasticdash_trace_id=mock_trace_id,
+        elasticdash_public_key=env_public_key,  # Only provided to top-level function
     )
 
     # Use the correct client for flushing
@@ -1409,14 +1409,14 @@ async def test_multiproject_mixed_sync_async_context_propagation():
 
     mock_name = "test_multiproject_mixed_sync_async_context_propagation"
     env_public_key = os.environ[ELASTICDASH_PUBLIC_KEY]
-    langfuse = get_client(public_key=env_public_key)
-    mock_trace_id = langfuse.create_trace_id()
+    elasticdash = get_client(public_key=env_public_key)
+    mock_trace_id = elasticdash.create_trace_id()
 
     @observe(as_type="generation")
     def sync_level_4_function():
         # Sync function called from async should inherit context
-        langfuse_client = get_client()
-        langfuse_client.update_current_generation(
+        elasticdash_client = get_client()
+        elasticdash_client.update_current_generation(
             metadata={"level": "4", "type": "sync"}
         )
         return "sync_level_4"
@@ -1426,29 +1426,29 @@ async def test_multiproject_mixed_sync_async_context_propagation():
         # Async function calls sync function
         await asyncio.sleep(0.01)
         result = sync_level_4_function()
-        langfuse_client = get_client()
-        langfuse_client.update_current_span(metadata={"level": "3", "type": "async"})
+        elasticdash_client = get_client()
+        elasticdash_client.update_current_span(metadata={"level": "3", "type": "async"})
         return result
 
     @observe()
     async def async_level_2_function():
         # Changed to async to avoid event loop issues
         result = await async_level_3_function()
-        langfuse_client = get_client()
-        langfuse_client.update_current_span(metadata={"level": "2", "type": "async"})
+        elasticdash_client = get_client()
+        elasticdash_client.update_current_span(metadata={"level": "2", "type": "async"})
         return result
 
     @observe()
     async def async_level_1_function(*args, **kwargs):
         # Top-level async function
-        langfuse_client = get_client()
-        langfuse_client.update_current_trace(name=mock_name)
+        elasticdash_client = get_client()
+        elasticdash_client.update_current_trace(name=mock_name)
         result = await async_level_2_function()
-        langfuse_client.update_current_span(metadata={"level": "1", "type": "async"})
+        elasticdash_client.update_current_span(metadata={"level": "1", "type": "async"})
         return result
 
     result = await async_level_1_function(
-        langfuse_trace_id=mock_trace_id, langfuse_public_key=env_public_key
+        elasticdash_trace_id=mock_trace_id, elasticdash_public_key=env_public_key
     )
     client1.flush()
 
@@ -1480,10 +1480,10 @@ async def test_multiproject_concurrent_async_context_isolation():
 
     mock_name = "test_multiproject_concurrent_async_context_isolation"
     env_public_key = os.environ[ELASTICDASH_PUBLIC_KEY]
-    langfuse = get_client(public_key=env_public_key)
+    elasticdash = get_client(public_key=env_public_key)
 
-    trace_id_1 = langfuse.create_trace_id()
-    trace_id_2 = langfuse.create_trace_id()
+    trace_id_1 = elasticdash.create_trace_id()
+    trace_id_2 = elasticdash.create_trace_id()
 
     # Use the same valid public key for both tasks to avoid credential issues
     # The isolation test is about trace contexts, not different projects
@@ -1494,8 +1494,8 @@ async def test_multiproject_concurrent_async_context_isolation():
     async def async_level_3_function(task_id):
         # Simulate work and ensure contexts don't leak
         await asyncio.sleep(0.1)  # Ensure concurrency overlap
-        langfuse_client = get_client()
-        langfuse_client.update_current_generation(
+        elasticdash_client = get_client()
+        elasticdash_client.update_current_generation(
             metadata={"task_id": task_id, "level": "3"}
         )
         return f"async_level_3_task_{task_id}"
@@ -1503,24 +1503,24 @@ async def test_multiproject_concurrent_async_context_isolation():
     @observe()
     async def async_level_2_function(task_id):
         result = await async_level_3_function(task_id)
-        langfuse_client = get_client()
-        langfuse_client.update_current_span(metadata={"task_id": task_id, "level": "2"})
+        elasticdash_client = get_client()
+        elasticdash_client.update_current_span(metadata={"task_id": task_id, "level": "2"})
         return result
 
     @observe()
     async def async_level_1_function(task_id, *args, **kwargs):
-        langfuse_client = get_client()
-        langfuse_client.update_current_trace(name=f"{mock_name}_task_{task_id}")
+        elasticdash_client = get_client()
+        elasticdash_client.update_current_trace(name=f"{mock_name}_task_{task_id}")
         result = await async_level_2_function(task_id)
-        langfuse_client.update_current_span(metadata={"task_id": task_id, "level": "1"})
+        elasticdash_client.update_current_span(metadata={"task_id": task_id, "level": "1"})
         return result
 
     # Run two concurrent async tasks with the same public key but different trace contexts
     task1 = async_level_1_function(
-        "1", langfuse_trace_id=trace_id_1, langfuse_public_key=public_key_1
+        "1", elasticdash_trace_id=trace_id_1, elasticdash_public_key=public_key_1
     )
     task2 = async_level_1_function(
-        "2", langfuse_trace_id=trace_id_2, langfuse_public_key=public_key_2
+        "2", elasticdash_trace_id=trace_id_2, elasticdash_public_key=public_key_2
     )
 
     result1, result2 = await asyncio.gather(task1, task2)
@@ -1570,8 +1570,8 @@ async def test_multiproject_async_generator_context_propagation():
 
     mock_name = "test_multiproject_async_generator_context_propagation"
     env_public_key = os.environ[ELASTICDASH_PUBLIC_KEY]
-    langfuse = get_client(public_key=env_public_key)
-    mock_trace_id = langfuse.create_trace_id()
+    elasticdash = get_client(public_key=env_public_key)
+    mock_trace_id = elasticdash.create_trace_id()
 
     @observe(capture_output=True)
     async def async_generator_function():
@@ -1587,20 +1587,20 @@ async def test_multiproject_async_generator_context_propagation():
 
     @observe()
     async def async_consumer_function():
-        langfuse_client = get_client()
-        langfuse_client.update_current_trace(name=mock_name)
+        elasticdash_client = get_client()
+        elasticdash_client.update_current_trace(name=mock_name)
 
         result = ""
         async for item in async_generator_function():
             result += item
 
-        langfuse_client.update_current_span(
+        elasticdash_client.update_current_span(
             metadata={"type": "consumer", "result": result}
         )
         return result
 
     result = await async_consumer_function(
-        langfuse_trace_id=mock_trace_id, langfuse_public_key=env_public_key
+        elasticdash_trace_id=mock_trace_id, elasticdash_public_key=env_public_key
     )
     client1.flush()
 
@@ -1634,16 +1634,16 @@ async def test_multiproject_async_context_exception_handling():
 
     mock_name = "test_multiproject_async_context_exception_handling"
     env_public_key = os.environ[ELASTICDASH_PUBLIC_KEY]
-    langfuse = get_client(public_key=env_public_key)
-    mock_trace_id = langfuse.create_trace_id()
+    elasticdash = get_client(public_key=env_public_key)
+    mock_trace_id = elasticdash.create_trace_id()
 
     @observe(as_type="generation")
     async def async_failing_function():
         # This function should inherit context but will raise an exception
         await asyncio.sleep(0.01)
-        langfuse_client = get_client()
-        langfuse_client.update_current_generation(metadata={"will_fail": True})
-        langfuse_client.update_current_trace(name=mock_name)
+        elasticdash_client = get_client()
+        elasticdash_client.update_current_generation(metadata={"will_fail": True})
+        elasticdash_client.update_current_trace(name=mock_name)
         raise ValueError("Async function failed")
 
     @observe()
@@ -1652,20 +1652,20 @@ async def test_multiproject_async_context_exception_handling():
             await async_failing_function()
         except ValueError:
             # Context should still be available here
-            langfuse_client = get_client()
-            langfuse_client.update_current_span(metadata={"caught_exception": True})
+            elasticdash_client = get_client()
+            elasticdash_client.update_current_span(metadata={"caught_exception": True})
             return "exception_handled"
 
     @observe()
     async def async_root_function(*args, **kwargs):
         result = await async_caller_function()
         # Context should still be available after exception
-        langfuse_client = get_client()
-        langfuse_client.update_current_span(metadata={"root": True})
+        elasticdash_client = get_client()
+        elasticdash_client.update_current_span(metadata={"root": True})
         return result
 
     result = await async_root_function(
-        langfuse_trace_id=mock_trace_id, langfuse_public_key=env_public_key
+        elasticdash_trace_id=mock_trace_id, elasticdash_public_key=env_public_key
     )
     client1.flush()
 
@@ -1692,8 +1692,8 @@ async def test_multiproject_async_context_exception_handling():
 
 def test_sync_generator_context_preservation():
     """Test that sync generators preserve context when consumed later (e.g., by streaming responses)"""
-    langfuse = get_client()
-    mock_trace_id = langfuse.create_trace_id()
+    elasticdash = get_client()
+    mock_trace_id = elasticdash.create_trace_id()
 
     # Global variable to capture span information
     span_info = {}
@@ -1719,12 +1719,12 @@ def test_sync_generator_context_preservation():
         return create_generator()
 
     # Simulate the scenario where generator is consumed after root function exits
-    generator = root_function(langfuse_trace_id=mock_trace_id)
+    generator = root_function(elasticdash_trace_id=mock_trace_id)
 
     # Consume generator later (like FastAPI would)
     items = list(generator)
 
-    langfuse.flush()
+    elasticdash.flush()
 
     # Verify results
     assert items == ["item_0", "item_1", "item_2"]
@@ -1755,8 +1755,8 @@ def test_sync_generator_context_preservation():
 @pytest.mark.skipif(sys.version_info < (3, 11), reason="requires python3.11 or higher")
 async def test_async_generator_context_preservation():
     """Test that async generators preserve context when consumed later (e.g., by streaming responses)"""
-    langfuse = get_client()
-    mock_trace_id = langfuse.create_trace_id()
+    elasticdash = get_client()
+    mock_trace_id = elasticdash.create_trace_id()
 
     # Global variable to capture span information
     span_info = {}
@@ -1783,14 +1783,14 @@ async def test_async_generator_context_preservation():
         return create_async_generator()
 
     # Simulate the scenario where generator is consumed after root function exits
-    generator = await root_function(langfuse_trace_id=mock_trace_id)
+    generator = await root_function(elasticdash_trace_id=mock_trace_id)
 
     # Consume generator later (like FastAPI would)
     items = []
     async for item in generator:
         items.append(item)
 
-    langfuse.flush()
+    elasticdash.flush()
 
     # Verify results
     assert items == ["async_item_0", "async_item_1", "async_item_2"]
@@ -1821,8 +1821,8 @@ async def test_async_generator_context_preservation():
 @pytest.mark.skipif(sys.version_info < (3, 11), reason="requires python3.11 or higher")
 async def test_async_generator_context_preservation_with_trace_hierarchy():
     """Test that async generators maintain proper parent-child span relationships"""
-    langfuse = get_client()
-    mock_trace_id = langfuse.create_trace_id()
+    elasticdash = get_client()
+    mock_trace_id = elasticdash.create_trace_id()
 
     # Global variables to capture span information
     span_info = {}
@@ -1849,12 +1849,12 @@ async def test_async_generator_context_preservation_with_trace_hierarchy():
         return child_generator()
 
     # Execute parent function
-    generator = await parent_function(langfuse_trace_id=mock_trace_id)
+    generator = await parent_function(elasticdash_trace_id=mock_trace_id)
 
     # Consume generator (simulating delayed consumption)
     items = [item async for item in generator]
 
-    langfuse.flush()
+    elasticdash.flush()
 
     # Verify results
     assert items == ["child_0", "child_1"]
@@ -1884,8 +1884,8 @@ async def test_async_generator_context_preservation_with_trace_hierarchy():
 @pytest.mark.skipif(sys.version_info < (3, 11), reason="requires python3.11 or higher")
 async def test_async_generator_exception_handling_with_context():
     """Test that exceptions in async generators are properly handled while preserving context"""
-    langfuse = get_client()
-    mock_trace_id = langfuse.create_trace_id()
+    elasticdash = get_client()
+    mock_trace_id = elasticdash.create_trace_id()
 
     @observe(name="failing_generator")
     async def failing_generator():
@@ -1906,14 +1906,14 @@ async def test_async_generator_exception_handling_with_context():
         return failing_generator()
 
     # Execute and consume generator
-    generator = await root_function(langfuse_trace_id=mock_trace_id)
+    generator = await root_function(elasticdash_trace_id=mock_trace_id)
 
     items = []
     with pytest.raises(ValueError, match="Generator failure test"):
         async for item in generator:
             items.append(item)
 
-    langfuse.flush()
+    elasticdash.flush()
 
     # Verify partial results
     assert items == ["first_item"]
@@ -1932,8 +1932,8 @@ async def test_async_generator_exception_handling_with_context():
 
 def test_sync_generator_empty_context_preservation():
     """Test that empty sync generators work correctly with context preservation"""
-    langfuse = get_client()
-    mock_trace_id = langfuse.create_trace_id()
+    elasticdash = get_client()
+    mock_trace_id = elasticdash.create_trace_id()
 
     @observe(name="empty_generator")
     def empty_generator():
@@ -1950,10 +1950,10 @@ def test_sync_generator_empty_context_preservation():
     def root_function():
         return empty_generator()
 
-    generator = root_function(langfuse_trace_id=mock_trace_id)
+    generator = root_function(elasticdash_trace_id=mock_trace_id)
     items = list(generator)
 
-    langfuse.flush()
+    elasticdash.flush()
 
     # Verify results
     assert items == []

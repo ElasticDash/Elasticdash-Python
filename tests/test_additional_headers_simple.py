@@ -5,7 +5,7 @@ This module tests that additional headers are properly configured in the HTTP cl
 
 import httpx
 
-from langfuse._client.client import ElasticDash
+from elasticdash._client.client import ElasticDash
 
 
 class TestAdditionalHeadersSimple:
@@ -13,7 +13,7 @@ class TestAdditionalHeadersSimple:
 
     def teardown_method(self):
         """Clean up after each test to avoid singleton interference."""
-        from langfuse._client.resource_manager import ElasticDashResourceManager
+        from elasticdash._client.resource_manager import ElasticDashResourceManager
 
         ElasticDashResourceManager.reset()
 
@@ -24,7 +24,7 @@ class TestAdditionalHeadersSimple:
             "X-Another-Header": "another-value",
         }
 
-        langfuse = ElasticDash(
+        elasticdash = ElasticDash(
             public_key="test-public-key",
             secret_key="test-secret-key",
             host="https://mock-host.com",
@@ -34,11 +34,11 @@ class TestAdditionalHeadersSimple:
 
         # Verify the httpx client has the additional headers
         assert (
-            langfuse._resources.httpx_client.headers["X-Custom-Header"]
+            elasticdash._resources.httpx_client.headers["X-Custom-Header"]
             == "custom-value"
         )
         assert (
-            langfuse._resources.httpx_client.headers["X-Another-Header"]
+            elasticdash._resources.httpx_client.headers["X-Another-Header"]
             == "another-value"
         )
 
@@ -55,7 +55,7 @@ class TestAdditionalHeadersSimple:
             "X-Another-Header": "another-value",
         }
 
-        langfuse = ElasticDash(
+        elasticdash = ElasticDash(
             public_key="test-public-key",
             secret_key="test-secret-key",
             host="https://mock-host.com",
@@ -65,17 +65,17 @@ class TestAdditionalHeadersSimple:
         )
 
         # Verify the original client is used (same instance)
-        assert langfuse._resources.httpx_client is custom_client
+        assert elasticdash._resources.httpx_client is custom_client
 
         # Verify existing headers are preserved and additional headers are NOT added
         assert (
-            langfuse._resources.httpx_client.headers["x-existing-header"]
+            elasticdash._resources.httpx_client.headers["x-existing-header"]
             == "existing-value"
         )
 
         # Additional headers should NOT be present
-        assert "x-custom-header" not in langfuse._resources.httpx_client.headers
-        assert "x-another-header" not in langfuse._resources.httpx_client.headers
+        assert "x-custom-header" not in elasticdash._resources.httpx_client.headers
+        assert "x-another-header" not in elasticdash._resources.httpx_client.headers
 
     def test_custom_httpx_client_without_additional_headers_preserves_client(self):
         """Test that when no additional headers are provided, the custom client is preserved."""
@@ -83,7 +83,7 @@ class TestAdditionalHeadersSimple:
         existing_headers = {"X-Existing-Header": "existing-value"}
         custom_client = httpx.Client(headers=existing_headers)
 
-        langfuse = ElasticDash(
+        elasticdash = ElasticDash(
             public_key="test-public-key",
             secret_key="test-secret-key",
             host="https://mock-host.com",
@@ -96,13 +96,13 @@ class TestAdditionalHeadersSimple:
         # but the important thing is that the headers are preserved
         # Verify existing headers are preserved
         assert (
-            langfuse._resources.httpx_client.headers["x-existing-header"]
+            elasticdash._resources.httpx_client.headers["x-existing-header"]
             == "existing-value"
         )
 
     def test_none_additional_headers_works(self):
         """Test that passing None for additional_headers works without errors."""
-        langfuse = ElasticDash(
+        elasticdash = ElasticDash(
             public_key="test-public-key",
             secret_key="test-secret-key",
             host="https://mock-host.com",
@@ -111,13 +111,13 @@ class TestAdditionalHeadersSimple:
         )
 
         # Verify client was created successfully
-        assert langfuse is not None
-        assert langfuse._resources is not None
-        assert langfuse._resources.httpx_client is not None
+        assert elasticdash is not None
+        assert elasticdash._resources is not None
+        assert elasticdash._resources.httpx_client is not None
 
     def test_empty_additional_headers_works(self):
         """Test that passing an empty dict for additional_headers works."""
-        langfuse = ElasticDash(
+        elasticdash = ElasticDash(
             public_key="test-public-key",
             secret_key="test-secret-key",
             host="https://mock-host.com",
@@ -126,13 +126,13 @@ class TestAdditionalHeadersSimple:
         )
 
         # Verify client was created successfully
-        assert langfuse is not None
-        assert langfuse._resources is not None
-        assert langfuse._resources.httpx_client is not None
+        assert elasticdash is not None
+        assert elasticdash._resources is not None
+        assert elasticdash._resources.httpx_client is not None
 
     def test_span_processor_has_additional_headers_in_otel_exporter(self):
         """Test that span processor includes additional headers in OTEL exporter."""
-        from langfuse._client.span_processor import ElasticDashSpanProcessor
+        from elasticdash._client.span_processor import ElasticDashSpanProcessor
 
         additional_headers = {
             "X-Custom-Trace-Header": "trace-value",
@@ -156,15 +156,15 @@ class TestAdditionalHeadersSimple:
 
         # Verify default headers are still present
         assert "Authorization" in exporter._headers
-        assert "x-langfuse-sdk-name" in exporter._headers
-        assert "x-langfuse-public-key" in exporter._headers
+        assert "x-elasticdash-sdk-name" in exporter._headers
+        assert "x-elasticdash-public-key" in exporter._headers
 
         # Check that our override worked
         assert exporter._headers["X-Override-Default"] == "override-value"
 
     def test_span_processor_none_additional_headers_works(self):
         """Test that span processor works with None additional headers."""
-        from langfuse._client.span_processor import ElasticDashSpanProcessor
+        from elasticdash._client.span_processor import ElasticDashSpanProcessor
 
         # Create span processor without additional headers
         processor = ElasticDashSpanProcessor(
@@ -179,5 +179,5 @@ class TestAdditionalHeadersSimple:
 
         # Verify default headers are present
         assert "Authorization" in exporter._headers
-        assert "x-langfuse-sdk-name" in exporter._headers
-        assert "x-langfuse-public-key" in exporter._headers
+        assert "x-elasticdash-sdk-name" in exporter._headers
+        assert "x-elasticdash-public-key" in exporter._headers

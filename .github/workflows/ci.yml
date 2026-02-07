@@ -52,7 +52,7 @@ jobs:
       - name: Install dependencies
         run: poetry install --only=main,dev
       - name: Run mypy type checking
-        run: poetry run mypy langfuse --no-error-summary
+        run: poetry run mypy elasticdash --no-error-summary
 
   ci:
     runs-on: ubuntu-latest
@@ -81,32 +81,32 @@ jobs:
         with:
           version: 9.5.0
 
-      - name: Clone langfuse server
+      - name: Clone elasticdash server
         run: |
-          git clone https://github.com/langfuse/langfuse.git ./langfuse-server && echo $(cd ./langfuse-server && git rev-parse HEAD)
+          git clone https://github.com/elasticdash/elasticdash.git ./elasticdash-server && echo $(cd ./elasticdash-server && git rev-parse HEAD)
 
-      - name: Setup node (for langfuse server)
+      - name: Setup node (for elasticdash server)
         uses: actions/setup-node@v3
         with:
           node-version: 24
 
-      - name: Cache langfuse server dependencies
+      - name: Cache elasticdash server dependencies
         uses: actions/cache@v3
         with:
-          path: ./langfuse-server/node_modules
+          path: ./elasticdash-server/node_modules
           key: |
-            langfuse-server-${{ hashFiles('./langfuse-server/package-lock.json') }}
-            langfuse-server-
+            elasticdash-server-${{ hashFiles('./elasticdash-server/package-lock.json') }}
+            elasticdash-server-
 
-      - name: Run langfuse server
+      - name: Run elasticdash server
         run: |
-          cd ./langfuse-server
+          cd ./elasticdash-server
 
-          echo "::group::Run langfuse server"
+          echo "::group::Run elasticdash server"
           TELEMETRY_ENABLED=false docker compose up -d postgres
           echo "::endgroup::"
 
-          echo "::group::Logs from langfuse server"
+          echo "::group::Logs from elasticdash server"
           TELEMETRY_ENABLED=false docker compose logs
           echo "::endgroup::"
 
@@ -132,9 +132,9 @@ jobs:
           echo "::endgroup::"
 
       # Add this step to check the health of the container
-      - name: Health check for langfuse server
+      - name: Health check for elasticdash server
         run: |
-          echo "Checking if the langfuse server is up..."
+          echo "Checking if the elasticdash server is up..."
           retry_count=0
           max_retries=10
           until curl --output /dev/null --silent --head --fail http://localhost:3000/api/public/health
@@ -143,7 +143,7 @@ jobs:
             echo "Attempt $retry_count of $max_retries..."
             if [ $retry_count -ge $max_retries ]; then
               echo "ElasticDash server did not respond in time. Printing logs..."
-              docker logs langfuse-server-langfuse-web-1
+              docker logs elasticdash-server-elasticdash-web-1
               echo "Failing the step..."
               exit 1
             fi

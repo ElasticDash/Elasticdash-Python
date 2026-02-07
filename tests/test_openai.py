@@ -5,17 +5,17 @@ from time import sleep
 import pytest
 from pydantic import BaseModel
 
-from langfuse._client.client import ElasticDash
+from elasticdash._client.client import ElasticDash
 from tests.utils import create_uuid, encode_file_to_base64, get_api
 
-langfuse = ElasticDash()
+elasticdash = ElasticDash()
 
 
 @pytest.fixture(scope="module")
 def openai():
     import openai
 
-    from langfuse.openai import openai as _openai
+    from elasticdash.openai import openai as _openai
 
     yield _openai
 
@@ -35,7 +35,7 @@ def test_openai_chat_completion(openai):
         metadata={"someKey": "someResponse"},
     )
 
-    langfuse.flush()
+    elasticdash.flush()
 
     sleep(1)
 
@@ -93,7 +93,7 @@ def test_openai_chat_completion_stream(openai):
 
     assert len(chat_content) > 0
 
-    langfuse.flush()
+    elasticdash.flush()
     sleep(3)
 
     generation = get_api().observations.get_many(
@@ -154,7 +154,7 @@ def test_openai_chat_completion_stream_with_next_iteration(openai):
 
     assert len(chat_content) > 0
 
-    langfuse.flush()
+    elasticdash.flush()
 
     generation = get_api().observations.get_many(
         name=generation_name, type="GENERATION"
@@ -203,7 +203,7 @@ def test_openai_chat_completion_stream_fail(openai):
             stream=True,
         )
 
-    langfuse.flush()
+    elasticdash.flush()
 
     generation = get_api().observations.get_many(
         name=generation_name, type="GENERATION"
@@ -236,24 +236,24 @@ def test_openai_chat_completion_stream_fail(openai):
     openai.api_key = os.environ["OPENAI_API_KEY"]
 
 
-def test_openai_chat_completion_with_langfuse_prompt(openai):
+def test_openai_chat_completion_with_elasticdash_prompt(openai):
     generation_name = create_uuid()
-    langfuse = ElasticDash()
+    elasticdash = ElasticDash()
     prompt_name = create_uuid()
-    langfuse.create_prompt(
+    elasticdash.create_prompt(
         name=prompt_name, prompt="test prompt", labels=["production"]
     )
 
-    prompt_client = langfuse.get_prompt(name=prompt_name)
+    prompt_client = elasticdash.get_prompt(name=prompt_name)
 
     openai.OpenAI().chat.completions.create(
         name=generation_name,
         model="gpt-3.5-turbo",
         messages=[{"role": "user", "content": "Make me laugh"}],
-        langfuse_prompt=prompt_client,
+        elasticdash_prompt=prompt_client,
     )
 
-    langfuse.flush()
+    elasticdash.flush()
 
     generation = get_api().observations.get_many(
         name=generation_name, type="GENERATION"
@@ -276,7 +276,7 @@ def test_openai_chat_completion_fail(openai):
             metadata={"someKey": "someResponse"},
         )
 
-    langfuse.flush()
+    elasticdash.flush()
 
     generation = get_api().observations.get_many(
         name=generation_name, type="GENERATION"
@@ -336,7 +336,7 @@ def test_openai_chat_completion_two_calls(openai):
         metadata={"someKey": "someResponse"},
     )
 
-    langfuse.flush()
+    elasticdash.flush()
 
     generation = get_api().observations.get_many(
         name=generation_name, type="GENERATION"
@@ -370,7 +370,7 @@ def test_openai_chat_completion_with_seed(openai):
         metadata={"someKey": "someResponse"},
     )
 
-    langfuse.flush()
+    elasticdash.flush()
 
     generation = get_api().observations.get_many(
         name=generation_name, type="GENERATION"
@@ -397,7 +397,7 @@ def test_openai_completion(openai):
         metadata={"someKey": "someResponse"},
     )
 
-    langfuse.flush()
+    elasticdash.flush()
 
     generation = get_api().observations.get_many(
         name=generation_name, type="GENERATION"
@@ -443,7 +443,7 @@ def test_openai_completion_stream(openai):
     for i in completion:
         content += (i.choices[0].text or "") if i.choices else ""
 
-    langfuse.flush()
+    elasticdash.flush()
 
     assert len(content) > 0
 
@@ -494,7 +494,7 @@ def test_openai_completion_fail(openai):
             metadata={"someKey": "someResponse"},
         )
 
-    langfuse.flush()
+    elasticdash.flush()
 
     generation = get_api().observations.get_many(
         name=generation_name, type="GENERATION"
@@ -537,7 +537,7 @@ def test_openai_completion_stream_fail(openai):
             stream=True,
         )
 
-    langfuse.flush()
+    elasticdash.flush()
 
     generation = get_api().observations.get_many(
         name=generation_name, type="GENERATION"
@@ -570,11 +570,11 @@ def test_openai_completion_stream_fail(openai):
     openai.api_key = os.environ["OPENAI_API_KEY"]
 
 
-def test_openai_completion_with_langfuse_prompt(openai):
+def test_openai_completion_with_elasticdash_prompt(openai):
     generation_name = create_uuid()
-    langfuse = ElasticDash()
+    elasticdash = ElasticDash()
     prompt_name = create_uuid()
-    prompt_client = langfuse.create_prompt(
+    prompt_client = elasticdash.create_prompt(
         name=prompt_name, prompt="test prompt", labels=["production"]
     )
     openai.OpenAI().completions.create(
@@ -583,10 +583,10 @@ def test_openai_completion_with_langfuse_prompt(openai):
         prompt="1 + 1 = ",
         temperature=0,
         metadata={"someKey": "someResponse"},
-        langfuse_prompt=prompt_client,
+        elasticdash_prompt=prompt_client,
     )
 
-    langfuse.flush()
+    elasticdash.flush()
 
     generation = get_api().observations.get_many(
         name=generation_name, type="GENERATION"
@@ -628,7 +628,7 @@ async def test_async_chat(openai):
         name=generation_name,
     )
 
-    langfuse.flush()
+    elasticdash.flush()
 
     generation = get_api().observations.get_many(
         name=generation_name, type="GENERATION"
@@ -674,7 +674,7 @@ async def test_async_chat_stream(openai):
     async for c in completion:
         print(c)
 
-    langfuse.flush()
+    elasticdash.flush()
 
     generation = get_api().observations.get_many(
         name=generation_name, type="GENERATION"
@@ -730,7 +730,7 @@ async def test_async_chat_stream_with_anext(openai):
         except StopAsyncIteration:
             break
 
-    langfuse.flush()
+    elasticdash.flush()
 
     print(result)
 
@@ -794,7 +794,7 @@ def test_openai_function_call(openai):
 
     output = json.loads(response.choices[0].message.function_call.arguments)
 
-    langfuse.flush()
+    elasticdash.flush()
 
     generation = get_api().observations.get_many(
         name=generation_name, type="GENERATION"
@@ -838,7 +838,7 @@ def test_openai_function_call_streamed(openai):
     for _ in response:
         pass
 
-    langfuse.flush()
+    elasticdash.flush()
 
     generation = get_api().observations.get_many(
         name=generation_name, type="GENERATION"
@@ -882,7 +882,7 @@ def test_openai_tool_call(openai):
         name=generation_name,
     )
 
-    langfuse.flush()
+    elasticdash.flush()
 
     generation = get_api().observations.get_many(
         name=generation_name, type="GENERATION"
@@ -938,7 +938,7 @@ def test_openai_tool_call_streamed(openai):
     for _ in response:
         pass
 
-    langfuse.flush()
+    elasticdash.flush()
 
     generation = get_api().observations.get_many(
         name=generation_name, type="GENERATION"
@@ -1016,7 +1016,7 @@ def test_structured_output_response_format_kwarg(openai):
         metadata={"someKey": "someResponse"},
     )
 
-    langfuse.flush()
+    elasticdash.flush()
 
     generation = get_api().observations.get_many(
         name=generation_name, type="GENERATION"
@@ -1083,7 +1083,7 @@ def test_structured_output_beta_completions_parse(openai):
 
     openai.OpenAI().chat.completions.parse(**params)
 
-    langfuse.flush()
+    elasticdash.flush()
 
     if Version(openai.__version__) >= Version("1.50.0"):
         # Check the trace and observation properties
@@ -1131,7 +1131,7 @@ async def test_close_async_stream(openai):
 
     await stream.close()
 
-    langfuse.flush()
+    elasticdash.flush()
 
     generation = get_api().observations.get_many(
         name=generation_name, type="GENERATION"
@@ -1192,7 +1192,7 @@ def test_base_64_image_input(openai):
         max_tokens=300,
     )
 
-    langfuse.flush()
+    elasticdash.flush()
 
     generation = get_api().observations.get_many(
         name=generation_name, type="GENERATION"
@@ -1202,7 +1202,7 @@ def test_base_64_image_input(openai):
     assert generation.data[0].name == generation_name
     assert generation.data[0].input[0]["content"][0]["text"] == "What’s in this image?"
     assert (
-        f"@@@langfuseMedia:type={content_type}|id="
+        f"@@@elasticdashMedia:type={content_type}|id="
         in generation.data[0].input[0]["content"][1]["image_url"]["url"]
     )
     assert generation.data[0].type == "GENERATION"
@@ -1218,7 +1218,7 @@ def test_base_64_image_input(openai):
 
 def test_audio_input_and_output(openai):
     client = openai.OpenAI()
-    openai.langfuse_debug = True
+    openai.elasticdash_debug = True
     generation_name = "test_audio_input_and_output" + create_uuid()[:8]
 
     content_path = "static/joke_prompt.wav"
@@ -1243,7 +1243,7 @@ def test_audio_input_and_output(openai):
         ],
     )
 
-    langfuse.flush()
+    elasticdash.flush()
 
     generation = get_api().observations.get_many(
         name=generation_name, type="GENERATION"
@@ -1256,7 +1256,7 @@ def test_audio_input_and_output(openai):
         == "Do what this recording says."
     )
     assert (
-        "@@@langfuseMedia:type=audio/wav|id="
+        "@@@elasticdashMedia:type=audio/wav|id="
         in generation.data[0].input[0]["content"][1]["input_audio"]["data"]
     )
     assert generation.data[0].type == "GENERATION"
@@ -1269,7 +1269,7 @@ def test_audio_input_and_output(openai):
     assert generation.data[0].usage.total is not None
     print(generation.data[0].output)
     assert (
-        "@@@langfuseMedia:type=audio/wav|id="
+        "@@@elasticdashMedia:type=audio/wav|id="
         in generation.data[0].output["audio"]["data"]
     )
 
@@ -1284,7 +1284,7 @@ def test_response_api_text_input(openai):
         input="Tell me a three sentence bedtime story about a unicorn.",
     )
 
-    langfuse.flush()
+    elasticdash.flush()
     generation = get_api().observations.get_many(
         name=generation_name, type="GENERATION"
     )
@@ -1329,7 +1329,7 @@ def test_response_api_image_input(openai):
         ],
     )
 
-    langfuse.flush()
+    elasticdash.flush()
 
     generation = get_api().observations.get_many(
         name=generation_name, type="GENERATION"
@@ -1361,7 +1361,7 @@ def test_response_api_web_search(openai):
         input="What was a positive news story from today?",
     )
 
-    langfuse.flush()
+    elasticdash.flush()
 
     generation = get_api().observations.get_many(
         name=generation_name, type="GENERATION"
@@ -1398,7 +1398,7 @@ def test_response_api_streaming(openai):
     for _ in response:
         continue
 
-    langfuse.flush()
+    elasticdash.flush()
 
     generation = get_api().observations.get_many(
         name=generation_name, type="GENERATION"
@@ -1452,7 +1452,7 @@ def test_response_api_functions(openai):
         tool_choice="auto",
     )
 
-    langfuse.flush()
+    elasticdash.flush()
 
     generation = get_api().observations.get_many(
         name=generation_name, type="GENERATION"
@@ -1484,7 +1484,7 @@ def test_response_api_reasoning(openai):
         input="How much wood would a woodchuck chuck?",
         reasoning={"effort": "high"},
     )
-    langfuse.flush()
+    elasticdash.flush()
 
     generation = get_api().observations.get_many(
         name=generation_name, type="GENERATION"
@@ -1515,7 +1515,7 @@ def test_openai_embeddings(openai):
         metadata={"test_key": "test_value"},
     )
 
-    langfuse.flush()
+    elasticdash.flush()
     sleep(1)
 
     embedding = get_api().observations.get_many(name=embedding_name, type="EMBEDDING")
@@ -1549,7 +1549,7 @@ def test_openai_embeddings_multiple_inputs(openai):
         metadata={"batch_size": len(inputs)},
     )
 
-    langfuse.flush()
+    elasticdash.flush()
     sleep(1)
 
     embedding = get_api().observations.get_many(name=embedding_name, type="EMBEDDING")
@@ -1580,7 +1580,7 @@ async def test_async_openai_embeddings(openai):
 
     print("result:", result.usage)
 
-    langfuse.flush()
+    elasticdash.flush()
     sleep(1)
 
     embedding = get_api().observations.get_many(name=embedding_name, type="EMBEDDING")

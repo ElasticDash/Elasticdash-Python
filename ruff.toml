@@ -10,7 +10,7 @@ select = [
     # Augment the convention by requiring an imperative mood for all docstrings.
     "D401",
 ]
-exclude = ["langfuse/api/**/*.py"]
+exclude = ["elasticdash/api/**/*.py"]
 
 [lint.pydocstyle]
 convention = "google"

@@ -2,7 +2,7 @@
 
 ```diff
 - import openai
-+ from langfuse.openai import openai
++ from elasticdash.openai import openai
 ```
 
 ElasticDash automatically tracks:
@@ -14,7 +14,7 @@ ElasticDash automatically tracks:
 
 The integration is fully interoperable with the `observe()` decorator and the low-level tracing SDK.
 
-See docs for more details: https://langfuse.com/docs/integrations/openai
+See docs for more details: https://elasticdash.com/docs/integrations/openai
 """
 
 import logging
@@ -30,10 +30,10 @@ from packaging.version import Version
 from pydantic import BaseModel
 from wrapt import wrap_function_wrapper
 
-from langfuse._client.get_client import get_client
-from langfuse._client.span import ElasticDashGeneration
-from langfuse._utils import _get_timestamp
-from langfuse.media import ElasticDashMedia
+from elasticdash._client.get_client import get_client
+from elasticdash._client.span import ElasticDashGeneration
+from elasticdash._utils import _get_timestamp
+from elasticdash.media import ElasticDashMedia
 
 try:
     import openai
@@ -50,7 +50,7 @@ except ImportError:
     AzureOpenAI = None  # type: ignore
     OpenAI = None  # type: ignore
 
-log = logging.getLogger("langfuse")
+log = logging.getLogger("elasticdash")
 
 
 @dataclass
@@ -199,10 +199,10 @@ class OpenAiArgsExtractor:
         self,
         metadata: Optional[Any] = None,
         name: Optional[str] = None,
-        langfuse_prompt: Optional[
+        elasticdash_prompt: Optional[
             Any
         ] = None,  # we cannot use prompt because it's an argument of the old OpenAI completions API
-        langfuse_public_key: Optional[str] = None,
+        elasticdash_public_key: Optional[str] = None,
         trace_id: Optional[str] = None,
         parent_observation_id: Optional[str] = None,
         **kwargs: Any,
@@ -220,14 +220,14 @@ class OpenAiArgsExtractor:
             }
         )
         self.args["name"] = name
-        self.args["langfuse_public_key"] = langfuse_public_key
-        self.args["langfuse_prompt"] = langfuse_prompt
+        self.args["elasticdash_public_key"] = elasticdash_public_key
+        self.args["elasticdash_prompt"] = elasticdash_prompt
         self.args["trace_id"] = trace_id
         self.args["parent_observation_id"] = parent_observation_id
 
         self.kwargs = kwargs
 
-    def get_langfuse_args(self) -> Any:
+    def get_elasticdash_args(self) -> Any:
         return {**self.args, **self.kwargs}
 
     def get_openai_args(self) -> Any:
@@ -245,14 +245,14 @@ class OpenAiArgsExtractor:
         return self.kwargs
 
 
-def _langfuse_wrapper(func: Any) -> Any:
-    def _with_langfuse(open_ai_definitions: Any) -> Any:
+def _elasticdash_wrapper(func: Any) -> Any:
+    def _with_elasticdash(open_ai_definitions: Any) -> Any:
         def wrapper(wrapped: Any, instance: Any, args: Any, kwargs: Any) -> Any:
             return func(open_ai_definitions, wrapped, args, kwargs)
 
         return wrapper
 
-    return _with_langfuse
+    return _with_elasticdash
 
 
 def _extract_chat_prompt(kwargs: Any) -> Any:
@@ -269,7 +269,7 @@ def _extract_chat_prompt(kwargs: Any) -> Any:
         prompt.update({"tools": kwargs["tools"]})
 
     if prompt:
-        # uf user provided functions, we need to send these together with messages to langfuse
+        # uf user provided functions, we need to send these together with messages to elasticdash
         prompt.update(
             {
                 "messages": [
@@ -279,7 +279,7 @@ def _extract_chat_prompt(kwargs: Any) -> Any:
         )
         return prompt
     else:
-        # vanilla case, only send messages in openai format to langfuse
+        # vanilla case, only send messages in openai format to elasticdash
         return [_process_message(message) for message in kwargs.get("messages", [])]
 
 
@@ -353,7 +353,7 @@ def _extract_chat_response(kwargs: Any) -> Any:
     return response
 
 
-def _get_langfuse_data_from_kwargs(resource: OpenAiDefinition, kwargs: Any) -> Any:
+def _get_elasticdash_data_from_kwargs(resource: OpenAiDefinition, kwargs: Any) -> Any:
     default_name = (
         "OpenAI-embedding" if resource.type == "embedding" else "OpenAI-generation"
     )
@@ -365,9 +365,9 @@ def _get_langfuse_data_from_kwargs(resource: OpenAiDefinition, kwargs: Any) -> A
     if name is not None and not isinstance(name, str):
         raise TypeError("name must be a string")
 
-    langfuse_public_key = kwargs.get("langfuse_public_key", None)
-    if langfuse_public_key is not None and not isinstance(langfuse_public_key, str):
-        raise TypeError("langfuse_public_key must be a string")
+    elasticdash_public_key = kwargs.get("elasticdash_public_key", None)
+    if elasticdash_public_key is not None and not isinstance(elasticdash_public_key, str):
+        raise TypeError("elasticdash_public_key must be a string")
 
     trace_id = kwargs.get("trace_id", None)
     if trace_id is not None and not isinstance(trace_id, str):
@@ -498,23 +498,23 @@ def _get_langfuse_data_from_kwargs(resource: OpenAiDefinition, kwargs: Any) -> A
         if parsed_seed is not None:
             modelParameters["seed"] = parsed_seed
 
-    langfuse_prompt = kwargs.get("langfuse_prompt", None)
+    elasticdash_prompt = kwargs.get("elasticdash_prompt", None)
 
     return {
         "name": name,
         "metadata": metadata,
-        "langfuse_public_key": langfuse_public_key,
+        "elasticdash_public_key": elasticdash_public_key,
         "trace_id": trace_id,
         "parent_observation_id": parent_observation_id,
         "user_id": user_id,
         "input": prompt,
         "model_parameters": modelParameters,
         "model": model or None,
-        "prompt": langfuse_prompt,
+        "prompt": elasticdash_prompt,
     }
 
 
-def _create_langfuse_update(
+def _create_elasticdash_update(
     completion: Any,
     generation: ElasticDashGeneration,
     completion_start_time: Any,
@@ -731,7 +731,7 @@ def _extract_streamed_openai_response(resource: Any, chunks: Any) -> Any:
     )
 
 
-def _get_langfuse_data_from_default_response(
+def _get_elasticdash_data_from_default_response(
     resource: OpenAiDefinition, response: Any
 ) -> Any:
     if response is None:
@@ -809,34 +809,34 @@ def _is_streaming_response(response: Any) -> bool:
     )
 
 
-@_langfuse_wrapper
+@_elasticdash_wrapper
 def _wrap(
     open_ai_resource: OpenAiDefinition, wrapped: Any, args: Any, kwargs: Any
 ) -> Any:
     arg_extractor = OpenAiArgsExtractor(*args, **kwargs)
-    langfuse_args = arg_extractor.get_langfuse_args()
+    elasticdash_args = arg_extractor.get_elasticdash_args()
 
-    langfuse_data = _get_langfuse_data_from_kwargs(open_ai_resource, langfuse_args)
-    langfuse_client = get_client(public_key=langfuse_args["langfuse_public_key"])
+    elasticdash_data = _get_elasticdash_data_from_kwargs(open_ai_resource, elasticdash_args)
+    elasticdash_client = get_client(public_key=elasticdash_args["elasticdash_public_key"])
 
     observation_type = (
         "embedding" if open_ai_resource.type == "embedding" else "generation"
     )
 
-    generation = langfuse_client.start_observation(
+    generation = elasticdash_client.start_observation(
         as_type=observation_type,  # type: ignore
-        name=langfuse_data["name"],
-        input=langfuse_data.get("input", None),
-        metadata=langfuse_data.get("metadata", None),
-        model_parameters=langfuse_data.get("model_parameters", None),
+        name=elasticdash_data["name"],
+        input=elasticdash_data.get("input", None),
+        metadata=elasticdash_data.get("metadata", None),
+        model_parameters=elasticdash_data.get("model_parameters", None),
         trace_context={
-            "trace_id": cast(str, langfuse_data.get("trace_id", None)),
+            "trace_id": cast(str, elasticdash_data.get("trace_id", None)),
             "parent_span_id": cast(
-                str, langfuse_data.get("parent_observation_id", None)
+                str, elasticdash_data.get("parent_observation_id", None)
             ),
         },
-        model=langfuse_data.get("model", None),
-        prompt=langfuse_data.get("prompt", None),
+        model=elasticdash_data.get("model", None),
+        prompt=elasticdash_data.get("prompt", None),
     )
 
     try:
@@ -850,7 +850,7 @@ def _wrap(
             )
 
         else:
-            model, completion, usage = _get_langfuse_data_from_default_response(
+            model, completion, usage = _get_elasticdash_data_from_default_response(
                 open_ai_resource,
                 (openai_response and openai_response.__dict__)
                 if _is_openai_v1()
@@ -880,34 +880,34 @@ def _wrap(
         raise ex
 
 
-@_langfuse_wrapper
+@_elasticdash_wrapper
 async def _wrap_async(
     open_ai_resource: OpenAiDefinition, wrapped: Any, args: Any, kwargs: Any
 ) -> Any:
     arg_extractor = OpenAiArgsExtractor(*args, **kwargs)
-    langfuse_args = arg_extractor.get_langfuse_args()
+    elasticdash_args = arg_extractor.get_elasticdash_args()
 
-    langfuse_data = _get_langfuse_data_from_kwargs(open_ai_resource, langfuse_args)
-    langfuse_client = get_client(public_key=langfuse_args["langfuse_public_key"])
+    elasticdash_data = _get_elasticdash_data_from_kwargs(open_ai_resource, elasticdash_args)
+    elasticdash_client = get_client(public_key=elasticdash_args["elasticdash_public_key"])
 
     observation_type = (
         "embedding" if open_ai_resource.type == "embedding" else "generation"
     )
 
-    generation = langfuse_client.start_observation(
+    generation = elasticdash_client.start_observation(
         as_type=observation_type,  # type: ignore
-        name=langfuse_data["name"],
-        input=langfuse_data.get("input", None),
-        metadata=langfuse_data.get("metadata", None),
+        name=elasticdash_data["name"],
+        input=elasticdash_data.get("input", None),
+        metadata=elasticdash_data.get("metadata", None),
         trace_context={
-            "trace_id": cast(str, langfuse_data.get("trace_id", None)),
+            "trace_id": cast(str, elasticdash_data.get("trace_id", None)),
             "parent_span_id": cast(
-                str, langfuse_data.get("parent_observation_id", None)
+                str, elasticdash_data.get("parent_observation_id", None)
             ),
         },
-        model_parameters=langfuse_data.get("model_parameters", None),
-        model=langfuse_data.get("model", None),
-        prompt=langfuse_data.get("prompt", None),
+        model_parameters=elasticdash_data.get("model_parameters", None),
+        model=elasticdash_data.get("model", None),
+        prompt=elasticdash_data.get("prompt", None),
     )
 
     try:
@@ -921,7 +921,7 @@ async def _wrap_async(
             )
 
         else:
-            model, completion, usage = _get_langfuse_data_from_default_response(
+            model, completion, usage = _get_elasticdash_data_from_default_response(
                 open_ai_resource,
                 (openai_response and openai_response.__dict__)
                 if _is_openai_v1()
@@ -1032,7 +1032,7 @@ class ElasticDashResponseGeneratorSync:
                 else _extract_streamed_openai_response(self.resource, self.items)
             )
 
-            _create_langfuse_update(
+            _create_elasticdash_update(
                 completion,
                 self.generation,
                 self.completion_start_time,
@@ -1103,7 +1103,7 @@ class ElasticDashResponseGeneratorAsync:
                 else _extract_streamed_openai_response(self.resource, self.items)
             )
 
-            _create_langfuse_update(
+            _create_elasticdash_update(
                 completion,
                 self.generation,
                 self.completion_start_time,

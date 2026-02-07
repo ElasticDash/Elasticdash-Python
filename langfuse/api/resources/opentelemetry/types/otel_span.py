@@ -62,7 +62,7 @@ class OtelSpan(pydantic_v1.BaseModel):
         default=None
     )
     """
-    Span attributes including ElasticDash-specific attributes (langfuse.observation.*)
+    Span attributes including ElasticDash-specific attributes (elasticdash.observation.*)
     """
 
     status: typing.Optional[typing.Any] = pydantic_v1.Field(default=None)

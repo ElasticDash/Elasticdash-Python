@@ -10,10 +10,10 @@ from typing import TYPE_CHECKING, Any, Literal, Optional, Tuple, TypeVar, cast
 import requests
 
 if TYPE_CHECKING:
-    from langfuse._client.client import ElasticDash
+    from elasticdash._client.client import ElasticDash
 
-from langfuse.api import MediaContentType
-from langfuse.types import ParsedMediaReference
+from elasticdash.api import MediaContentType
+from elasticdash.types import ParsedMediaReference
 
 T = TypeVar("T")
 
@@ -135,14 +135,14 @@ class ElasticDashMedia:
         if self._content_type is None or self._source is None or self._media_id is None:
             return None
 
-        return f"@@@langfuseMedia:type={self._content_type}|id={self._media_id}|source={self._source}@@@"
+        return f"@@@elasticdashMedia:type={self._content_type}|id={self._media_id}|source={self._source}@@@"
 
     @staticmethod
     def parse_reference_string(reference_string: str) -> ParsedMediaReference:
         """Parse a media reference string into a ParsedMediaReference.
 
         Example reference string:
-            "@@@langfuseMedia:type=image/jpeg|id=some-uuid|source=base64_data_uri@@@"
+            "@@@elasticdashMedia:type=image/jpeg|id=some-uuid|source=base64_data_uri@@@"
 
         Args:
             reference_string: The reference string to parse.
@@ -152,7 +152,7 @@ class ElasticDashMedia:
 
         Raises:
             ValueError: If the reference string is empty or not a string.
-            ValueError: If the reference string does not start with "@@@langfuseMedia:type=".
+            ValueError: If the reference string does not start with "@@@elasticdashMedia:type=".
             ValueError: If the reference string does not end with "@@@".
             ValueError: If the reference string is missing required fields.
         """
@@ -162,15 +162,15 @@ class ElasticDashMedia:
         if not isinstance(reference_string, str):
             raise ValueError("Reference string is not a string")
 
-        if not reference_string.startswith("@@@langfuseMedia:type="):
+        if not reference_string.startswith("@@@elasticdashMedia:type="):
             raise ValueError(
-                "Reference string does not start with '@@@langfuseMedia:type='"
+                "Reference string does not start with '@@@elasticdashMedia:type='"
             )
 
         if not reference_string.endswith("@@@"):
             raise ValueError("Reference string does not end with '@@@'")
 
-        content = reference_string[len("@@@langfuseMedia:") :].rstrip("@@@")
+        content = reference_string[len("@@@elasticdashMedia:") :].rstrip("@@@")
 
         # Split into key-value pairs
         pairs = content.split("|")
@@ -226,7 +226,7 @@ class ElasticDashMedia:
     def resolve_media_references(
         *,
         obj: T,
-        langfuse_client: "ElasticDash",
+        elasticdash_client: "ElasticDash",
         resolve_with: Literal["base64_data_uri"],
         max_depth: int = 10,
         content_fetch_timeout_seconds: int = 10,
@@ -234,7 +234,7 @@ class ElasticDashMedia:
         """Replace media reference strings in an object with base64 data URIs.
 
         This method recursively traverses an object (up to max_depth) looking for media reference strings
-        in the format "@@@langfuseMedia:...@@@". When found, it (synchronously) fetches the actual media content using
+        in the format "@@@elasticdashMedia:...@@@". When found, it (synchronously) fetches the actual media content using
         the provided ElasticDash client and replaces the reference string with a base64 data URI.
 
         If fetching media content fails for a reference string, a warning is logged and the reference
@@ -243,7 +243,7 @@ class ElasticDashMedia:
         Args:
             obj: The object to process. Can be a primitive value, array, or nested object.
                 If the object has a __dict__ attribute, a dict will be returned instead of the original object type.
-            langfuse_client: ElasticDash client instance used to fetch media content.
+            elasticdash_client: ElasticDash client instance used to fetch media content.
             resolve_with: The representation of the media content to replace the media reference string with.
                 Currently only "base64_data_uri" is supported.
             max_depth: Optional. Default is 10. The maximum depth to traverse the object.
@@ -254,13 +254,13 @@ class ElasticDashMedia:
 
         Example:
             obj = {
-                "image": "@@@langfuseMedia:type=image/jpeg|id=123|source=bytes@@@",
+                "image": "@@@elasticdashMedia:type=image/jpeg|id=123|source=bytes@@@",
                 "nested": {
-                    "pdf": "@@@langfuseMedia:type=application/pdf|id=456|source=bytes@@@"
+                    "pdf": "@@@elasticdashMedia:type=application/pdf|id=456|source=bytes@@@"
                 }
             }
 
-            result = await ElasticDashMedia.resolve_media_references(obj, langfuse_client)
+            result = await ElasticDashMedia.resolve_media_references(obj, elasticdash_client)
 
             # Result:
             # {
@@ -277,7 +277,7 @@ class ElasticDashMedia:
 
             # Handle string
             if isinstance(obj, str):
-                regex = r"@@@langfuseMedia:.+?@@@"
+                regex = r"@@@elasticdashMedia:.+?@@@"
                 reference_string_matches = re.findall(regex, obj)
                 if len(reference_string_matches) == 0:
                     return obj
@@ -290,7 +290,7 @@ class ElasticDashMedia:
                         parsed_media_reference = ElasticDashMedia.parse_reference_string(
                             reference_string
                         )
-                        media_data = langfuse_client.api.media.get(
+                        media_data = elasticdash_client.api.media.get(
                             parsed_media_reference["media_id"]
                         )
                         media_content = requests.get(

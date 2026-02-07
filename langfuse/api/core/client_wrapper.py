@@ -11,17 +11,17 @@ class BaseClientWrapper:
     def __init__(
         self,
         *,
-        x_langfuse_sdk_name: typing.Optional[str] = None,
-        x_langfuse_sdk_version: typing.Optional[str] = None,
-        x_langfuse_public_key: typing.Optional[str] = None,
+        x_elasticdash_sdk_name: typing.Optional[str] = None,
+        x_elasticdash_sdk_version: typing.Optional[str] = None,
+        x_elasticdash_public_key: typing.Optional[str] = None,
         username: typing.Optional[typing.Union[str, typing.Callable[[], str]]] = None,
         password: typing.Optional[typing.Union[str, typing.Callable[[], str]]] = None,
         base_url: str,
         timeout: typing.Optional[float] = None,
     ):
-        self._x_langfuse_sdk_name = x_langfuse_sdk_name
-        self._x_langfuse_sdk_version = x_langfuse_sdk_version
-        self._x_langfuse_public_key = x_langfuse_public_key
+        self._x_elasticdash_sdk_name = x_elasticdash_sdk_name
+        self._x_elasticdash_sdk_version = x_elasticdash_sdk_version
+        self._x_elasticdash_public_key = x_elasticdash_public_key
         self._username = username
         self._password = password
         self._base_url = base_url
@@ -33,12 +33,12 @@ class BaseClientWrapper:
         password = self._get_password()
         if username is not None and password is not None:
             headers["Authorization"] = httpx.BasicAuth(username, password)._auth_header
-        if self._x_langfuse_sdk_name is not None:
-            headers["X-ElasticDash-Sdk-Name"] = self._x_langfuse_sdk_name
-        if self._x_langfuse_sdk_version is not None:
-            headers["X-ElasticDash-Sdk-Version"] = self._x_langfuse_sdk_version
-        if self._x_langfuse_public_key is not None:
-            headers["X-ElasticDash-Public-Key"] = self._x_langfuse_public_key
+        if self._x_elasticdash_sdk_name is not None:
+            headers["X-ElasticDash-Sdk-Name"] = self._x_elasticdash_sdk_name
+        if self._x_elasticdash_sdk_version is not None:
+            headers["X-ElasticDash-Sdk-Version"] = self._x_elasticdash_sdk_version
+        if self._x_elasticdash_public_key is not None:
+            headers["X-ElasticDash-Public-Key"] = self._x_elasticdash_public_key
         return headers
 
     def _get_username(self) -> typing.Optional[str]:
@@ -64,9 +64,9 @@ class SyncClientWrapper(BaseClientWrapper):
     def __init__(
         self,
         *,
-        x_langfuse_sdk_name: typing.Optional[str] = None,
-        x_langfuse_sdk_version: typing.Optional[str] = None,
-        x_langfuse_public_key: typing.Optional[str] = None,
+        x_elasticdash_sdk_name: typing.Optional[str] = None,
+        x_elasticdash_sdk_version: typing.Optional[str] = None,
+        x_elasticdash_public_key: typing.Optional[str] = None,
         username: typing.Optional[typing.Union[str, typing.Callable[[], str]]] = None,
         password: typing.Optional[typing.Union[str, typing.Callable[[], str]]] = None,
         base_url: str,
@@ -74,9 +74,9 @@ class SyncClientWrapper(BaseClientWrapper):
         httpx_client: httpx.Client,
     ):
         super().__init__(
-            x_langfuse_sdk_name=x_langfuse_sdk_name,
-            x_langfuse_sdk_version=x_langfuse_sdk_version,
-            x_langfuse_public_key=x_langfuse_public_key,
+            x_elasticdash_sdk_name=x_elasticdash_sdk_name,
+            x_elasticdash_sdk_version=x_elasticdash_sdk_version,
+            x_elasticdash_public_key=x_elasticdash_public_key,
             username=username,
             password=password,
             base_url=base_url,
@@ -94,9 +94,9 @@ class AsyncClientWrapper(BaseClientWrapper):
     def __init__(
         self,
         *,
-        x_langfuse_sdk_name: typing.Optional[str] = None,
-        x_langfuse_sdk_version: typing.Optional[str] = None,
-        x_langfuse_public_key: typing.Optional[str] = None,
+        x_elasticdash_sdk_name: typing.Optional[str] = None,
+        x_elasticdash_sdk_version: typing.Optional[str] = None,
+        x_elasticdash_public_key: typing.Optional[str] = None,
         username: typing.Optional[typing.Union[str, typing.Callable[[], str]]] = None,
         password: typing.Optional[typing.Union[str, typing.Callable[[], str]]] = None,
         base_url: str,
@@ -104,9 +104,9 @@ class AsyncClientWrapper(BaseClientWrapper):
         httpx_client: httpx.AsyncClient,
     ):
         super().__init__(
-            x_langfuse_sdk_name=x_langfuse_sdk_name,
-            x_langfuse_sdk_version=x_langfuse_sdk_version,
-            x_langfuse_public_key=x_langfuse_public_key,
+            x_elasticdash_sdk_name=x_elasticdash_sdk_name,
+            x_elasticdash_sdk_version=x_elasticdash_sdk_version,
+            x_elasticdash_public_key=x_elasticdash_public_key,
             username=username,
             password=password,
             base_url=base_url,

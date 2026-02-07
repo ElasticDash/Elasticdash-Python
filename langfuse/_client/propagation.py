@@ -22,9 +22,9 @@ from opentelemetry.util._decorator import (
     _agnosticcontextmanager,
 )
 
-from langfuse._client.attributes import ElasticDashOtelSpanAttributes
-from langfuse._client.constants import ELASTICDASH_SDK_EXPERIMENT_ENVIRONMENT
-from langfuse.logger import langfuse_logger
+from elasticdash._client.attributes import ElasticDashOtelSpanAttributes
+from elasticdash._client.constants import ELASTICDASH_SDK_EXPERIMENT_ENVIRONMENT
+from elasticdash.logger import elasticdash_logger
 
 PropagatedKeys = Literal[
     "user_id",
@@ -127,23 +127,23 @@ def propagate_attributes(
         Basic usage with user and session tracking:
 
         ```python
-        from langfuse import ElasticDash
+        from elasticdash import ElasticDash
 
-        langfuse = ElasticDash()
+        elasticdash = ElasticDash()
 
         # Set attributes early in the trace
-        with langfuse.start_as_current_span(name="user_workflow") as span:
-            with langfuse.propagate_attributes(
+        with elasticdash.start_as_current_span(name="user_workflow") as span:
+            with elasticdash.propagate_attributes(
                 user_id="user_123",
                 session_id="session_abc",
                 metadata={"experiment": "variant_a", "environment": "production"}
             ):
                 # All spans created here will have user_id, session_id, and metadata
-                with langfuse.start_span(name="llm_call") as llm_span:
+                with elasticdash.start_span(name="llm_call") as llm_span:
                     # This span inherits: user_id, session_id, experiment, environment
                     ...
 
-                with langfuse.start_generation(name="completion") as gen:
+                with elasticdash.start_generation(name="completion") as gen:
                     # This span also inherits all attributes
                     ...
         ```
@@ -151,15 +151,15 @@ def propagate_attributes(
         Late propagation (anti-pattern):
 
         ```python
-        with langfuse.start_as_current_span(name="workflow") as span:
+        with elasticdash.start_as_current_span(name="workflow") as span:
             # These spans WON'T have user_id
-            early_span = langfuse.start_span(name="early_work")
+            early_span = elasticdash.start_span(name="early_work")
             early_span.end()
 
             # Set attributes in the middle
-            with langfuse.propagate_attributes(user_id="user_123"):
+            with elasticdash.propagate_attributes(user_id="user_123"):
                 # Only spans created AFTER this point will have user_id
-                late_span = langfuse.start_span(name="late_work")
+                late_span = elasticdash.start_span(name="late_work")
                 late_span.end()
 
             # Result: Aggregations by user_id will miss "early_work" span
@@ -169,8 +169,8 @@ def propagate_attributes(
 
         ```python
         # Service A - originating service
-        with langfuse.start_as_current_span(name="api_request"):
-            with langfuse.propagate_attributes(
+        with elasticdash.start_as_current_span(name="api_request"):
+            with elasticdash.propagate_attributes(
                 user_id="user_123",
                 session_id="session_abc",
                 as_baggage=True  # Propagate via HTTP headers
@@ -402,13 +402,13 @@ def _validate_propagated_value(
         return validated_values if len(validated_values) > 0 else None
 
     if not isinstance(value, str):
-        langfuse_logger.warning(  # type: ignore
+        elasticdash_logger.warning(  # type: ignore
             f"Propagated attribute '{key}' value is not a string. Dropping value."
         )
         return None
 
     if len(value) > 200:
-        langfuse_logger.warning(
+        elasticdash_logger.warning(
             f"Propagated attribute '{key}' value is over 200 characters ({len(value)} chars). Dropping value."
         )
         return None
@@ -418,13 +418,13 @@ def _validate_propagated_value(
 
 def _validate_string_value(*, value: str, key: str) -> bool:
     if not isinstance(value, str):
-        langfuse_logger.warning(  # type: ignore
+        elasticdash_logger.warning(  # type: ignore
             f"Propagated attribute '{key}' value is not a string. Dropping value."
         )
         return False
 
     if len(value) > 200:
-        langfuse_logger.warning(
+        elasticdash_logger.warning(
             f"Propagated attribute '{key}' value is over 200 characters ({len(value)} chars). Dropping value."
         )
         return False
@@ -433,10 +433,10 @@ def _validate_string_value(*, value: str, key: str) -> bool:
 
 
 def _get_propagated_context_key(key: str) -> str:
-    return f"langfuse.propagated.{key}"
+    return f"elasticdash.propagated.{key}"
 
 
-ELASTICDASH_BAGGAGE_PREFIX = "langfuse_"
+ELASTICDASH_BAGGAGE_PREFIX = "elasticdash_"
 
 
 def _get_propagated_baggage_key(key: str) -> str:

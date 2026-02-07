@@ -8,7 +8,7 @@ ELASTICDASH_TRACING_ENVIRONMENT = "ELASTICDASH_TRACING_ENVIRONMENT"
 """
 .. envvar:: ELASTICDASH_TRACING_ENVIRONMENT
 
-The tracing environment. Can be any lowercase alphanumeric string with hyphens and underscores that does not start with 'langfuse'.
+The tracing environment. Can be any lowercase alphanumeric string with hyphens and underscores that does not start with 'elasticdash'.
 
 **Default value:** ``"default"``
 """
@@ -41,7 +41,7 @@ ELASTICDASH_BASE_URL = "ELASTICDASH_BASE_URL"
 
 Base URL of ElasticDash API. Can be set via `ELASTICDASH_BASE_URL` environment variable.
 
-**Default value:** ``"https://cloud.langfuse.com"``
+**Default value:** ``"https://cloud.elasticdash.com"``
 """
 
 ELASTICDASH_HOST = "ELASTICDASH_HOST"
@@ -50,7 +50,7 @@ ELASTICDASH_HOST = "ELASTICDASH_HOST"
 
 Deprecated. Use ELASTICDASH_BASE_URL instead. Host of ElasticDash API. Can be set via `ELASTICDASH_HOST` environment variable.
 
-**Default value:** ``"https://cloud.langfuse.com"``
+**Default value:** ``"https://cloud.elasticdash.com"``
 """
 
 ELASTICDASH_OTEL_TRACES_EXPORT_PATH = "ELASTICDASH_OTEL_TRACES_EXPORT_PATH"

@@ -70,7 +70,7 @@ class BaseScore(pydantic_v1.BaseModel):
 
     environment: str = pydantic_v1.Field()
     """
-    The environment from which this score originated. Can be any lowercase alphanumeric string with hyphens and underscores that does not start with 'langfuse'.
+    The environment from which this score originated. Can be any lowercase alphanumeric string with hyphens and underscores that does not start with 'elasticdash'.
     """
 
     def json(self, **kwargs: typing.Any) -> str:

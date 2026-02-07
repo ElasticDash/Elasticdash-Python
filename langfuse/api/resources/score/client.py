@@ -46,13 +46,13 @@ class ScoreClient:
 
         Examples
         --------
-        from langfuse import CreateScoreRequest
-        from langfuse.client import FernElasticDash
+        from elasticdash import CreateScoreRequest
+        from elasticdash.client import FernElasticDash
 
         client = FernElasticDash(
-            x_langfuse_sdk_name="YOUR_X_ELASTICDASH_SDK_NAME",
-            x_langfuse_sdk_version="YOUR_X_ELASTICDASH_SDK_VERSION",
-            x_langfuse_public_key="YOUR_X_ELASTICDASH_PUBLIC_KEY",
+            x_elasticdash_sdk_name="YOUR_X_ELASTICDASH_SDK_NAME",
+            x_elasticdash_sdk_version="YOUR_X_ELASTICDASH_SDK_VERSION",
+            x_elasticdash_public_key="YOUR_X_ELASTICDASH_PUBLIC_KEY",
             username="YOUR_USERNAME",
             password="YOUR_PASSWORD",
             base_url="https://yourhost.com/path/to/api",
@@ -106,7 +106,7 @@ class ScoreClient:
         Parameters
         ----------
         score_id : str
-            The unique langfuse identifier of a score
+            The unique elasticdash identifier of a score
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -117,12 +117,12 @@ class ScoreClient:
 
         Examples
         --------
-        from langfuse.client import FernElasticDash
+        from elasticdash.client import FernElasticDash
 
         client = FernElasticDash(
-            x_langfuse_sdk_name="YOUR_X_ELASTICDASH_SDK_NAME",
-            x_langfuse_sdk_version="YOUR_X_ELASTICDASH_SDK_VERSION",
-            x_langfuse_public_key="YOUR_X_ELASTICDASH_PUBLIC_KEY",
+            x_elasticdash_sdk_name="YOUR_X_ELASTICDASH_SDK_NAME",
+            x_elasticdash_sdk_version="YOUR_X_ELASTICDASH_SDK_VERSION",
+            x_elasticdash_public_key="YOUR_X_ELASTICDASH_PUBLIC_KEY",
             username="YOUR_USERNAME",
             password="YOUR_PASSWORD",
             base_url="https://yourhost.com/path/to/api",
@@ -191,13 +191,13 @@ class AsyncScoreClient:
         --------
         import asyncio
 
-        from langfuse import CreateScoreRequest
-        from langfuse.client import AsyncFernElasticDash
+        from elasticdash import CreateScoreRequest
+        from elasticdash.client import AsyncFernElasticDash
 
         client = AsyncFernElasticDash(
-            x_langfuse_sdk_name="YOUR_X_ELASTICDASH_SDK_NAME",
-            x_langfuse_sdk_version="YOUR_X_ELASTICDASH_SDK_VERSION",
-            x_langfuse_public_key="YOUR_X_ELASTICDASH_PUBLIC_KEY",
+            x_elasticdash_sdk_name="YOUR_X_ELASTICDASH_SDK_NAME",
+            x_elasticdash_sdk_version="YOUR_X_ELASTICDASH_SDK_VERSION",
+            x_elasticdash_public_key="YOUR_X_ELASTICDASH_PUBLIC_KEY",
             username="YOUR_USERNAME",
             password="YOUR_PASSWORD",
             base_url="https://yourhost.com/path/to/api",
@@ -257,7 +257,7 @@ class AsyncScoreClient:
         Parameters
         ----------
         score_id : str
-            The unique langfuse identifier of a score
+            The unique elasticdash identifier of a score
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -270,12 +270,12 @@ class AsyncScoreClient:
         --------
         import asyncio
 
-        from langfuse.client import AsyncFernElasticDash
+        from elasticdash.client import AsyncFernElasticDash
 
         client = AsyncFernElasticDash(
-            x_langfuse_sdk_name="YOUR_X_ELASTICDASH_SDK_NAME",
-            x_langfuse_sdk_version="YOUR_X_ELASTICDASH_SDK_VERSION",
-            x_langfuse_public_key="YOUR_X_ELASTICDASH_PUBLIC_KEY",
+            x_elasticdash_sdk_name="YOUR_X_ELASTICDASH_SDK_NAME",
+            x_elasticdash_sdk_version="YOUR_X_ELASTICDASH_SDK_VERSION",
+            x_elasticdash_public_key="YOUR_X_ELASTICDASH_PUBLIC_KEY",
             username="YOUR_USERNAME",
             password="YOUR_PASSWORD",
             base_url="https://yourhost.com/path/to/api",

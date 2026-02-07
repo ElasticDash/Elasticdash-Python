@@ -4,9 +4,9 @@ import logging
 import typing
 from datetime import datetime, timezone
 
-from langfuse.model import PromptClient
+from elasticdash.model import PromptClient
 
-log = logging.getLogger("langfuse")
+log = logging.getLogger("elasticdash")
 
 
 def _get_timestamp() -> datetime:

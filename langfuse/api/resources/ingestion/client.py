@@ -33,7 +33,7 @@ class IngestionClient:
         """
         **Legacy endpoint for batch ingestion for ElasticDash Observability.**
 
-        -> Please use the OpenTelemetry endpoint (`/api/public/otel/v1/traces`). Learn more: https://langfuse.com/integrations/native/opentelemetry
+        -> Please use the OpenTelemetry endpoint (`/api/public/otel/v1/traces`). Learn more: https://elasticdash.com/integrations/native/opentelemetry
 
         Within each batch, there can be multiple events.
         Each event has a type, an id, a timestamp, metadata and a body.
@@ -43,7 +43,7 @@ class IngestionClient:
         I.e. if you want to update a trace, you'd use the same body id, but separate event IDs.
 
         Notes:
-        - Introduction to data model: https://langfuse.com/docs/observability/data-model
+        - Introduction to data model: https://elasticdash.com/docs/observability/data-model
         - Batch sizes are limited to 3.5 MB in total. You need to adjust the number of events per batch accordingly.
         - The API does not return a 4xx status code for input errors. Instead, it responds with a 207 status code, which includes a list of the encountered errors.
 
@@ -66,13 +66,13 @@ class IngestionClient:
         --------
         import datetime
 
-        from langfuse import IngestionEvent_TraceCreate, TraceBody
-        from langfuse.client import FernElasticDash
+        from elasticdash import IngestionEvent_TraceCreate, TraceBody
+        from elasticdash.client import FernElasticDash
 
         client = FernElasticDash(
-            x_langfuse_sdk_name="YOUR_X_ELASTICDASH_SDK_NAME",
-            x_langfuse_sdk_version="YOUR_X_ELASTICDASH_SDK_VERSION",
-            x_langfuse_public_key="YOUR_X_ELASTICDASH_PUBLIC_KEY",
+            x_elasticdash_sdk_name="YOUR_X_ELASTICDASH_SDK_NAME",
+            x_elasticdash_sdk_version="YOUR_X_ELASTICDASH_SDK_VERSION",
+            x_elasticdash_public_key="YOUR_X_ELASTICDASH_PUBLIC_KEY",
             username="YOUR_USERNAME",
             password="YOUR_PASSWORD",
             base_url="https://yourhost.com/path/to/api",
@@ -151,7 +151,7 @@ class AsyncIngestionClient:
         """
         **Legacy endpoint for batch ingestion for ElasticDash Observability.**
 
-        -> Please use the OpenTelemetry endpoint (`/api/public/otel/v1/traces`). Learn more: https://langfuse.com/integrations/native/opentelemetry
+        -> Please use the OpenTelemetry endpoint (`/api/public/otel/v1/traces`). Learn more: https://elasticdash.com/integrations/native/opentelemetry
 
         Within each batch, there can be multiple events.
         Each event has a type, an id, a timestamp, metadata and a body.
@@ -161,7 +161,7 @@ class AsyncIngestionClient:
         I.e. if you want to update a trace, you'd use the same body id, but separate event IDs.
 
         Notes:
-        - Introduction to data model: https://langfuse.com/docs/observability/data-model
+        - Introduction to data model: https://elasticdash.com/docs/observability/data-model
         - Batch sizes are limited to 3.5 MB in total. You need to adjust the number of events per batch accordingly.
         - The API does not return a 4xx status code for input errors. Instead, it responds with a 207 status code, which includes a list of the encountered errors.
 
@@ -185,13 +185,13 @@ class AsyncIngestionClient:
         import asyncio
         import datetime
 
-        from langfuse import IngestionEvent_TraceCreate, TraceBody
-        from langfuse.client import AsyncFernElasticDash
+        from elasticdash import IngestionEvent_TraceCreate, TraceBody
+        from elasticdash.client import AsyncFernElasticDash
 
         client = AsyncFernElasticDash(
-            x_langfuse_sdk_name="YOUR_X_ELASTICDASH_SDK_NAME",
-            x_langfuse_sdk_version="YOUR_X_ELASTICDASH_SDK_VERSION",
-            x_langfuse_public_key="YOUR_X_ELASTICDASH_PUBLIC_KEY",
+            x_elasticdash_sdk_name="YOUR_X_ELASTICDASH_SDK_NAME",
+            x_elasticdash_sdk_version="YOUR_X_ELASTICDASH_SDK_VERSION",
+            x_elasticdash_public_key="YOUR_X_ELASTICDASH_PUBLIC_KEY",
             username="YOUR_USERNAME",
             password="YOUR_PASSWORD",
             base_url="https://yourhost.com/path/to/api",

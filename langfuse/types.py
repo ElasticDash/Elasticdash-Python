@@ -5,7 +5,7 @@ from the ElasticDash SDK, making them easily accessible without requiring nested
 
 Example:
     ```python
-    from langfuse.types import Evaluation, LocalExperimentItem, TaskFunction
+    from elasticdash.types import Evaluation, LocalExperimentItem, TaskFunction
 
     # Define your task function
     def my_task(*, item: LocalExperimentItem, **kwargs) -> str:
@@ -36,8 +36,8 @@ except ImportError:
 
 from pydantic import BaseModel
 
-from langfuse.api import MediaContentType, UsageDetails
-from langfuse.model import MapValue, ModelUsage, PromptClient
+from elasticdash.api import MediaContentType, UsageDetails
+from elasticdash.model import MapValue, ModelUsage, PromptClient
 
 SpanLevel = Literal["DEBUG", "DEFAULT", "WARNING", "ERROR"]
 

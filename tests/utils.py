@@ -9,7 +9,7 @@ try:
 except ImportError:
     import pydantic  # type: ignore
 
-from langfuse.api.client import FernElasticDash
+from elasticdash.api.client import FernElasticDash
 
 
 def create_uuid():

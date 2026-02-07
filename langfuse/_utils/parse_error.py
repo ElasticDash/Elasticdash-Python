@@ -2,25 +2,25 @@ import logging
 from typing import Union
 
 # our own api errors
-from langfuse._utils.request import APIError, APIErrors
-from langfuse.api.core import ApiError
+from elasticdash._utils.request import APIError, APIErrors
+from elasticdash.api.core import ApiError
 
 # fern api errors
-from langfuse.api.resources.commons.errors import (
+from elasticdash.api.resources.commons.errors import (
     AccessDeniedError,
     Error,
     MethodNotAllowedError,
     NotFoundError,
     UnauthorizedError,
 )
-from langfuse.api.resources.health.errors import ServiceUnavailableError
+from elasticdash.api.resources.health.errors import ServiceUnavailableError
 
-SUPPORT_URL = "https://langfuse.com/support"
-API_DOCS_URL = "https://api.reference.langfuse.com"
-RBAC_DOCS_URL = "https://langfuse.com/docs/rbac"
-INSTALLATION_DOCS_URL = "https://langfuse.com/docs/sdk/typescript/guide"
-RATE_LIMITS_URL = "https://langfuse.com/faq/all/api-limits"
-PYPI_PACKAGE_URL = "https://pypi.org/project/langfuse/"
+SUPPORT_URL = "https://elasticdash.com/support"
+API_DOCS_URL = "https://api.reference.elasticdash.com"
+RBAC_DOCS_URL = "https://elasticdash.com/docs/rbac"
+INSTALLATION_DOCS_URL = "https://elasticdash.com/docs/sdk/typescript/guide"
+RATE_LIMITS_URL = "https://elasticdash.com/faq/all/api-limits"
+PYPI_PACKAGE_URL = "https://pypi.org/project/elasticdash/"
 
 # Error messages
 updatePromptResponse = (
@@ -67,7 +67,7 @@ def generate_error_message_fern(error: Error) -> str:
 
 
 def handle_fern_exception(exception: Error) -> None:
-    log = logging.getLogger("langfuse")
+    log = logging.getLogger("elasticdash")
     log.debug(exception)
     error_message = generate_error_message_fern(exception)
     log.error(error_message)
@@ -95,7 +95,7 @@ def generate_error_message(exception: Union[APIError, APIErrors, Exception]) -> 
 
 
 def handle_exception(exception: Union[APIError, APIErrors, Exception]) -> None:
-    log = logging.getLogger("langfuse")
+    log = logging.getLogger("elasticdash")
     log.debug(exception)
     error_message = generate_error_message(exception)
     log.error(error_message)

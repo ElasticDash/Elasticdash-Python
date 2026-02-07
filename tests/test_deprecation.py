@@ -5,7 +5,7 @@ from unittest.mock import patch
 
 import pytest
 
-from langfuse import ElasticDash
+from elasticdash import ElasticDash
 
 
 class TestDeprecationWarnings:
@@ -48,7 +48,7 @@ class TestDeprecationWarnings:
     ]
 
     @pytest.fixture
-    def langfuse_client(self):
+    def elasticdash_client(self):
         """Create a ElasticDash client for testing."""
         with patch.dict(
             "os.environ",
@@ -61,7 +61,7 @@ class TestDeprecationWarnings:
             return ElasticDash()
 
     @pytest.mark.parametrize("func_info", DEPRECATED_FUNCTIONS)
-    def test_deprecated_function_warnings(self, langfuse_client, func_info):
+    def test_deprecated_function_warnings(self, elasticdash_client, func_info):
         """Test that deprecated functions emit proper deprecation warnings."""
         method_name = func_info["method"]
         target = func_info["target"]
@@ -74,7 +74,7 @@ class TestDeprecationWarnings:
             try:
                 if target == "client":
                     # Test deprecated methods on the client
-                    method = getattr(langfuse_client, method_name)
+                    method = getattr(elasticdash_client, method_name)
                     if "current" in method_name:
                         # Context manager methods
                         with method(**kwargs) as obj:
@@ -88,7 +88,7 @@ class TestDeprecationWarnings:
 
                 elif target == "span":
                     # Test deprecated methods on spans
-                    span = langfuse_client.start_span(name="test_parent")
+                    span = elasticdash_client.start_span(name="test_parent")
                     method = getattr(span, method_name)
                     if "current" in method_name:
                         # Context manager methods

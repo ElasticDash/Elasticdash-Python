@@ -1,4 +1,4 @@
-"""Test suite for utility functions in langfuse._client.utils module."""
+"""Test suite for utility functions in elasticdash._client.utils module."""
 
 import asyncio
 import threading
@@ -6,7 +6,7 @@ from unittest import mock
 
 import pytest
 
-from langfuse._client.utils import run_async_safely
+from elasticdash._client.utils import run_async_safely
 
 
 class TestRunAsyncSafely:

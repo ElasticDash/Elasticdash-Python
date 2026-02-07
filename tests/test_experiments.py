@@ -5,8 +5,8 @@ from typing import Any, Dict, List
 
 import pytest
 
-from langfuse import get_client
-from langfuse.experiment import (
+from elasticdash import get_client
+from elasticdash.experiment import (
     Evaluation,
     ExperimentData,
     ExperimentItem,
@@ -61,9 +61,9 @@ def run_evaluator_average_length(*, item_results: List[ExperimentItemResult], **
 # Basic Functionality Tests
 def test_run_experiment_on_local_dataset(sample_dataset):
     """Test running experiment on local dataset."""
-    langfuse_client = get_client()
+    elasticdash_client = get_client()
 
-    result = langfuse_client.run_experiment(
+    result = elasticdash_client.run_experiment(
         name="Euro capitals",
         description="Country capital experiment",
         data=sample_dataset,
@@ -89,7 +89,7 @@ def test_run_experiment_on_local_dataset(sample_dataset):
         assert len(item_result.evaluations) == 2  # Both evaluators should run
 
     # Flush and wait for server processing
-    langfuse_client.flush()
+    elasticdash_client.flush()
     time.sleep(2)
 
     # Validate traces are correctly persisted with input/output/metadata
@@ -135,12 +135,12 @@ def test_run_experiment_on_local_dataset(sample_dataset):
         )
 
 
-def test_run_experiment_on_langfuse_dataset():
+def test_run_experiment_on_elasticdash_dataset():
     """Test running experiment on ElasticDash dataset."""
-    langfuse_client = get_client()
+    elasticdash_client = get_client()
     # Create dataset
     dataset_name = "test-dataset-" + create_uuid()
-    langfuse_client.create_dataset(name=dataset_name)
+    elasticdash_client.create_dataset(name=dataset_name)
 
     # Add items to dataset
     test_items = [
@@ -149,14 +149,14 @@ def test_run_experiment_on_langfuse_dataset():
     ]
 
     for item in test_items:
-        langfuse_client.create_dataset_item(
+        elasticdash_client.create_dataset_item(
             dataset_name=dataset_name,
             input=item["input"],
             expected_output=item["expected_output"],
         )
 
     # Get dataset and run experiment
-    dataset = langfuse_client.get_dataset(dataset_name)
+    dataset = elasticdash_client.get_dataset(dataset_name)
 
     # Use unique experiment name for proper identification
     experiment_name = "Dataset Test " + create_uuid()[:8]
@@ -174,7 +174,7 @@ def test_run_experiment_on_langfuse_dataset():
     assert all(item.dataset_run_id is not None for item in result.item_results)
 
     # Flush and wait for server processing
-    langfuse_client.flush()
+    elasticdash_client.flush()
     time.sleep(3)
 
     # Verify dataset run exists via API
@@ -284,7 +284,7 @@ def test_run_experiment_on_langfuse_dataset():
 # Error Handling Tests
 def test_evaluator_failures_handled_gracefully():
     """Test that evaluator failures don't break the experiment."""
-    langfuse_client = get_client()
+    elasticdash_client = get_client()
 
     def failing_evaluator(**kwargs):
         raise Exception("Evaluator failed")
@@ -292,7 +292,7 @@ def test_evaluator_failures_handled_gracefully():
     def working_evaluator(**kwargs):
         return Evaluation(name="working_eval", value=1.0)
 
-    result = langfuse_client.run_experiment(
+    result = elasticdash_client.run_experiment(
         name="Error test",
         data=[{"input": "test"}],
         task=lambda **kwargs: "result",
@@ -313,13 +313,13 @@ def test_evaluator_failures_handled_gracefully():
         == 1
     )
 
-    langfuse_client.flush()
+    elasticdash_client.flush()
     time.sleep(1)
 
 
 def test_task_failures_handled_gracefully():
     """Test that task failures are handled gracefully and don't stop the experiment."""
-    langfuse_client = get_client()
+    elasticdash_client = get_client()
 
     def failing_task(item):
         raise Exception("Task failed")
@@ -328,7 +328,7 @@ def test_task_failures_handled_gracefully():
         return f"Processed: {item['input']}"
 
     # Test with mixed data - some will fail, some will succeed
-    result = langfuse_client.run_experiment(
+    result = elasticdash_client.run_experiment(
         name="Task error test",
         data=[{"input": "test1"}, {"input": "test2"}],
         task=failing_task,
@@ -337,18 +337,18 @@ def test_task_failures_handled_gracefully():
     # Should complete but with no valid results since all tasks failed
     assert len(result.item_results) == 0
 
-    langfuse_client.flush()
+    elasticdash_client.flush()
     time.sleep(1)
 
 
 def test_run_evaluator_failures_handled():
     """Test that run evaluator failures don't break the experiment."""
-    langfuse_client = get_client()
+    elasticdash_client = get_client()
 
     def failing_run_evaluator(**kwargs):
         raise Exception("Run evaluator failed")
 
-    result = langfuse_client.run_experiment(
+    result = elasticdash_client.run_experiment(
         name="Run evaluator error test",
         data=[{"input": "test"}],
         task=lambda **kwargs: "result",
@@ -359,16 +359,16 @@ def test_run_evaluator_failures_handled():
     assert len(result.item_results) == 1
     assert len(result.run_evaluations) == 0
 
-    langfuse_client.flush()
+    elasticdash_client.flush()
     time.sleep(1)
 
 
 # Edge Cases Tests
 def test_empty_dataset_handling():
     """Test experiment with empty dataset."""
-    langfuse_client = get_client()
+    elasticdash_client = get_client()
 
-    result = langfuse_client.run_experiment(
+    result = elasticdash_client.run_experiment(
         name="Empty dataset test",
         data=[],
         task=lambda **kwargs: "result",
@@ -378,13 +378,13 @@ def test_empty_dataset_handling():
     assert len(result.item_results) == 0
     assert len(result.run_evaluations) == 1  # Run evaluators still execute
 
-    langfuse_client.flush()
+    elasticdash_client.flush()
     time.sleep(1)
 
 
 def test_dataset_with_missing_fields():
     """Test handling dataset with missing fields."""
-    langfuse_client = get_client()
+    elasticdash_client = get_client()
 
     incomplete_dataset = [
         {"input": "Germany"},  # Missing expected_output
@@ -392,7 +392,7 @@ def test_dataset_with_missing_fields():
         {"input": "Spain", "expected_output": "Madrid"},  # Complete
     ]
 
-    result = langfuse_client.run_experiment(
+    result = elasticdash_client.run_experiment(
         name="Incomplete data test",
         data=incomplete_dataset,
         task=lambda **kwargs: "result",
@@ -404,19 +404,19 @@ def test_dataset_with_missing_fields():
         assert hasattr(item_result, "trace_id")
         assert hasattr(item_result, "output")
 
-    langfuse_client.flush()
+    elasticdash_client.flush()
     time.sleep(1)
 
 
 def test_large_dataset_with_concurrency():
     """Test handling large dataset with concurrency control."""
-    langfuse_client = get_client()
+    elasticdash_client = get_client()
 
     large_dataset: ExperimentData = [
         {"input": f"Item {i}", "expected_output": f"Output {i}"} for i in range(20)
     ]
 
-    result = langfuse_client.run_experiment(
+    result = elasticdash_client.run_experiment(
         name="Large dataset test",
         data=large_dataset,
         task=lambda **kwargs: f"Processed {kwargs['item']}",
@@ -429,19 +429,19 @@ def test_large_dataset_with_concurrency():
         assert len(item_result.evaluations) == 1
         assert hasattr(item_result, "trace_id")
 
-    langfuse_client.flush()
+    elasticdash_client.flush()
     time.sleep(3)
 
 
 # Evaluator Configuration Tests
 def test_single_evaluation_return():
     """Test evaluators returning single evaluation instead of array."""
-    langfuse_client = get_client()
+    elasticdash_client = get_client()
 
     def single_evaluator(**kwargs):
         return Evaluation(name="single_eval", value=1, comment="Single evaluation")
 
-    result = langfuse_client.run_experiment(
+    result = elasticdash_client.run_experiment(
         name="Single evaluation test",
         data=[{"input": "test"}],
         task=lambda **kwargs: "result",
@@ -452,15 +452,15 @@ def test_single_evaluation_return():
     assert len(result.item_results[0].evaluations) == 1
     assert result.item_results[0].evaluations[0].name == "single_eval"
 
-    langfuse_client.flush()
+    elasticdash_client.flush()
     time.sleep(1)
 
 
 def test_no_evaluators():
     """Test experiment with no evaluators."""
-    langfuse_client = get_client()
+    elasticdash_client = get_client()
 
-    result = langfuse_client.run_experiment(
+    result = elasticdash_client.run_experiment(
         name="No evaluators test",
         data=[{"input": "test"}],
         task=lambda **kwargs: "result",
@@ -470,20 +470,20 @@ def test_no_evaluators():
     assert len(result.item_results[0].evaluations) == 0
     assert len(result.run_evaluations) == 0
 
-    langfuse_client.flush()
+    elasticdash_client.flush()
     time.sleep(1)
 
 
 def test_only_run_evaluators():
     """Test experiment with only run evaluators."""
-    langfuse_client = get_client()
+    elasticdash_client = get_client()
 
     def run_only_evaluator(**kwargs):
         return Evaluation(
             name="run_only_eval", value=10, comment="Run-level evaluation"
         )
 
-    result = langfuse_client.run_experiment(
+    result = elasticdash_client.run_experiment(
         name="Only run evaluators test",
         data=[{"input": "test"}],
         task=lambda **kwargs: "result",
@@ -495,13 +495,13 @@ def test_only_run_evaluators():
     assert len(result.run_evaluations) == 1
     assert result.run_evaluations[0].name == "run_only_eval"
 
-    langfuse_client.flush()
+    elasticdash_client.flush()
     time.sleep(1)
 
 
 def test_different_data_types():
     """Test evaluators returning different data types."""
-    langfuse_client = get_client()
+    elasticdash_client = get_client()
 
     def number_evaluator(**kwargs):
         return Evaluation(name="number_eval", value=42)
@@ -512,7 +512,7 @@ def test_different_data_types():
     def boolean_evaluator(**kwargs):
         return Evaluation(name="boolean_eval", value=True)
 
-    result = langfuse_client.run_experiment(
+    result = elasticdash_client.run_experiment(
         name="Different data types test",
         data=[{"input": "test"}],
         task=lambda **kwargs: "result",
@@ -527,26 +527,26 @@ def test_different_data_types():
     assert eval_by_name["string_eval"] == "excellent"
     assert eval_by_name["boolean_eval"] is True
 
-    langfuse_client.flush()
+    elasticdash_client.flush()
     time.sleep(1)
 
 
 # Data Persistence Tests
 def test_scores_are_persisted():
     """Test that scores are properly persisted to the database."""
-    langfuse_client = get_client()
+    elasticdash_client = get_client()
 
     # Create dataset
     dataset_name = "score-persistence-" + create_uuid()
-    langfuse_client.create_dataset(name=dataset_name)
+    elasticdash_client.create_dataset(name=dataset_name)
 
-    langfuse_client.create_dataset_item(
+    elasticdash_client.create_dataset_item(
         dataset_name=dataset_name,
         input="Test input",
         expected_output="Test output",
     )
 
-    dataset = langfuse_client.get_dataset(dataset_name)
+    dataset = elasticdash_client.get_dataset(dataset_name)
 
     def test_evaluator(**kwargs):
         return Evaluation(
@@ -575,7 +575,7 @@ def test_scores_are_persisted():
     assert len(result.item_results) == 1
     assert len(result.run_evaluations) == 1
 
-    langfuse_client.flush()
+    elasticdash_client.flush()
     time.sleep(3)
 
     # Verify scores are persisted via API
@@ -589,23 +589,23 @@ def test_scores_are_persisted():
 
 def test_multiple_experiments_on_same_dataset():
     """Test running multiple experiments on the same dataset."""
-    langfuse_client = get_client()
+    elasticdash_client = get_client()
 
     # Create dataset
     dataset_name = "multi-experiment-" + create_uuid()
-    langfuse_client.create_dataset(name=dataset_name)
+    elasticdash_client.create_dataset(name=dataset_name)
 
     for item in [
         {"input": "Germany", "expected_output": "Berlin"},
         {"input": "France", "expected_output": "Paris"},
     ]:
-        langfuse_client.create_dataset_item(
+        elasticdash_client.create_dataset_item(
             dataset_name=dataset_name,
             input=item["input"],
             expected_output=item["expected_output"],
         )
 
-    dataset = langfuse_client.get_dataset(dataset_name)
+    dataset = elasticdash_client.get_dataset(dataset_name)
 
     # Run first experiment
     result1 = dataset.run_experiment(
@@ -616,7 +616,7 @@ def test_multiple_experiments_on_same_dataset():
         evaluators=[factuality_evaluator],
     )
 
-    langfuse_client.flush()
+    elasticdash_client.flush()
     time.sleep(2)
 
     # Run second experiment
@@ -628,7 +628,7 @@ def test_multiple_experiments_on_same_dataset():
         evaluators=[simple_evaluator],
     )
 
-    langfuse_client.flush()
+    elasticdash_client.flush()
     time.sleep(2)
 
     # Both experiments should have different run IDs
@@ -649,9 +649,9 @@ def test_multiple_experiments_on_same_dataset():
 # Result Formatting Tests
 def test_format_experiment_results_basic():
     """Test basic result formatting functionality."""
-    langfuse_client = get_client()
+    elasticdash_client = get_client()
 
-    result = langfuse_client.run_experiment(
+    result = elasticdash_client.run_experiment(
         name="Formatting test",
         description="Test result formatting",
         data=[{"input": "Hello", "expected_output": "Hi"}],
@@ -666,15 +666,15 @@ def test_format_experiment_results_basic():
     assert hasattr(result.item_results[0], "trace_id")
     assert hasattr(result.item_results[0], "evaluations")
 
-    langfuse_client.flush()
+    elasticdash_client.flush()
     time.sleep(1)
 
 
 def test_boolean_score_types():
     """Test that BOOLEAN score types are properly ingested and persisted."""
-    from langfuse.api import ScoreDataType
+    from elasticdash.api import ScoreDataType
 
-    langfuse_client = get_client()
+    elasticdash_client = get_client()
 
     def boolean_evaluator(*, input, output, expected_output=None, **kwargs):
         """Boolean evaluator that checks if output contains the expected answer."""
@@ -747,7 +747,7 @@ def test_boolean_score_types():
         else:
             return "I don't know the capital"
 
-    result = langfuse_client.run_experiment(
+    result = elasticdash_client.run_experiment(
         name="Boolean score type test",
         description="Test BOOLEAN data type in scores",
         data=test_data,
@@ -782,7 +782,7 @@ def test_boolean_score_types():
     assert run_eval.data_type == ScoreDataType.BOOLEAN
 
     # Flush and wait for server processing
-    langfuse_client.flush()
+    elasticdash_client.flush()
     time.sleep(3)
 
     # Verify scores are persisted via API with correct data types
@@ -801,7 +801,7 @@ def test_boolean_score_types():
 
 def test_experiment_composite_evaluator_weighted_average():
     """Test composite evaluator in experiments that computes weighted average."""
-    langfuse_client = get_client()
+    elasticdash_client = get_client()
 
     def accuracy_evaluator(*, input, output, **kwargs):
         return Evaluation(name="accuracy", value=0.8)
@@ -828,7 +828,7 @@ def test_experiment_composite_evaluator_weighted_average():
         {"input": "Test 2", "expected_output": "Output 2"},
     ]
 
-    result = langfuse_client.run_experiment(
+    result = elasticdash_client.run_experiment(
         name=f"Composite Test {create_uuid()}",
         data=data,
         task=mock_task,

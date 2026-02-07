@@ -36,8 +36,8 @@ from opentelemetry.util._decorator import (
 )
 from packaging.version import Version
 
-from langfuse._client.attributes import ElasticDashOtelSpanAttributes, _serialize
-from langfuse._client.constants import (
+from elasticdash._client.attributes import ElasticDashOtelSpanAttributes, _serialize
+from elasticdash._client.constants import (
     ELASTICDASH_SDK_EXPERIMENT_ENVIRONMENT,
     ObservationTypeGenerationLike,
     ObservationTypeLiteral,
@@ -45,8 +45,8 @@ from langfuse._client.constants import (
     ObservationTypeSpanLike,
     get_observation_types_list,
 )
-from langfuse._client.datasets import DatasetClient, DatasetItemClient
-from langfuse._client.environment_variables import (
+from elasticdash._client.datasets import DatasetClient, DatasetItemClient
+from elasticdash._client.environment_variables import (
     ELASTICDASH_BASE_URL,
     ELASTICDASH_DEBUG,
     ELASTICDASH_HOST,
@@ -57,12 +57,12 @@ from langfuse._client.environment_variables import (
     ELASTICDASH_TRACING_ENABLED,
     ELASTICDASH_TRACING_ENVIRONMENT,
 )
-from langfuse._client.propagation import (
+from elasticdash._client.propagation import (
     PropagatedExperimentAttributes,
     _propagate_attributes,
 )
-from langfuse._client.resource_manager import ElasticDashResourceManager
-from langfuse._client.span import (
+from elasticdash._client.resource_manager import ElasticDashResourceManager
+from elasticdash._client.span import (
     ElasticDashAgent,
     ElasticDashChain,
     ElasticDashEmbedding,
@@ -74,32 +74,32 @@ from langfuse._client.span import (
     ElasticDashSpan,
     ElasticDashTool,
 )
-from langfuse._client.utils import get_sha256_hash_hex, run_async_safely
-from langfuse._utils import _get_timestamp
-from langfuse._utils.parse_error import handle_fern_exception
-from langfuse._utils.prompt_cache import PromptCache
-from langfuse.api.resources.commons.errors.error import Error
-from langfuse.api.resources.commons.errors.not_found_error import NotFoundError
-from langfuse.api.resources.commons.types import DatasetRunWithItems
-from langfuse.api.resources.datasets.types import (
+from elasticdash._client.utils import get_sha256_hash_hex, run_async_safely
+from elasticdash._utils import _get_timestamp
+from elasticdash._utils.parse_error import handle_fern_exception
+from elasticdash._utils.prompt_cache import PromptCache
+from elasticdash.api.resources.commons.errors.error import Error
+from elasticdash.api.resources.commons.errors.not_found_error import NotFoundError
+from elasticdash.api.resources.commons.types import DatasetRunWithItems
+from elasticdash.api.resources.datasets.types import (
     DeleteDatasetRunResponse,
     PaginatedDatasetRuns,
 )
-from langfuse.api.resources.ingestion.types.score_body import ScoreBody
-from langfuse.api.resources.prompts.types import (
+from elasticdash.api.resources.ingestion.types.score_body import ScoreBody
+from elasticdash.api.resources.prompts.types import (
     CreatePromptRequest_Chat,
     CreatePromptRequest_Text,
     Prompt_Chat,
     Prompt_Text,
 )
-from langfuse.batch_evaluation import (
+from elasticdash.batch_evaluation import (
     BatchEvaluationResult,
     BatchEvaluationResumeToken,
     BatchEvaluationRunner,
     CompositeEvaluatorFunction,
     MapperFunction,
 )
-from langfuse.experiment import (
+from elasticdash.experiment import (
     Evaluation,
     EvaluatorFunction,
     ExperimentData,
@@ -111,9 +111,9 @@ from langfuse.experiment import (
     _run_evaluator,
     _run_task,
 )
-from langfuse.logger import langfuse_logger
-from langfuse.media import ElasticDashMedia
-from langfuse.model import (
+from elasticdash.logger import elasticdash_logger
+from elasticdash.media import ElasticDashMedia
+from elasticdash.model import (
     ChatMessageDict,
     ChatMessageWithPlaceholdersDict,
     ChatPromptClient,
@@ -127,7 +127,7 @@ from langfuse.model import (
     PromptClient,
     TextPromptClient,
 )
-from langfuse.types import MaskFunction, ScoreDataType, SpanLevel, TraceContext
+from elasticdash.types import MaskFunction, ScoreDataType, SpanLevel, TraceContext
 
 
 class ElasticDash:
@@ -152,15 +152,15 @@ class ElasticDash:
     Parameters:
         public_key (Optional[str]): Your ElasticDash public API key. Can also be set via ELASTICDASH_PUBLIC_KEY environment variable.
         secret_key (Optional[str]): Your ElasticDash secret API key. Can also be set via ELASTICDASH_SECRET_KEY environment variable.
-        base_url (Optional[str]): The ElasticDash API base URL. Defaults to "https://cloud.langfuse.com". Can also be set via ELASTICDASH_BASE_URL environment variable.
-        host (Optional[str]): Deprecated. Use base_url instead. The ElasticDash API host URL. Defaults to "https://cloud.langfuse.com".
+        base_url (Optional[str]): The ElasticDash API base URL. Defaults to "https://cloud.elasticdash.com". Can also be set via ELASTICDASH_BASE_URL environment variable.
+        host (Optional[str]): Deprecated. Use base_url instead. The ElasticDash API host URL. Defaults to "https://cloud.elasticdash.com".
         timeout (Optional[int]): Timeout in seconds for API requests. Defaults to 5 seconds.
         httpx_client (Optional[httpx.Client]): Custom httpx client for making non-tracing HTTP requests. If not provided, a default client will be created.
         debug (bool): Enable debug logging. Defaults to False. Can also be set via ELASTICDASH_DEBUG environment variable.
         tracing_enabled (Optional[bool]): Enable or disable tracing. Defaults to True. Can also be set via ELASTICDASH_TRACING_ENABLED environment variable.
         flush_at (Optional[int]): Number of spans to batch before sending to the API. Defaults to 512. Can also be set via ELASTICDASH_FLUSH_AT environment variable.
         flush_interval (Optional[float]): Time in seconds between batch flushes. Defaults to 5 seconds. Can also be set via ELASTICDASH_FLUSH_INTERVAL environment variable.
-        environment (Optional[str]): Environment name for tracing. Default is 'default'. Can also be set via ELASTICDASH_TRACING_ENVIRONMENT environment variable. Can be any lowercase alphanumeric string with hyphens and underscores that does not start with 'langfuse'.
+        environment (Optional[str]): Environment name for tracing. Default is 'default'. Can also be set via ELASTICDASH_TRACING_ENVIRONMENT environment variable. Can be any lowercase alphanumeric string with hyphens and underscores that does not start with 'elasticdash'.
         release (Optional[str]): Release version/hash of your application. Used for grouping analytics by release.
         media_upload_thread_count (Optional[int]): Number of background threads for handling media uploads. Defaults to 1. Can also be set via ELASTICDASH_MEDIA_UPLOAD_THREAD_COUNT environment variable.
         sample_rate (Optional[float]): Sampling rate for traces (0.0 to 1.0). Defaults to 1.0 (100% of traces are sampled). Can also be set via ELASTICDASH_SAMPLE_RATE environment variable.
@@ -171,17 +171,17 @@ class ElasticDash:
 
     Example:
         ```python
-        from langfuse.otel import ElasticDash
+        from elasticdash.otel import ElasticDash
 
         # Initialize the client (reads from env vars if not provided)
-        langfuse = ElasticDash(
+        elasticdash = ElasticDash(
             public_key="your-public-key",
             secret_key="your-secret-key",
-            host="https://cloud.langfuse.com",  # Optional, default shown
+            host="https://cloud.elasticdash.com",  # Optional, default shown
         )
 
         # Create a trace span
-        with langfuse.start_as_current_span(name="process-query") as span:
+        with elasticdash.start_as_current_span(name="process-query") as span:
             # Your application code here
 
             # Create a nested generation span for an LLM call
@@ -235,7 +235,7 @@ class ElasticDash:
             base_url
             or os.environ.get(ELASTICDASH_BASE_URL)
             or host
-            or os.environ.get(ELASTICDASH_HOST, "https://cloud.langfuse.com")
+            or os.environ.get(ELASTICDASH_HOST, "https://cloud.elasticdash.com")
         )
         self._environment = environment or cast(
             str, os.environ.get(ELASTICDASH_TRACING_ENVIRONMENT)
@@ -254,7 +254,7 @@ class ElasticDash:
             and os.environ.get(ELASTICDASH_TRACING_ENABLED, "true").lower() != "false"
         )
         if not self._tracing_enabled:
-            langfuse_logger.info(
+            elasticdash_logger.info(
                 "Configuration: ElasticDash tracing is explicitly disabled. No data will be sent to the ElasticDash API."
             )
 
@@ -265,11 +265,11 @@ class ElasticDash:
             logging.basicConfig(
                 format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
             )
-            langfuse_logger.setLevel(logging.DEBUG)
+            elasticdash_logger.setLevel(logging.DEBUG)
 
         public_key = public_key or os.environ.get(ELASTICDASH_PUBLIC_KEY)
         if public_key is None:
-            langfuse_logger.warning(
+            elasticdash_logger.warning(
                 "Authentication error: ElasticDash client initialized without public_key. Client will be disabled. "
                 "Provide a public_key parameter or set ELASTICDASH_PUBLIC_KEY environment variable. "
             )
@@ -278,7 +278,7 @@ class ElasticDash:
 
         secret_key = secret_key or os.environ.get(ELASTICDASH_SECRET_KEY)
         if secret_key is None:
-            langfuse_logger.warning(
+            elasticdash_logger.warning(
                 "Authentication error: ElasticDash client initialized without secret_key. Client will be disabled. "
                 "Provide a secret_key parameter or set ELASTICDASH_SECRET_KEY environment variable. "
             )
@@ -286,7 +286,7 @@ class ElasticDash:
             return
 
         if os.environ.get("OTEL_SDK_DISABLED", "false").lower() == "true":
-            langfuse_logger.warning(
+            elasticdash_logger.warning(
                 "OTEL_SDK_DISABLED is set. ElasticDash tracing will be disabled and no traces will appear in the UI."
             )
 
@@ -353,7 +353,7 @@ class ElasticDash:
 
         Example:
             ```python
-            span = langfuse.start_span(name="process-data")
+            span = elasticdash.start_span(name="process-data")
             try:
                 # Do work
                 span.update(output="result")
@@ -410,7 +410,7 @@ class ElasticDash:
 
         Example:
             ```python
-            with langfuse.start_as_current_span(name="process-query") as span:
+            with elasticdash.start_as_current_span(name="process-query") as span:
                 # Do work
                 result = process_data()
                 span.update(output=result)
@@ -721,7 +721,7 @@ class ElasticDash:
             # issue is that ElasticDashEvent could be returned and that classes have diff. args
             return observation_class(  # type: ignore[return-value,call-arg]
                 otel_span=otel_span,
-                langfuse_client=self,
+                elasticdash_client=self,
                 environment=self._environment,
                 input=input,
                 output=output,
@@ -743,7 +743,7 @@ class ElasticDash:
             # issue is that ElasticDashEvent could be returned and that classes have diff. args
             return observation_class(  # type: ignore[return-value,call-arg]
                 otel_span=otel_span,
-                langfuse_client=self,
+                elasticdash_client=self,
                 environment=self._environment,
                 input=input,
                 output=output,
@@ -753,7 +753,7 @@ class ElasticDash:
                 status_message=status_message,
             )
             # span._observation_type = as_type
-            # span._otel_span.set_attribute("langfuse.observation.type", as_type)
+            # span._otel_span.set_attribute("elasticdash.observation.type", as_type)
             # return span
 
     def start_generation(
@@ -806,7 +806,7 @@ class ElasticDash:
 
         Example:
             ```python
-            generation = langfuse.start_generation(
+            generation = elasticdash.start_generation(
                 name="answer-generation",
                 model="gpt-4",
                 input={"prompt": "Explain quantum computing"},
@@ -903,7 +903,7 @@ class ElasticDash:
 
         Example:
             ```python
-            with langfuse.start_as_current_generation(
+            with elasticdash.start_as_current_generation(
                 name="answer-generation",
                 model="gpt-4",
                 input={"prompt": "Explain quantum computing"}
@@ -1166,7 +1166,7 @@ class ElasticDash:
         Example:
             ```python
             # Create a span
-            with langfuse.start_as_current_observation(name="process-query", as_type="span") as span:
+            with elasticdash.start_as_current_observation(name="process-query", as_type="span") as span:
                 # Do work
                 result = process_data()
                 span.update(output=result)
@@ -1177,13 +1177,13 @@ class ElasticDash:
                     child_span.update(output="sub-result")
 
             # Create a tool observation
-            with langfuse.start_as_current_observation(name="web-search", as_type="tool") as tool:
+            with elasticdash.start_as_current_observation(name="web-search", as_type="tool") as tool:
                 # Do tool work
                 results = search_web(query)
                 tool.update(output=results)
 
             # Create a generation observation
-            with langfuse.start_as_current_observation(
+            with elasticdash.start_as_current_observation(
                 name="answer-generation",
                 as_type="generation",
                 model="gpt-4"
@@ -1312,7 +1312,7 @@ class ElasticDash:
             )
 
         # This should never be reached since all valid types are handled above
-        langfuse_logger.warning(
+        elasticdash_logger.warning(
             f"Unknown observation type: {as_type}, falling back to span"
         )
         return self._start_as_current_otel_span_with_processed_media(
@@ -1409,13 +1409,13 @@ class ElasticDash:
                 usage_details=usage_details,
                 cost_details=cost_details,
                 prompt=prompt,
-            ) as langfuse_span:
+            ) as elasticdash_span:
                 if remote_parent_span is not None:
-                    langfuse_span._otel_span.set_attribute(
+                    elasticdash_span._otel_span.set_attribute(
                         ElasticDashOtelSpanAttributes.AS_ROOT, True
                     )
 
-                yield langfuse_span
+                yield elasticdash_span
 
     @_agnosticcontextmanager
     def _start_as_current_otel_span_with_processed_media(
@@ -1446,7 +1446,7 @@ class ElasticDash:
             )  # default was "generation"
             common_args = {
                 "otel_span": otel_span,
-                "langfuse_client": self,
+                "elasticdash_client": self,
                 "environment": self._environment,
                 "input": input,
                 "output": output,
@@ -1478,7 +1478,7 @@ class ElasticDash:
         current_span = otel_trace_api.get_current_span()
 
         if current_span is otel_trace_api.INVALID_SPAN:
-            langfuse_logger.warning(
+            elasticdash_logger.warning(
                 "Context error: No active span in current context. Operations that depend on an active span will be skipped. "
                 "Ensure spans are created with start_as_current_span() or that you're operating within an active span context."
             )
@@ -1526,12 +1526,12 @@ class ElasticDash:
 
         Example:
             ```python
-            with langfuse.start_as_current_generation(name="answer-query") as generation:
+            with elasticdash.start_as_current_generation(name="answer-query") as generation:
                 # Initial setup and API call
                 response = llm.generate(...)
 
                 # Update with results that weren't available at creation time
-                langfuse.update_current_generation(
+                elasticdash.update_current_generation(
                     output=response.text,
                     usage_details={
                         "prompt_tokens": response.usage.prompt_tokens,
@@ -1541,7 +1541,7 @@ class ElasticDash:
             ```
         """
         if not self._tracing_enabled:
-            langfuse_logger.debug(
+            elasticdash_logger.debug(
                 "Operation skipped: update_current_generation - Tracing is disabled or client is in no-op mode."
             )
             return
@@ -1550,7 +1550,7 @@ class ElasticDash:
 
         if current_otel_span is not None:
             generation = ElasticDashGeneration(
-                otel_span=current_otel_span, langfuse_client=self
+                otel_span=current_otel_span, elasticdash_client=self
             )
 
             if name:
@@ -1599,22 +1599,22 @@ class ElasticDash:
 
         Example:
             ```python
-            with langfuse.start_as_current_span(name="process-data") as span:
+            with elasticdash.start_as_current_span(name="process-data") as span:
                 # Initial processing
                 result = process_first_part()
 
                 # Update with intermediate results
-                langfuse.update_current_span(metadata={"intermediate_result": result})
+                elasticdash.update_current_span(metadata={"intermediate_result": result})
 
                 # Continue processing
                 final_result = process_second_part(result)
 
                 # Final update
-                langfuse.update_current_span(output=final_result)
+                elasticdash.update_current_span(output=final_result)
             ```
         """
         if not self._tracing_enabled:
-            langfuse_logger.debug(
+            elasticdash_logger.debug(
                 "Operation skipped: update_current_span - Tracing is disabled or client is in no-op mode."
             )
             return
@@ -1624,7 +1624,7 @@ class ElasticDash:
         if current_otel_span is not None:
             span = ElasticDashSpan(
                 otel_span=current_otel_span,
-                langfuse_client=self,
+                elasticdash_client=self,
                 environment=self._environment,
             )
 
@@ -1667,10 +1667,10 @@ class ElasticDash:
             public: Whether the ElasticDash trace should be publicly accessible
 
         See Also:
-            :func:`langfuse.propagate_attributes`: Recommended replacement
+            :func:`elasticdash.propagate_attributes`: Recommended replacement
         """
         if not self._tracing_enabled:
-            langfuse_logger.debug(
+            elasticdash_logger.debug(
                 "Operation skipped: update_current_trace - Tracing is disabled or client is in no-op mode."
             )
             return
@@ -1685,7 +1685,7 @@ class ElasticDash:
             span_class = self._get_span_class(existing_observation_type)
             span = span_class(
                 otel_span=current_otel_span,
-                langfuse_client=self,
+                elasticdash_client=self,
                 environment=self._environment,
             )
 
@@ -1732,7 +1732,7 @@ class ElasticDash:
 
         Example:
             ```python
-            event = langfuse.create_event(name="process-event")
+            event = elasticdash.create_event(name="process-event")
             ```
         """
         timestamp = time_ns()
@@ -1758,7 +1758,7 @@ class ElasticDash:
                         ElasticDashEvent,
                         ElasticDashEvent(
                             otel_span=otel_span,
-                            langfuse_client=self,
+                            elasticdash_client=self,
                             environment=self._environment,
                             input=input,
                             output=output,
@@ -1775,7 +1775,7 @@ class ElasticDash:
             ElasticDashEvent,
             ElasticDashEvent(
                 otel_span=otel_span,
-                langfuse_client=self,
+                elasticdash_client=self,
                 environment=self._environment,
                 input=input,
                 output=output,
@@ -1790,12 +1790,12 @@ class ElasticDash:
         self, *, trace_id: str, parent_span_id: Optional[str]
     ) -> Any:
         if not self._is_valid_trace_id(trace_id):
-            langfuse_logger.warning(
+            elasticdash_logger.warning(
                 f"Passed trace ID '{trace_id}' is not a valid 32 lowercase hex char ElasticDash trace id. Ignoring trace ID."
             )
 
         if parent_span_id and not self._is_valid_span_id(parent_span_id):
-            langfuse_logger.warning(
+            elasticdash_logger.warning(
                 f"Passed span ID '{parent_span_id}' is not a valid 16 lowercase hex char ElasticDash span id. Ignoring parent span ID."
             )
 
@@ -1848,17 +1848,17 @@ class ElasticDash:
         Example:
             ```python
             # Generate a random observation ID
-            obs_id = langfuse.create_observation_id()
+            obs_id = elasticdash.create_observation_id()
 
             # Generate a deterministic ID based on a seed
-            user_obs_id = langfuse.create_observation_id(seed="user-123-feedback")
+            user_obs_id = elasticdash.create_observation_id(seed="user-123-feedback")
 
             # Correlate an external item ID with a ElasticDash observation ID
             item_id = "item-789012"
-            correlated_obs_id = langfuse.create_observation_id(seed=item_id)
+            correlated_obs_id = elasticdash.create_observation_id(seed=item_id)
 
             # Use the ID with ElasticDash APIs
-            langfuse.create_score(
+            elasticdash.create_score(
                 name="relevance",
                 value=0.95,
                 trace_id=trace_id,
@@ -1897,17 +1897,17 @@ class ElasticDash:
         Example:
             ```python
             # Generate a random trace ID
-            trace_id = langfuse.create_trace_id()
+            trace_id = elasticdash.create_trace_id()
 
             # Generate a deterministic ID based on a seed
-            session_trace_id = langfuse.create_trace_id(seed="session-456")
+            session_trace_id = elasticdash.create_trace_id(seed="session-456")
 
             # Correlate an external ID with a ElasticDash trace ID
             external_id = "external-system-123456"
-            correlated_trace_id = langfuse.create_trace_id(seed=external_id)
+            correlated_trace_id = elasticdash.create_trace_id(seed=external_id)
 
             # Use the ID with trace context
-            with langfuse.start_as_current_span(
+            with elasticdash.start_as_current_span(
                 name="process-request",
                 trace_context={"trace_id": trace_id}
             ) as span:
@@ -2036,7 +2036,7 @@ class ElasticDash:
         Example:
             ```python
             # Create a numeric score for accuracy
-            langfuse.create_score(
+            elasticdash.create_score(
                 name="accuracy",
                 value=0.92,
                 trace_id="abcdef1234567890abcdef1234567890",
@@ -2045,7 +2045,7 @@ class ElasticDash:
             )
 
             # Create a categorical score for sentiment
-            langfuse.create_score(
+            elasticdash.create_score(
                 name="sentiment",
                 value="positive",
                 trace_id="abcdef1234567890abcdef1234567890",
@@ -2094,7 +2094,7 @@ class ElasticDash:
                 )
 
         except Exception as e:
-            langfuse_logger.exception(
+            elasticdash_logger.exception(
                 f"Error creating score: Failed to process score event for trace_id={trace_id}, name={name}. Error: {e}"
             )
 
@@ -2151,13 +2151,13 @@ class ElasticDash:
 
         Example:
             ```python
-            with langfuse.start_as_current_generation(name="answer-query") as generation:
+            with elasticdash.start_as_current_generation(name="answer-query") as generation:
                 # Generate answer
                 response = generate_answer(...)
                 generation.update(output=response)
 
                 # Score the generation
-                langfuse.score_current_span(
+                elasticdash.score_current_span(
                     name="relevance",
                     value=0.85,
                     data_type="NUMERIC",
@@ -2172,7 +2172,7 @@ class ElasticDash:
             trace_id = self._get_otel_trace_id(current_span)
             observation_id = self._get_otel_span_id(current_span)
 
-            langfuse_logger.info(
+            elasticdash_logger.info(
                 f"Score: Creating score name='{name}' value={value} for current span ({observation_id}) in trace {trace_id}"
             )
 
@@ -2242,13 +2242,13 @@ class ElasticDash:
 
         Example:
             ```python
-            with langfuse.start_as_current_span(name="process-user-request") as span:
+            with elasticdash.start_as_current_span(name="process-user-request") as span:
                 # Process request
                 result = process_complete_request()
                 span.update(output=result)
 
                 # Score the overall trace
-                langfuse.score_current_trace(
+                elasticdash.score_current_trace(
                     name="overall_quality",
                     value=0.95,
                     data_type="NUMERIC",
@@ -2262,7 +2262,7 @@ class ElasticDash:
         if current_span is not None:
             trace_id = self._get_otel_trace_id(current_span)
 
-            langfuse_logger.info(
+            elasticdash_logger.info(
                 f"Score: Creating score name='{name}' value={value} for entire trace {trace_id}"
             )
 
@@ -2287,12 +2287,12 @@ class ElasticDash:
         Example:
             ```python
             # Record some spans and scores
-            with langfuse.start_as_current_span(name="operation") as span:
+            with elasticdash.start_as_current_span(name="operation") as span:
                 # Do work...
                 pass
 
             # Ensure all data is sent to ElasticDash before proceeding
-            langfuse.flush()
+            elasticdash.flush()
 
             # Continue with other work
             ```
@@ -2313,13 +2313,13 @@ class ElasticDash:
         Example:
             ```python
             # Initialize ElasticDash
-            langfuse = ElasticDash(public_key="...", secret_key="...")
+            elasticdash = ElasticDash(public_key="...", secret_key="...")
 
             # Use ElasticDash throughout your application
             # ...
 
             # When application is shutting down
-            langfuse.shutdown()
+            elasticdash.shutdown()
             ```
         """
         if self._resources is not None:
@@ -2338,9 +2338,9 @@ class ElasticDash:
 
         Example:
             ```python
-            with langfuse.start_as_current_span(name="process-request") as span:
+            with elasticdash.start_as_current_span(name="process-request") as span:
                 # Get the current trace ID for reference
-                trace_id = langfuse.get_current_trace_id()
+                trace_id = elasticdash.get_current_trace_id()
 
                 # Use it for external correlation
                 log.info(f"Processing request with trace_id: {trace_id}")
@@ -2350,7 +2350,7 @@ class ElasticDash:
             ```
         """
         if not self._tracing_enabled:
-            langfuse_logger.debug(
+            elasticdash_logger.debug(
                 "Operation skipped: get_current_trace_id - Tracing is disabled or client is in no-op mode."
             )
             return None
@@ -2372,9 +2372,9 @@ class ElasticDash:
 
         Example:
             ```python
-            with langfuse.start_as_current_span(name="process-user-query") as span:
+            with elasticdash.start_as_current_span(name="process-user-query") as span:
                 # Get the current observation ID
-                observation_id = langfuse.get_current_observation_id()
+                observation_id = elasticdash.get_current_observation_id()
 
                 # Store it for later reference
                 cache.set(f"query_{query_id}_observation", observation_id)
@@ -2383,7 +2383,7 @@ class ElasticDash:
             ```
         """
         if not self._tracing_enabled:
-            langfuse_logger.debug(
+            elasticdash_logger.debug(
                 "Operation skipped: get_current_observation_id - Tracing is disabled or client is in no-op mode."
             )
             return None
@@ -2420,12 +2420,12 @@ class ElasticDash:
         Example:
             ```python
             # Get URL for the current trace
-            with langfuse.start_as_current_span(name="process-request") as span:
-                trace_url = langfuse.get_trace_url()
+            with elasticdash.start_as_current_span(name="process-request") as span:
+                trace_url = elasticdash.get_trace_url()
                 log.info(f"Processing trace: {trace_url}")
 
             # Get URL for a specific trace
-            specific_trace_url = langfuse.get_trace_url(trace_id="1234567890abcdef1234567890abcdef")
+            specific_trace_url = elasticdash.get_trace_url(trace_id="1234567890abcdef1234567890abcdef")
             send_notification(f"Review needed for trace: {specific_trace_url}")
             ```
         """
@@ -2454,7 +2454,7 @@ class ElasticDash:
             DatasetClient: The dataset with the given name.
         """
         try:
-            langfuse_logger.debug(f"Getting datasets {name}")
+            elasticdash_logger.debug(f"Getting datasets {name}")
             dataset = self.api.datasets.get(dataset_name=self._url_encode(name))
 
             dataset_items = []
@@ -2473,7 +2473,7 @@ class ElasticDash:
 
                 page += 1
 
-            items = [DatasetItemClient(i, langfuse=self) for i in dataset_items]
+            items = [DatasetItemClient(i, elasticdash=self) for i in dataset_items]
 
             return DatasetClient(dataset, items=items)
 
@@ -2637,7 +2637,7 @@ class ElasticDash:
                     "comment": f"Output contains {len(output)} characters"
                 }
 
-            result = langfuse.run_experiment(
+            result = elasticdash.run_experiment(
                 name="Text Summarization Test",
                 description="Evaluate summarization quality and length",
                 data=[
@@ -2691,7 +2691,7 @@ class ElasticDash:
                     "comment": f"Average accuracy across {len(accuracies)} items"
                 }
 
-            result = langfuse.run_experiment(
+            result = elasticdash.run_experiment(
                 name="LLM Safety and Accuracy Test",
                 description="Evaluate model accuracy and safety across diverse prompts",
                 data=test_dataset,  # Your dataset items
@@ -2706,7 +2706,7 @@ class ElasticDash:
             Using with ElasticDash datasets:
             ```python
             # Get dataset from ElasticDash
-            dataset = langfuse.get_dataset("my-eval-dataset")
+            dataset = elasticdash.get_dataset("my-eval-dataset")
 
             result = dataset.run_experiment(
                 name="Production Model Evaluation",
@@ -2761,7 +2761,7 @@ class ElasticDash:
         max_concurrency: int,
         metadata: Optional[Dict[str, Any]] = None,
     ) -> ExperimentResult:
-        langfuse_logger.debug(
+        elasticdash_logger.debug(
             f"Starting experiment '{name}' run '{run_name}' with {len(data)} items"
         )
 
@@ -2790,7 +2790,7 @@ class ElasticDash:
         valid_results: List[ExperimentItemResult] = []
         for i, result in enumerate(item_results):
             if isinstance(result, Exception):
-                langfuse_logger.error(f"Item {i} failed: {result}")
+                elasticdash_logger.error(f"Item {i} failed: {result}")
             elif isinstance(result, ExperimentItemResult):
                 valid_results.append(result)  # type: ignore
 
@@ -2803,7 +2803,7 @@ class ElasticDash:
                 )
                 run_evaluations.extend(evaluations)
             except Exception as e:
-                langfuse_logger.error(f"Run evaluator failed: {e}")
+                elasticdash_logger.error(f"Run evaluator failed: {e}")
 
         # Generate dataset run URL if applicable
         dataset_run_id = valid_results[0].dataset_run_id if valid_results else None
@@ -2841,7 +2841,7 @@ class ElasticDash:
                     )
 
             except Exception as e:
-                langfuse_logger.error(f"Failed to store run evaluation: {e}")
+                elasticdash_logger.error(f"Failed to store run evaluation: {e}")
 
         # Flush scores and traces
         self.flush()
@@ -2923,7 +2923,7 @@ class ElasticDash:
                         dataset_run_id = dataset_run_item.dataset_run_id
 
                     except Exception as e:
-                        langfuse_logger.error(f"Failed to create dataset run item: {e}")
+                        elasticdash_logger.error(f"Failed to create dataset run item: {e}")
 
                 if (
                     not isinstance(item, dict)
@@ -3021,7 +3021,7 @@ class ElasticDash:
                             )
 
                 except Exception as e:
-                    langfuse_logger.error(f"Evaluator failed: {e}")
+                    elasticdash_logger.error(f"Evaluator failed: {e}")
 
             # Run composite evaluator if provided and we have evaluations
             if composite_evaluator and evaluations:
@@ -3069,7 +3069,7 @@ class ElasticDash:
                             evaluations.append(composite_evaluation)
 
                 except Exception as e:
-                    langfuse_logger.error(f"Composite evaluator failed: {e}")
+                    elasticdash_logger.error(f"Composite evaluator failed: {e}")
 
             return ExperimentItemResult(
                 item=item,
@@ -3181,7 +3181,7 @@ class ElasticDash:
         Examples:
             Basic trace evaluation:
             ```python
-            from langfuse import ElasticDash, EvaluatorInputs, Evaluation
+            from elasticdash import ElasticDash, EvaluatorInputs, Evaluation
 
             client = ElasticDash()
 
@@ -3331,7 +3331,7 @@ class ElasticDash:
         """
         try:
             projects = self.api.projects.get()
-            langfuse_logger.debug(
+            elasticdash_logger.debug(
                 f"Auth check successful, found {len(projects.data)} projects"
             )
             if len(projects.data) == 0:
@@ -3341,7 +3341,7 @@ class ElasticDash:
             return True
 
         except AttributeError as e:
-            langfuse_logger.warning(
+            elasticdash_logger.warning(
                 f"Auth check failed: Client not properly initialized. Error: {e}"
             )
             return False
@@ -3379,7 +3379,7 @@ class ElasticDash:
                 inputSchema=input_schema,
                 expectedOutputSchema=expected_output_schema,
             )
-            langfuse_logger.debug(f"Creating datasets {body}")
+            elasticdash_logger.debug(f"Creating datasets {body}")
 
             return self.api.datasets.create(request=body)
 
@@ -3418,12 +3418,12 @@ class ElasticDash:
 
         Example:
             ```python
-            from langfuse import ElasticDash
+            from elasticdash import ElasticDash
 
-            langfuse = ElasticDash()
+            elasticdash = ElasticDash()
 
             # Uploading items to the ElasticDash dataset named "capital_cities"
-            langfuse.create_dataset_item(
+            elasticdash.create_dataset_item(
                 dataset_name="capital_cities",
                 input={"input": {"country": "Italy"}},
                 expected_output={"expected_output": "Rome"},
@@ -3442,7 +3442,7 @@ class ElasticDash:
                 status=status,
                 id=id,
             )
-            langfuse_logger.debug(f"Creating dataset item {body}")
+            elasticdash_logger.debug(f"Creating dataset item {body}")
             return self.api.dataset_items.create(request=body)
         except Error as e:
             handle_fern_exception(e)
@@ -3459,7 +3459,7 @@ class ElasticDash:
         """Replace media reference strings in an object with base64 data URIs.
 
         This method recursively traverses an object (up to max_depth) looking for media reference strings
-        in the format "@@@langfuseMedia:...@@@". When found, it (synchronously) fetches the actual media content using
+        in the format "@@@elasticdashMedia:...@@@". When found, it (synchronously) fetches the actual media content using
         the provided ElasticDash client and replaces the reference string with a base64 data URI.
 
         If fetching media content fails for a reference string, a warning is logged and the reference
@@ -3479,13 +3479,13 @@ class ElasticDash:
 
         Example:
             obj = {
-                "image": "@@@langfuseMedia:type=image/jpeg|id=123|source=bytes@@@",
+                "image": "@@@elasticdashMedia:type=image/jpeg|id=123|source=bytes@@@",
                 "nested": {
-                    "pdf": "@@@langfuseMedia:type=application/pdf|id=456|source=bytes@@@"
+                    "pdf": "@@@elasticdashMedia:type=application/pdf|id=456|source=bytes@@@"
                 }
             }
 
-            result = await ElasticDashMedia.resolve_media_references(obj, langfuse_client)
+            result = await ElasticDashMedia.resolve_media_references(obj, elasticdash_client)
 
             # Result:
             # {
@@ -3496,7 +3496,7 @@ class ElasticDash:
             # }
         """
         return ElasticDashMedia.resolve_media_references(
-            langfuse_client=self,
+            elasticdash_client=self,
             obj=obj,
             resolve_with=resolve_with,
             max_depth=max_depth,
@@ -3587,11 +3587,11 @@ class ElasticDash:
             max_retries, default_max_retries=2, max_retries_upper_bound=4
         )
 
-        langfuse_logger.debug(f"Getting prompt '{cache_key}'")
+        elasticdash_logger.debug(f"Getting prompt '{cache_key}'")
         cached_prompt = self._resources.prompt_cache.get(cache_key)
 
         if cached_prompt is None or cache_ttl_seconds == 0:
-            langfuse_logger.debug(
+            elasticdash_logger.debug(
                 f"Prompt '{cache_key}' not found in cache or caching disabled."
             )
             try:
@@ -3605,7 +3605,7 @@ class ElasticDash:
                 )
             except Exception as e:
                 if fallback:
-                    langfuse_logger.warning(
+                    elasticdash_logger.warning(
                         f"Returning fallback prompt for '{cache_key}' due to fetch error: {e}"
                     )
 
@@ -3634,10 +3634,10 @@ class ElasticDash:
                 raise e
 
         if cached_prompt.is_expired():
-            langfuse_logger.debug(f"Stale prompt '{cache_key}' found in cache.")
+            elasticdash_logger.debug(f"Stale prompt '{cache_key}' found in cache.")
             try:
                 # refresh prompt in background thread, refresh_prompt deduplicates tasks
-                langfuse_logger.debug(f"Refreshing prompt '{cache_key}' in background.")
+                elasticdash_logger.debug(f"Refreshing prompt '{cache_key}' in background.")
 
                 def refresh_task() -> None:
                     self._fetch_prompt_and_update_cache(
@@ -3653,14 +3653,14 @@ class ElasticDash:
                     cache_key,
                     refresh_task,
                 )
-                langfuse_logger.debug(
+                elasticdash_logger.debug(
                     f"Returning stale prompt '{cache_key}' from cache."
                 )
                 # return stale prompt
                 return cached_prompt.value
 
             except Exception as e:
-                langfuse_logger.warning(
+                elasticdash_logger.warning(
                     f"Error when refreshing cached prompt '{cache_key}', returning cached version. Error: {e}"
                 )
                 # creation of refresh prompt task failed, return stale prompt
@@ -3679,7 +3679,7 @@ class ElasticDash:
         fetch_timeout_seconds: Optional[int],
     ) -> PromptClient:
         cache_key = PromptCache.generate_cache_key(name, version=version, label=label)
-        langfuse_logger.debug(f"Fetching prompt '{cache_key}' from server...")
+        elasticdash_logger.debug(f"Fetching prompt '{cache_key}' from server...")
 
         try:
 
@@ -3712,7 +3712,7 @@ class ElasticDash:
             return prompt
 
         except NotFoundError as not_found_error:
-            langfuse_logger.warning(
+            elasticdash_logger.warning(
                 f"Prompt '{cache_key}' not found during refresh, evicting from cache."
             )
             if self._resources is not None:
@@ -3720,7 +3720,7 @@ class ElasticDash:
             raise not_found_error
 
         except Exception as e:
-            langfuse_logger.error(
+            elasticdash_logger.error(
                 f"Error while fetching prompt '{cache_key}': {str(e)}"
             )
             raise e
@@ -3798,7 +3798,7 @@ class ElasticDash:
             ChatPromptClient: The prompt if type argument is 'chat'.
         """
         try:
-            langfuse_logger.debug(f"Creating prompt {name=}, {labels=}")
+            elasticdash_logger.debug(f"Creating prompt {name=}, {labels=}")
 
             if type == "chat":
                 if not isinstance(prompt, list):

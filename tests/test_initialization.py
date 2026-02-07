@@ -8,8 +8,8 @@ import os
 
 import pytest
 
-from langfuse import ElasticDash
-from langfuse._client.resource_manager import ElasticDashResourceManager
+from elasticdash import ElasticDash
+from elasticdash._client.resource_manager import ElasticDashResourceManager
 
 
 class TestClientInitialization:
@@ -107,7 +107,7 @@ class TestClientInitialization:
             secret_key="test_sk",
         )
 
-        assert client._base_url == "https://cloud.langfuse.com"
+        assert client._base_url == "https://cloud.elasticdash.com"
 
     def test_base_url_env_var(self, cleanup_env_vars):
         """Test that ELASTICDASH_BASE_URL environment variable is used correctly."""

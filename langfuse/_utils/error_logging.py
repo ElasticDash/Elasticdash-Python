@@ -2,7 +2,7 @@ import functools
 import logging
 from typing import Any, Callable, List, Optional
 
-logger = logging.getLogger("langfuse")
+logger = logging.getLogger("elasticdash")
 
 
 def catch_and_log_errors(func: Callable[..., Any]) -> Callable[..., Any]:

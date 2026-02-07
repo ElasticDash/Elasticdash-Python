@@ -13,7 +13,7 @@ class ScoreBody(pydantic_v1.BaseModel):
     """
     Examples
     --------
-    from langfuse import ScoreBody
+    from elasticdash import ScoreBody
 
     ScoreBody(
         name="novelty",

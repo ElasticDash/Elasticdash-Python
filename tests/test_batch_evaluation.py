@@ -10,14 +10,14 @@ import time
 
 import pytest
 
-from langfuse import get_client
-from langfuse.batch_evaluation import (
+from elasticdash import get_client
+from elasticdash.batch_evaluation import (
     BatchEvaluationResult,
     BatchEvaluationResumeToken,
     EvaluatorInputs,
     EvaluatorStats,
 )
-from langfuse.experiment import Evaluation
+from elasticdash.experiment import Evaluation
 from tests.utils import create_uuid
 
 # ============================================================================
@@ -29,7 +29,7 @@ from tests.utils import create_uuid
 
 
 @pytest.fixture
-def langfuse_client():
+def elasticdash_client():
     """Get a ElasticDash client for testing."""
     return get_client()
 
@@ -67,9 +67,9 @@ def simple_evaluator(*, input, output, expected_output=None, metadata=None, **kw
 # ============================================================================
 
 
-def test_run_batched_evaluation_on_observations_basic(langfuse_client):
+def test_run_batched_evaluation_on_observations_basic(elasticdash_client):
     """Test basic batch evaluation on traces."""
-    result = langfuse_client.run_batched_evaluation(
+    result = elasticdash_client.run_batched_evaluation(
         scope="observations",
         mapper=simple_trace_mapper,
         evaluators=[simple_evaluator],
@@ -93,9 +93,9 @@ def test_run_batched_evaluation_on_observations_basic(langfuse_client):
     assert stats.name == "simple_evaluator"
 
 
-def test_run_batched_evaluation_on_traces_basic(langfuse_client):
+def test_run_batched_evaluation_on_traces_basic(elasticdash_client):
     """Test basic batch evaluation on traces."""
-    result = langfuse_client.run_batched_evaluation(
+    result = elasticdash_client.run_batched_evaluation(
         scope="traces",
         mapper=simple_trace_mapper,
         evaluators=[simple_evaluator],
@@ -119,11 +119,11 @@ def test_run_batched_evaluation_on_traces_basic(langfuse_client):
     assert stats.name == "simple_evaluator"
 
 
-def test_batch_evaluation_with_filter(langfuse_client):
+def test_batch_evaluation_with_filter(elasticdash_client):
     """Test batch evaluation with JSON filter."""
     # Create a trace with specific tag
     unique_tag = f"test-filter-{create_uuid()}"
-    with langfuse_client.start_as_current_span(
+    with elasticdash_client.start_as_current_span(
         name=f"filtered-trace-{create_uuid()}"
     ) as span:
         span.update_trace(
@@ -132,13 +132,13 @@ def test_batch_evaluation_with_filter(langfuse_client):
             tags=[unique_tag],
         )
 
-    langfuse_client.flush()
+    elasticdash_client.flush()
     time.sleep(3)
 
     # Filter format: array of filter conditions
     filter_json = f'[{{"type": "arrayOptions", "column": "tags", "operator": "any of", "value": ["{unique_tag}"]}}]'
 
-    result = langfuse_client.run_batched_evaluation(
+    result = elasticdash_client.run_batched_evaluation(
         scope="traces",
         mapper=simple_trace_mapper,
         evaluators=[simple_evaluator],
@@ -151,7 +151,7 @@ def test_batch_evaluation_with_filter(langfuse_client):
     assert result.completed is True
 
 
-def test_batch_evaluation_with_metadata(langfuse_client):
+def test_batch_evaluation_with_metadata(elasticdash_client):
     """Test that additional metadata is added to all scores."""
 
     def metadata_checking_evaluator(*, input, output, metadata=None, **kwargs):
@@ -166,7 +166,7 @@ def test_batch_evaluation_with_metadata(langfuse_client):
         "evaluation_version": "v2.0",
     }
 
-    result = langfuse_client.run_batched_evaluation(
+    result = elasticdash_client.run_batched_evaluation(
         scope="traces",
         mapper=simple_trace_mapper,
         evaluators=[metadata_checking_evaluator],
@@ -177,7 +177,7 @@ def test_batch_evaluation_with_metadata(langfuse_client):
     assert result.total_scores_created > 0
 
     # Verify scores were created with merged metadata
-    langfuse_client.flush()
+    elasticdash_client.flush()
     time.sleep(3)
 
     # Note: In a real test, you'd verify via API that metadata was merged
@@ -185,9 +185,9 @@ def test_batch_evaluation_with_metadata(langfuse_client):
     assert result.completed is True
 
 
-def test_result_structure_fields(langfuse_client):
+def test_result_structure_fields(elasticdash_client):
     """Test that BatchEvaluationResult has all expected fields."""
-    result = langfuse_client.run_batched_evaluation(
+    result = elasticdash_client.run_batched_evaluation(
         scope="traces",
         mapper=simple_trace_mapper,
         evaluators=[simple_evaluator],
@@ -224,7 +224,7 @@ def test_result_structure_fields(langfuse_client):
 # ============================================================================
 
 
-def test_simple_mapper(langfuse_client):
+def test_simple_mapper(elasticdash_client):
     """Test basic mapper functionality."""
 
     def custom_mapper(*, item):
@@ -235,7 +235,7 @@ def test_simple_mapper(langfuse_client):
             metadata={"custom_field": "test_value"},
         )
 
-    result = langfuse_client.run_batched_evaluation(
+    result = elasticdash_client.run_batched_evaluation(
         scope="traces",
         mapper=custom_mapper,
         evaluators=[simple_evaluator],
@@ -246,7 +246,7 @@ def test_simple_mapper(langfuse_client):
 
 
 @pytest.mark.asyncio
-async def test_async_mapper(langfuse_client):
+async def test_async_mapper(elasticdash_client):
     """Test that async mappers work correctly."""
 
     async def async_mapper(*, item):
@@ -259,7 +259,7 @@ async def test_async_mapper(langfuse_client):
         )
 
     # Note: run_batched_evaluation is synchronous but handles async mappers
-    result = langfuse_client.run_batched_evaluation(
+    result = elasticdash_client.run_batched_evaluation(
         scope="traces",
         mapper=async_mapper,
         evaluators=[simple_evaluator],
@@ -269,13 +269,13 @@ async def test_async_mapper(langfuse_client):
     assert result.total_items_processed > 0
 
 
-def test_mapper_failure_handling(langfuse_client):
+def test_mapper_failure_handling(elasticdash_client):
     """Test that mapper failures cause items to be skipped."""
 
     def failing_mapper(*, item):
         raise ValueError("Intentional mapper failure")
 
-    result = langfuse_client.run_batched_evaluation(
+    result = elasticdash_client.run_batched_evaluation(
         scope="traces",
         mapper=failing_mapper,
         evaluators=[simple_evaluator],
@@ -288,7 +288,7 @@ def test_mapper_failure_handling(langfuse_client):
     assert "ValueError" in result.error_summary or "Exception" in result.error_summary
 
 
-def test_mapper_with_missing_fields(langfuse_client):
+def test_mapper_with_missing_fields(elasticdash_client):
     """Test mapper handles traces with missing fields gracefully."""
 
     def robust_mapper(*, item):
@@ -303,7 +303,7 @@ def test_mapper_with_missing_fields(langfuse_client):
             metadata={},
         )
 
-    result = langfuse_client.run_batched_evaluation(
+    result = elasticdash_client.run_batched_evaluation(
         scope="traces",
         mapper=robust_mapper,
         evaluators=[simple_evaluator],
@@ -318,13 +318,13 @@ def test_mapper_with_missing_fields(langfuse_client):
 # ============================================================================
 
 
-def test_single_evaluator(langfuse_client):
+def test_single_evaluator(elasticdash_client):
     """Test with a single evaluator."""
 
     def quality_evaluator(*, input, output, **kwargs):
         return Evaluation(name="quality", value=0.85, comment="High quality")
 
-    result = langfuse_client.run_batched_evaluation(
+    result = elasticdash_client.run_batched_evaluation(
         scope="traces",
         mapper=simple_trace_mapper,
         evaluators=[quality_evaluator],
@@ -336,7 +336,7 @@ def test_single_evaluator(langfuse_client):
     assert result.evaluator_stats[0].name == "quality_evaluator"
 
 
-def test_multiple_evaluators(langfuse_client):
+def test_multiple_evaluators(elasticdash_client):
     """Test with multiple evaluators running in parallel."""
 
     def accuracy_evaluator(*, input, output, **kwargs):
@@ -348,7 +348,7 @@ def test_multiple_evaluators(langfuse_client):
     def safety_evaluator(*, input, output, **kwargs):
         return Evaluation(name="safety", value=1.0)
 
-    result = langfuse_client.run_batched_evaluation(
+    result = elasticdash_client.run_batched_evaluation(
         scope="traces",
         mapper=simple_trace_mapper,
         evaluators=[accuracy_evaluator, relevance_evaluator, safety_evaluator],
@@ -361,14 +361,14 @@ def test_multiple_evaluators(langfuse_client):
 
 
 @pytest.mark.asyncio
-async def test_async_evaluator(langfuse_client):
+async def test_async_evaluator(elasticdash_client):
     """Test that async evaluators work correctly."""
 
     async def async_evaluator(*, input, output, **kwargs):
         await asyncio.sleep(0.01)  # Simulate async work
         return Evaluation(name="async_score", value=0.75)
 
-    result = langfuse_client.run_batched_evaluation(
+    result = elasticdash_client.run_batched_evaluation(
         scope="traces",
         mapper=simple_trace_mapper,
         evaluators=[async_evaluator],
@@ -378,7 +378,7 @@ async def test_async_evaluator(langfuse_client):
     assert result.total_scores_created > 0
 
 
-def test_evaluator_returning_list(langfuse_client):
+def test_evaluator_returning_list(elasticdash_client):
     """Test evaluator that returns multiple Evaluations."""
 
     def multi_score_evaluator(*, input, output, **kwargs):
@@ -388,7 +388,7 @@ def test_evaluator_returning_list(langfuse_client):
             Evaluation(name="score_3", value=0.7),
         ]
 
-    result = langfuse_client.run_batched_evaluation(
+    result = elasticdash_client.run_batched_evaluation(
         scope="traces",
         mapper=simple_trace_mapper,
         evaluators=[multi_score_evaluator],
@@ -399,7 +399,7 @@ def test_evaluator_returning_list(langfuse_client):
     assert result.total_scores_created >= result.total_items_processed * 3
 
 
-def test_evaluator_failure_statistics(langfuse_client):
+def test_evaluator_failure_statistics(elasticdash_client):
     """Test that evaluator failures are tracked in statistics."""
 
     def working_evaluator(*, input, output, **kwargs):
@@ -408,7 +408,7 @@ def test_evaluator_failure_statistics(langfuse_client):
     def failing_evaluator(*, input, output, **kwargs):
         raise RuntimeError("Intentional evaluator failure")
 
-    result = langfuse_client.run_batched_evaluation(
+    result = elasticdash_client.run_batched_evaluation(
         scope="traces",
         mapper=simple_trace_mapper,
         evaluators=[working_evaluator, failing_evaluator],
@@ -434,7 +434,7 @@ def test_evaluator_failure_statistics(langfuse_client):
     assert result.total_evaluations_failed > 0
 
 
-def test_mixed_sync_async_evaluators(langfuse_client):
+def test_mixed_sync_async_evaluators(elasticdash_client):
     """Test mixing synchronous and asynchronous evaluators."""
 
     def sync_evaluator(*, input, output, **kwargs):
@@ -444,7 +444,7 @@ def test_mixed_sync_async_evaluators(langfuse_client):
         await asyncio.sleep(0.01)
         return Evaluation(name="async_score", value=0.9)
 
-    result = langfuse_client.run_batched_evaluation(
+    result = elasticdash_client.run_batched_evaluation(
         scope="traces",
         mapper=simple_trace_mapper,
         evaluators=[sync_evaluator, async_evaluator],
@@ -460,7 +460,7 @@ def test_mixed_sync_async_evaluators(langfuse_client):
 # ============================================================================
 
 
-def test_composite_evaluator_weighted_average(langfuse_client):
+def test_composite_evaluator_weighted_average(elasticdash_client):
     """Test composite evaluator that computes weighted average."""
 
     def accuracy_evaluator(*, input, output, **kwargs):
@@ -483,7 +483,7 @@ def test_composite_evaluator_weighted_average(langfuse_client):
             comment=f"Weighted average of {len(evaluations)} metrics",
         )
 
-    result = langfuse_client.run_batched_evaluation(
+    result = elasticdash_client.run_batched_evaluation(
         scope="traces",
         mapper=simple_trace_mapper,
         evaluators=[accuracy_evaluator, relevance_evaluator],
@@ -497,7 +497,7 @@ def test_composite_evaluator_weighted_average(langfuse_client):
     assert result.total_scores_created > result.total_composite_scores_created
 
 
-def test_composite_evaluator_pass_fail(langfuse_client):
+def test_composite_evaluator_pass_fail(elasticdash_client):
     """Test composite evaluator that implements pass/fail logic."""
 
     def metric1_evaluator(*, input, output, **kwargs):
@@ -521,7 +521,7 @@ def test_composite_evaluator_pass_fail(langfuse_client):
             comment="All checks passed" if passes else "Some checks failed",
         )
 
-    result = langfuse_client.run_batched_evaluation(
+    result = elasticdash_client.run_batched_evaluation(
         scope="traces",
         mapper=simple_trace_mapper,
         evaluators=[metric1_evaluator, metric2_evaluator],
@@ -533,7 +533,7 @@ def test_composite_evaluator_pass_fail(langfuse_client):
 
 
 @pytest.mark.asyncio
-async def test_async_composite_evaluator(langfuse_client):
+async def test_async_composite_evaluator(elasticdash_client):
     """Test async composite evaluator."""
 
     def evaluator1(*, input, output, **kwargs):
@@ -546,7 +546,7 @@ async def test_async_composite_evaluator(langfuse_client):
         ) / len(evaluations)
         return Evaluation(name="async_composite", value=avg)
 
-    result = langfuse_client.run_batched_evaluation(
+    result = elasticdash_client.run_batched_evaluation(
         scope="traces",
         mapper=simple_trace_mapper,
         evaluators=[evaluator1],
@@ -557,7 +557,7 @@ async def test_async_composite_evaluator(langfuse_client):
     assert result.total_composite_scores_created > 0
 
 
-def test_composite_evaluator_with_no_evaluations(langfuse_client):
+def test_composite_evaluator_with_no_evaluations(elasticdash_client):
     """Test composite evaluator when no evaluations are present."""
 
     def always_failing_evaluator(*, input, output, **kwargs):
@@ -567,7 +567,7 @@ def test_composite_evaluator_with_no_evaluations(langfuse_client):
         # Should not be called if no evaluations succeed
         return Evaluation(name="composite", value=0.0)
 
-    result = langfuse_client.run_batched_evaluation(
+    result = elasticdash_client.run_batched_evaluation(
         scope="traces",
         mapper=simple_trace_mapper,
         evaluators=[always_failing_evaluator],
@@ -579,7 +579,7 @@ def test_composite_evaluator_with_no_evaluations(langfuse_client):
     assert result.total_composite_scores_created == 0
 
 
-def test_composite_evaluator_failure_handling(langfuse_client):
+def test_composite_evaluator_failure_handling(elasticdash_client):
     """Test that composite evaluator failures are handled gracefully."""
 
     def evaluator1(*, input, output, **kwargs):
@@ -588,7 +588,7 @@ def test_composite_evaluator_failure_handling(langfuse_client):
     def failing_composite(*, input, output, expected_output, metadata, evaluations):
         raise ValueError("Composite evaluator failed")
 
-    result = langfuse_client.run_batched_evaluation(
+    result = elasticdash_client.run_batched_evaluation(
         scope="traces",
         mapper=simple_trace_mapper,
         evaluators=[evaluator1],
@@ -607,7 +607,7 @@ def test_composite_evaluator_failure_handling(langfuse_client):
 # ============================================================================
 
 
-def test_mapper_failure_skips_item(langfuse_client):
+def test_mapper_failure_skips_item(elasticdash_client):
     """Test that mapper failure causes item to be skipped."""
 
     call_count = {"count": 0}
@@ -618,7 +618,7 @@ def test_mapper_failure_skips_item(langfuse_client):
             raise Exception("Mapper failed")
         return simple_trace_mapper(item=item)
 
-    result = langfuse_client.run_batched_evaluation(
+    result = elasticdash_client.run_batched_evaluation(
         scope="traces",
         mapper=sometimes_failing_mapper,
         evaluators=[simple_evaluator],
@@ -630,7 +630,7 @@ def test_mapper_failure_skips_item(langfuse_client):
     assert result.total_items_processed > 0
 
 
-def test_evaluator_failure_continues(langfuse_client):
+def test_evaluator_failure_continues(elasticdash_client):
     """Test that one evaluator failing doesn't stop others."""
 
     def working_evaluator1(*, input, output, **kwargs):
@@ -642,7 +642,7 @@ def test_evaluator_failure_continues(langfuse_client):
     def working_evaluator2(*, input, output, **kwargs):
         return Evaluation(name="working2", value=0.9)
 
-    result = langfuse_client.run_batched_evaluation(
+    result = elasticdash_client.run_batched_evaluation(
         scope="traces",
         mapper=simple_trace_mapper,
         evaluators=[working_evaluator1, failing_evaluator, working_evaluator2],
@@ -659,7 +659,7 @@ def test_evaluator_failure_continues(langfuse_client):
     assert failing_stats.failed_runs > 0
 
 
-def test_all_evaluators_fail(langfuse_client):
+def test_all_evaluators_fail(elasticdash_client):
     """Test when all evaluators fail but item is still processed."""
 
     def failing_evaluator1(*, input, output, **kwargs):
@@ -668,7 +668,7 @@ def test_all_evaluators_fail(langfuse_client):
     def failing_evaluator2(*, input, output, **kwargs):
         raise Exception("Failed 2")
 
-    result = langfuse_client.run_batched_evaluation(
+    result = elasticdash_client.run_batched_evaluation(
         scope="traces",
         mapper=simple_trace_mapper,
         evaluators=[failing_evaluator1, failing_evaluator2],
@@ -688,12 +688,12 @@ def test_all_evaluators_fail(langfuse_client):
 # ============================================================================
 
 
-def test_empty_results_handling(langfuse_client):
+def test_empty_results_handling(elasticdash_client):
     """Test batch evaluation when filter returns no items."""
     nonexistent_name = f"nonexistent-trace-{create_uuid()}"
     nonexistent_filter = f'[{{"type": "string", "column": "name", "operator": "=", "value": "{nonexistent_name}"}}]'
 
-    result = langfuse_client.run_batched_evaluation(
+    result = elasticdash_client.run_batched_evaluation(
         scope="traces",
         mapper=simple_trace_mapper,
         evaluators=[simple_evaluator],
@@ -707,9 +707,9 @@ def test_empty_results_handling(langfuse_client):
     assert result.has_more_items is False
 
 
-def test_max_items_zero(langfuse_client):
+def test_max_items_zero(elasticdash_client):
     """Test with max_items=0 (should process no items)."""
-    result = langfuse_client.run_batched_evaluation(
+    result = elasticdash_client.run_batched_evaluation(
         scope="traces",
         mapper=simple_trace_mapper,
         evaluators=[simple_evaluator],
@@ -720,7 +720,7 @@ def test_max_items_zero(langfuse_client):
     assert result.total_items_processed == 0
 
 
-def test_evaluation_value_type_conversions(langfuse_client):
+def test_evaluation_value_type_conversions(elasticdash_client):
     """Test that different evaluation value types are handled correctly."""
 
     def multi_type_evaluator(*, input, output, **kwargs):
@@ -731,7 +731,7 @@ def test_evaluation_value_type_conversions(langfuse_client):
             Evaluation(name="none_score", value=None),  # None
         ]
 
-    result = langfuse_client.run_batched_evaluation(
+    result = elasticdash_client.run_batched_evaluation(
         scope="traces",
         mapper=simple_trace_mapper,
         evaluators=[multi_type_evaluator],
@@ -747,11 +747,11 @@ def test_evaluation_value_type_conversions(langfuse_client):
 # ============================================================================
 
 
-def test_pagination_with_max_items(langfuse_client):
+def test_pagination_with_max_items(elasticdash_client):
     """Test that max_items limit is respected."""
     # Create more traces to ensure we have enough data
     for i in range(10):
-        with langfuse_client.start_as_current_span(
+        with elasticdash_client.start_as_current_span(
             name=f"pagination-test-{create_uuid()}"
         ) as span:
             span.update_trace(
@@ -760,12 +760,12 @@ def test_pagination_with_max_items(langfuse_client):
                 tags=["pagination_test"],
             )
 
-    langfuse_client.flush()
+    elasticdash_client.flush()
     time.sleep(3)
 
     filter_json = '[{"type": "arrayOptions", "column": "tags", "operator": "any of", "value": ["pagination_test"]}]'
 
-    result = langfuse_client.run_batched_evaluation(
+    result = elasticdash_client.run_batched_evaluation(
         scope="traces",
         mapper=simple_trace_mapper,
         evaluators=[simple_evaluator],
@@ -778,24 +778,24 @@ def test_pagination_with_max_items(langfuse_client):
     assert result.total_items_processed <= 5
 
 
-def test_has_more_items_flag(langfuse_client):
+def test_has_more_items_flag(elasticdash_client):
     """Test that has_more_items flag is set correctly when max_items is reached."""
     # Create enough traces to exceed max_items
     batch_tag = f"batch-test-{create_uuid()}"
     for i in range(15):
-        with langfuse_client.start_as_current_span(name=f"more-items-test-{i}") as span:
+        with elasticdash_client.start_as_current_span(name=f"more-items-test-{i}") as span:
             span.update_trace(
                 input=f"Input {i}",
                 output=f"Output {i}",
                 tags=[batch_tag],
             )
 
-    langfuse_client.flush()
+    elasticdash_client.flush()
     time.sleep(3)
 
     filter_json = f'[{{"type": "arrayOptions", "column": "tags", "operator": "any of", "value": ["{batch_tag}"]}}]'
 
-    result = langfuse_client.run_batched_evaluation(
+    result = elasticdash_client.run_batched_evaluation(
         scope="traces",
         mapper=simple_trace_mapper,
         evaluators=[simple_evaluator],
@@ -809,10 +809,10 @@ def test_has_more_items_flag(langfuse_client):
         assert result.has_more_items is True
 
 
-def test_fetch_batch_size_parameter(langfuse_client):
+def test_fetch_batch_size_parameter(elasticdash_client):
     """Test that different fetch_batch_size values work correctly."""
     for batch_size in [1, 5, 10]:
-        result = langfuse_client.run_batched_evaluation(
+        result = elasticdash_client.run_batched_evaluation(
             scope="traces",
             mapper=simple_trace_mapper,
             evaluators=[simple_evaluator],
@@ -829,7 +829,7 @@ def test_fetch_batch_size_parameter(langfuse_client):
 # ============================================================================
 
 
-def test_resume_token_structure(langfuse_client):
+def test_resume_token_structure(elasticdash_client):
     """Test that BatchEvaluationResumeToken has correct structure."""
     resume_token = BatchEvaluationResumeToken(
         scope="traces",
@@ -851,10 +851,10 @@ def test_resume_token_structure(langfuse_client):
 # ============================================================================
 
 
-def test_max_concurrency_parameter(langfuse_client):
+def test_max_concurrency_parameter(elasticdash_client):
     """Test that max_concurrency parameter works correctly."""
     for concurrency in [1, 5, 10]:
-        result = langfuse_client.run_batched_evaluation(
+        result = elasticdash_client.run_batched_evaluation(
             scope="traces",
             mapper=simple_trace_mapper,
             evaluators=[simple_evaluator],
@@ -871,13 +871,13 @@ def test_max_concurrency_parameter(langfuse_client):
 # ============================================================================
 
 
-def test_evaluator_stats_structure(langfuse_client):
+def test_evaluator_stats_structure(elasticdash_client):
     """Test that EvaluatorStats has correct structure."""
 
     def test_evaluator(*, input, output, **kwargs):
         return Evaluation(name="test", value=1.0)
 
-    result = langfuse_client.run_batched_evaluation(
+    result = elasticdash_client.run_batched_evaluation(
         scope="traces",
         mapper=simple_trace_mapper,
         evaluators=[test_evaluator],
@@ -901,7 +901,7 @@ def test_evaluator_stats_structure(langfuse_client):
     assert stats.failed_runs == 0
 
 
-def test_evaluator_stats_tracking(langfuse_client):
+def test_evaluator_stats_tracking(elasticdash_client):
     """Test that evaluator statistics are tracked correctly."""
 
     call_count = {"count": 0}
@@ -912,7 +912,7 @@ def test_evaluator_stats_tracking(langfuse_client):
             raise Exception("Failed")
         return Evaluation(name="test", value=1.0)
 
-    result = langfuse_client.run_batched_evaluation(
+    result = elasticdash_client.run_batched_evaluation(
         scope="traces",
         mapper=simple_trace_mapper,
         evaluators=[sometimes_failing_evaluator],
@@ -926,13 +926,13 @@ def test_evaluator_stats_tracking(langfuse_client):
     assert stats.successful_runs + stats.failed_runs == stats.total_runs
 
 
-def test_error_summary_aggregation(langfuse_client):
+def test_error_summary_aggregation(elasticdash_client):
     """Test that error types are aggregated correctly in error_summary."""
 
     def failing_mapper(*, item):
         raise ValueError("Mapper error")
 
-    result = langfuse_client.run_batched_evaluation(
+    result = elasticdash_client.run_batched_evaluation(
         scope="traces",
         mapper=failing_mapper,
         evaluators=[simple_evaluator],
@@ -944,13 +944,13 @@ def test_error_summary_aggregation(langfuse_client):
     assert any("Error" in key for key in result.error_summary.keys())
 
 
-def test_failed_item_ids_collected(langfuse_client):
+def test_failed_item_ids_collected(elasticdash_client):
     """Test that failed item IDs are collected."""
 
     def failing_mapper(*, item):
         raise Exception("Failed")
 
-    result = langfuse_client.run_batched_evaluation(
+    result = elasticdash_client.run_batched_evaluation(
         scope="traces",
         mapper=failing_mapper,
         evaluators=[simple_evaluator],
@@ -967,9 +967,9 @@ def test_failed_item_ids_collected(langfuse_client):
 # ============================================================================
 
 
-def test_duration_tracking(langfuse_client):
+def test_duration_tracking(elasticdash_client):
     """Test that duration is tracked correctly."""
-    result = langfuse_client.run_batched_evaluation(
+    result = elasticdash_client.run_batched_evaluation(
         scope="traces",
         mapper=simple_trace_mapper,
         evaluators=[simple_evaluator],
@@ -980,9 +980,9 @@ def test_duration_tracking(langfuse_client):
     assert result.duration_seconds < 60  # Should complete quickly for small batch
 
 
-def test_verbose_logging(langfuse_client):
+def test_verbose_logging(elasticdash_client):
     """Test that verbose=True doesn't cause errors."""
-    result = langfuse_client.run_batched_evaluation(
+    result = elasticdash_client.run_batched_evaluation(
         scope="traces",
         mapper=simple_trace_mapper,
         evaluators=[simple_evaluator],
@@ -998,13 +998,13 @@ def test_verbose_logging(langfuse_client):
 # ============================================================================
 
 
-def test_item_evaluations_basic(langfuse_client):
+def test_item_evaluations_basic(elasticdash_client):
     """Test that item_evaluations dict contains correct structure."""
 
     def test_evaluator(*, input, output, **kwargs):
         return Evaluation(name="test_metric", value=0.5)
 
-    result = langfuse_client.run_batched_evaluation(
+    result = elasticdash_client.run_batched_evaluation(
         scope="traces",
         mapper=simple_trace_mapper,
         evaluators=[test_evaluator],
@@ -1027,7 +1027,7 @@ def test_item_evaluations_basic(langfuse_client):
         assert evaluations[0].name == "test_metric"
 
 
-def test_item_evaluations_multiple_evaluators(langfuse_client):
+def test_item_evaluations_multiple_evaluators(elasticdash_client):
     """Test item_evaluations with multiple evaluators."""
 
     def accuracy_evaluator(*, input, output, **kwargs):
@@ -1036,7 +1036,7 @@ def test_item_evaluations_multiple_evaluators(langfuse_client):
     def relevance_evaluator(*, input, output, **kwargs):
         return Evaluation(name="relevance", value=0.9)
 
-    result = langfuse_client.run_batched_evaluation(
+    result = elasticdash_client.run_batched_evaluation(
         scope="traces",
         mapper=simple_trace_mapper,
         evaluators=[accuracy_evaluator, relevance_evaluator],
@@ -1053,7 +1053,7 @@ def test_item_evaluations_multiple_evaluators(langfuse_client):
         assert eval_names == {"accuracy", "relevance"}
 
 
-def test_item_evaluations_with_composite(langfuse_client):
+def test_item_evaluations_with_composite(elasticdash_client):
     """Test that item_evaluations includes composite evaluations."""
 
     def base_evaluator(*, input, output, **kwargs):
@@ -1067,7 +1067,7 @@ def test_item_evaluations_with_composite(langfuse_client):
             ),
         )
 
-    result = langfuse_client.run_batched_evaluation(
+    result = elasticdash_client.run_batched_evaluation(
         scope="traces",
         mapper=simple_trace_mapper,
         evaluators=[base_evaluator],
@@ -1085,13 +1085,13 @@ def test_item_evaluations_with_composite(langfuse_client):
     assert result.total_composite_scores_created > 0
 
 
-def test_item_evaluations_empty_on_failure(langfuse_client):
+def test_item_evaluations_empty_on_failure(elasticdash_client):
     """Test that failed items don't appear in item_evaluations."""
 
     def failing_mapper(*, item):
         raise Exception("Mapper failed")
 
-    result = langfuse_client.run_batched_evaluation(
+    result = elasticdash_client.run_batched_evaluation(
         scope="traces",
         mapper=failing_mapper,
         evaluators=[simple_evaluator],

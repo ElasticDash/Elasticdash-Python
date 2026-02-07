@@ -8,13 +8,13 @@ import backoff
 import requests
 from typing_extensions import ParamSpec
 
-from langfuse._client.environment_variables import ELASTICDASH_MEDIA_UPLOAD_ENABLED
-from langfuse._utils import _get_timestamp
-from langfuse.api import GetMediaUploadUrlRequest, PatchMediaBody
-from langfuse.api.client import FernElasticDash
-from langfuse.api.core import ApiError
-from langfuse.api.resources.media.types.media_content_type import MediaContentType
-from langfuse.media import ElasticDashMedia
+from elasticdash._client.environment_variables import ELASTICDASH_MEDIA_UPLOAD_ENABLED
+from elasticdash._utils import _get_timestamp
+from elasticdash.api import GetMediaUploadUrlRequest, PatchMediaBody
+from elasticdash.api.client import FernElasticDash
+from elasticdash.api.core import ApiError
+from elasticdash.api.resources.media.types.media_content_type import MediaContentType
+from elasticdash.media import ElasticDashMedia
 
 from .media_upload_queue import UploadMediaJob
 
@@ -23,7 +23,7 @@ P = ParamSpec("P")
 
 
 class MediaManager:
-    _log = logging.getLogger("langfuse")
+    _log = logging.getLogger("elasticdash")
 
     def __init__(
         self,

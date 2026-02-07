@@ -7,7 +7,7 @@ from typing import Any, List, Union
 
 import httpx
 
-from langfuse._utils.serializer import EventSerializer
+from elasticdash._utils.serializer import EventSerializer
 
 
 class ElasticDashClient:
@@ -41,14 +41,14 @@ class ElasticDashClient:
                 f"{self._public_key}:{self._secret_key}".encode("utf-8")
             ).decode("ascii"),
             "Content-Type": "application/json",
-            "x-langfuse-sdk-name": "python",
-            "x-langfuse-sdk-version": self._version,
-            "x-langfuse-public-key": self._public_key,
+            "x-elasticdash-sdk-name": "python",
+            "x-elasticdash-sdk-version": self._version,
+            "x-elasticdash-public-key": self._public_key,
         }
 
     def batch_post(self, **kwargs: Any) -> httpx.Response:
         """Post the `kwargs` to the batch API endpoint for events"""
-        log = logging.getLogger("langfuse")
+        log = logging.getLogger("elasticdash")
         log.debug("uploading data: %s", kwargs)
 
         res = self.post(**kwargs)
@@ -58,7 +58,7 @@ class ElasticDashClient:
 
     def post(self, **kwargs: Any) -> httpx.Response:
         """Post the `kwargs` to the API"""
-        log = logging.getLogger("langfuse")
+        log = logging.getLogger("elasticdash")
         url = self._remove_trailing_slash(self._base_url) + "/api/public/ingestion"
         data = json.dumps(kwargs, cls=EventSerializer)
         log.debug("making request: %s to %s", data, url)
@@ -81,7 +81,7 @@ class ElasticDashClient:
     def _process_response(
         self, res: httpx.Response, success_message: str, *, return_json: bool = True
     ) -> Union[httpx.Response, Any]:
-        log = logging.getLogger("langfuse")
+        log = logging.getLogger("elasticdash")
         log.debug("received response: %s", res.text)
         if res.status_code in (200, 201):
             log.debug(success_message)

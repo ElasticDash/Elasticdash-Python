@@ -66,9 +66,9 @@ class FernElasticDash:
     base_url : str
         The base url to use for requests from the client.
 
-    x_langfuse_sdk_name : typing.Optional[str]
-    x_langfuse_sdk_version : typing.Optional[str]
-    x_langfuse_public_key : typing.Optional[str]
+    x_elasticdash_sdk_name : typing.Optional[str]
+    x_elasticdash_sdk_version : typing.Optional[str]
+    x_elasticdash_public_key : typing.Optional[str]
     username : typing.Optional[typing.Union[str, typing.Callable[[], str]]]
     password : typing.Optional[typing.Union[str, typing.Callable[[], str]]]
     timeout : typing.Optional[float]
@@ -82,12 +82,12 @@ class FernElasticDash:
 
     Examples
     --------
-    from langfuse.client import FernElasticDash
+    from elasticdash.client import FernElasticDash
 
     client = FernElasticDash(
-        x_langfuse_sdk_name="YOUR_X_ELASTICDASH_SDK_NAME",
-        x_langfuse_sdk_version="YOUR_X_ELASTICDASH_SDK_VERSION",
-        x_langfuse_public_key="YOUR_X_ELASTICDASH_PUBLIC_KEY",
+        x_elasticdash_sdk_name="YOUR_X_ELASTICDASH_SDK_NAME",
+        x_elasticdash_sdk_version="YOUR_X_ELASTICDASH_SDK_VERSION",
+        x_elasticdash_public_key="YOUR_X_ELASTICDASH_PUBLIC_KEY",
         username="YOUR_USERNAME",
         password="YOUR_PASSWORD",
         base_url="https://yourhost.com/path/to/api",
@@ -98,9 +98,9 @@ class FernElasticDash:
         self,
         *,
         base_url: str,
-        x_langfuse_sdk_name: typing.Optional[str] = None,
-        x_langfuse_sdk_version: typing.Optional[str] = None,
-        x_langfuse_public_key: typing.Optional[str] = None,
+        x_elasticdash_sdk_name: typing.Optional[str] = None,
+        x_elasticdash_sdk_version: typing.Optional[str] = None,
+        x_elasticdash_public_key: typing.Optional[str] = None,
         username: typing.Optional[typing.Union[str, typing.Callable[[], str]]] = None,
         password: typing.Optional[typing.Union[str, typing.Callable[[], str]]] = None,
         timeout: typing.Optional[float] = None,
@@ -112,9 +112,9 @@ class FernElasticDash:
         )
         self._client_wrapper = SyncClientWrapper(
             base_url=base_url,
-            x_langfuse_sdk_name=x_langfuse_sdk_name,
-            x_langfuse_sdk_version=x_langfuse_sdk_version,
-            x_langfuse_public_key=x_langfuse_public_key,
+            x_elasticdash_sdk_name=x_elasticdash_sdk_name,
+            x_elasticdash_sdk_version=x_elasticdash_sdk_version,
+            x_elasticdash_public_key=x_elasticdash_public_key,
             username=username,
             password=password,
             httpx_client=httpx_client
@@ -171,9 +171,9 @@ class AsyncFernElasticDash:
     base_url : str
         The base url to use for requests from the client.
 
-    x_langfuse_sdk_name : typing.Optional[str]
-    x_langfuse_sdk_version : typing.Optional[str]
-    x_langfuse_public_key : typing.Optional[str]
+    x_elasticdash_sdk_name : typing.Optional[str]
+    x_elasticdash_sdk_version : typing.Optional[str]
+    x_elasticdash_public_key : typing.Optional[str]
     username : typing.Optional[typing.Union[str, typing.Callable[[], str]]]
     password : typing.Optional[typing.Union[str, typing.Callable[[], str]]]
     timeout : typing.Optional[float]
@@ -187,12 +187,12 @@ class AsyncFernElasticDash:
 
     Examples
     --------
-    from langfuse.client import AsyncFernElasticDash
+    from elasticdash.client import AsyncFernElasticDash
 
     client = AsyncFernElasticDash(
-        x_langfuse_sdk_name="YOUR_X_ELASTICDASH_SDK_NAME",
-        x_langfuse_sdk_version="YOUR_X_ELASTICDASH_SDK_VERSION",
-        x_langfuse_public_key="YOUR_X_ELASTICDASH_PUBLIC_KEY",
+        x_elasticdash_sdk_name="YOUR_X_ELASTICDASH_SDK_NAME",
+        x_elasticdash_sdk_version="YOUR_X_ELASTICDASH_SDK_VERSION",
+        x_elasticdash_public_key="YOUR_X_ELASTICDASH_PUBLIC_KEY",
         username="YOUR_USERNAME",
         password="YOUR_PASSWORD",
         base_url="https://yourhost.com/path/to/api",
@@ -203,9 +203,9 @@ class AsyncFernElasticDash:
         self,
         *,
         base_url: str,
-        x_langfuse_sdk_name: typing.Optional[str] = None,
-        x_langfuse_sdk_version: typing.Optional[str] = None,
-        x_langfuse_public_key: typing.Optional[str] = None,
+        x_elasticdash_sdk_name: typing.Optional[str] = None,
+        x_elasticdash_sdk_version: typing.Optional[str] = None,
+        x_elasticdash_public_key: typing.Optional[str] = None,
         username: typing.Optional[typing.Union[str, typing.Callable[[], str]]] = None,
         password: typing.Optional[typing.Union[str, typing.Callable[[], str]]] = None,
         timeout: typing.Optional[float] = None,
@@ -217,9 +217,9 @@ class AsyncFernElasticDash:
         )
         self._client_wrapper = AsyncClientWrapper(
             base_url=base_url,
-            x_langfuse_sdk_name=x_langfuse_sdk_name,
-            x_langfuse_sdk_version=x_langfuse_sdk_version,
-            x_langfuse_public_key=x_langfuse_public_key,
+            x_elasticdash_sdk_name=x_elasticdash_sdk_name,
+            x_elasticdash_sdk_version=x_elasticdash_sdk_version,
+            x_elasticdash_public_key=x_elasticdash_public_key,
             username=username,
             password=password,
             httpx_client=httpx_client

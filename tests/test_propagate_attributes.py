@@ -11,9 +11,9 @@ import time
 import pytest
 from opentelemetry.instrumentation.threading import ThreadingInstrumentor
 
-from langfuse import propagate_attributes
-from langfuse._client.attributes import ElasticDashOtelSpanAttributes, _serialize
-from langfuse._client.constants import ELASTICDASH_SDK_EXPERIMENT_ENVIRONMENT
+from elasticdash import propagate_attributes
+from elasticdash._client.attributes import ElasticDashOtelSpanAttributes, _serialize
+from elasticdash._client.constants import ELASTICDASH_SDK_EXPERIMENT_ENVIRONMENT
 from tests.test_otel import TestOTelBase
 
 
@@ -21,9 +21,9 @@ class TestPropagateAttributesBase(TestOTelBase):
     """Base class for propagate_attributes tests with shared helper methods."""
 
     @pytest.fixture
-    def langfuse_client(self, monkeypatch, tracer_provider, mock_processor_init):
+    def elasticdash_client(self, monkeypatch, tracer_provider, mock_processor_init):
         """Create a mocked ElasticDash client with explicit tracer_provider for testing."""
-        from langfuse import ElasticDash
+        from elasticdash import ElasticDash
 
         # Set environment variables
         monkeypatch.setenv("ELASTICDASH_PUBLIC_KEY", "test-public-key")
@@ -76,14 +76,14 @@ class TestPropagateAttributesBase(TestOTelBase):
 class TestPropagateAttributesBasic(TestPropagateAttributesBase):
     """Tests for basic propagate_attributes functionality."""
 
-    def test_user_id_propagates_to_child_spans(self, langfuse_client, memory_exporter):
+    def test_user_id_propagates_to_child_spans(self, elasticdash_client, memory_exporter):
         """Verify user_id propagates to all child spans within context."""
-        with langfuse_client.start_as_current_span(name="parent-span"):
+        with elasticdash_client.start_as_current_span(name="parent-span"):
             with propagate_attributes(user_id="test_user_123"):
-                child1 = langfuse_client.start_span(name="child-span-1")
+                child1 = elasticdash_client.start_span(name="child-span-1")
                 child1.end()
 
-                child2 = langfuse_client.start_span(name="child-span-2")
+                child2 = elasticdash_client.start_span(name="child-span-2")
                 child2.end()
 
         # Verify both children have user_id
@@ -102,15 +102,15 @@ class TestPropagateAttributesBasic(TestPropagateAttributesBase):
         )
 
     def test_session_id_propagates_to_child_spans(
-        self, langfuse_client, memory_exporter
+        self, elasticdash_client, memory_exporter
     ):
         """Verify session_id propagates to all child spans within context."""
-        with langfuse_client.start_as_current_span(name="parent-span"):
+        with elasticdash_client.start_as_current_span(name="parent-span"):
             with propagate_attributes(session_id="session_abc"):
-                child1 = langfuse_client.start_span(name="child-span-1")
+                child1 = elasticdash_client.start_span(name="child-span-1")
                 child1.end()
 
-                child2 = langfuse_client.start_span(name="child-span-2")
+                child2 = elasticdash_client.start_span(name="child-span-2")
                 child2.end()
 
         # Verify both children have session_id
@@ -128,16 +128,16 @@ class TestPropagateAttributesBasic(TestPropagateAttributesBase):
             "session_abc",
         )
 
-    def test_metadata_propagates_to_child_spans(self, langfuse_client, memory_exporter):
+    def test_metadata_propagates_to_child_spans(self, elasticdash_client, memory_exporter):
         """Verify metadata propagates to all child spans within context."""
-        with langfuse_client.start_as_current_span(name="parent-span"):
+        with elasticdash_client.start_as_current_span(name="parent-span"):
             with propagate_attributes(
                 metadata={"experiment": "variant_a", "version": "1.0"}
             ):
-                child1 = langfuse_client.start_span(name="child-span-1")
+                child1 = elasticdash_client.start_span(name="child-span-1")
                 child1.end()
 
-                child2 = langfuse_client.start_span(name="child-span-2")
+                child2 = elasticdash_client.start_span(name="child-span-2")
                 child2.end()
 
         # Verify both children have metadata
@@ -165,15 +165,15 @@ class TestPropagateAttributesBasic(TestPropagateAttributesBase):
             "1.0",
         )
 
-    def test_all_attributes_propagate_together(self, langfuse_client, memory_exporter):
+    def test_all_attributes_propagate_together(self, elasticdash_client, memory_exporter):
         """Verify user_id, session_id, and metadata all propagate together."""
-        with langfuse_client.start_as_current_span(name="parent-span"):
+        with elasticdash_client.start_as_current_span(name="parent-span"):
             with propagate_attributes(
                 user_id="user_123",
                 session_id="session_abc",
                 metadata={"experiment": "test", "env": "prod"},
             ):
-                child = langfuse_client.start_span(name="child-span")
+                child = elasticdash_client.start_span(name="child-span")
                 child.end()
 
         # Verify child has all attributes
@@ -199,17 +199,17 @@ class TestPropagateAttributesBasic(TestPropagateAttributesBase):
 class TestPropagateAttributesHierarchy(TestPropagateAttributesBase):
     """Tests for propagation across span hierarchies."""
 
-    def test_propagation_to_direct_children(self, langfuse_client, memory_exporter):
+    def test_propagation_to_direct_children(self, elasticdash_client, memory_exporter):
         """Verify attributes propagate to all direct children."""
-        with langfuse_client.start_as_current_span(name="parent-span"):
+        with elasticdash_client.start_as_current_span(name="parent-span"):
             with propagate_attributes(user_id="user_123"):
-                child1 = langfuse_client.start_span(name="child-1")
+                child1 = elasticdash_client.start_span(name="child-1")
                 child1.end()
 
-                child2 = langfuse_client.start_span(name="child-2")
+                child2 = elasticdash_client.start_span(name="child-2")
                 child2.end()
 
-                child3 = langfuse_client.start_span(name="child-3")
+                child3 = elasticdash_client.start_span(name="child-3")
                 child3.end()
 
         # Verify all three children have user_id
@@ -219,12 +219,12 @@ class TestPropagateAttributesHierarchy(TestPropagateAttributesBase):
                 child_span, ElasticDashOtelSpanAttributes.TRACE_USER_ID, "user_123"
             )
 
-    def test_propagation_to_grandchildren(self, langfuse_client, memory_exporter):
+    def test_propagation_to_grandchildren(self, elasticdash_client, memory_exporter):
         """Verify attributes propagate through multiple levels of nesting."""
-        with langfuse_client.start_as_current_span(name="parent-span"):
+        with elasticdash_client.start_as_current_span(name="parent-span"):
             with propagate_attributes(user_id="user_123", session_id="session_abc"):
-                with langfuse_client.start_as_current_span(name="child-span"):
-                    grandchild = langfuse_client.start_span(name="grandchild-span")
+                with elasticdash_client.start_as_current_span(name="child-span"):
+                    grandchild = elasticdash_client.start_span(name="grandchild-span")
                     grandchild.end()
 
         # Verify all three levels have attributes
@@ -241,17 +241,17 @@ class TestPropagateAttributesHierarchy(TestPropagateAttributesBase):
             )
 
     def test_propagation_across_observation_types(
-        self, langfuse_client, memory_exporter
+        self, elasticdash_client, memory_exporter
     ):
         """Verify attributes propagate to different observation types."""
-        with langfuse_client.start_as_current_span(name="parent-span"):
+        with elasticdash_client.start_as_current_span(name="parent-span"):
             with propagate_attributes(user_id="user_123"):
                 # Create span
-                span = langfuse_client.start_span(name="test-span")
+                span = elasticdash_client.start_span(name="test-span")
                 span.end()
 
                 # Create generation
-                generation = langfuse_client.start_observation(
+                generation = elasticdash_client.start_observation(
                     as_type="generation", name="test-generation"
                 )
                 generation.end()
@@ -272,19 +272,19 @@ class TestPropagateAttributesTiming(TestPropagateAttributesBase):
     """Critical tests for early vs late propagation timing."""
 
     def test_early_propagation_all_spans_covered(
-        self, langfuse_client, memory_exporter
+        self, elasticdash_client, memory_exporter
     ):
         """Verify setting attributes early covers all child spans."""
-        with langfuse_client.start_as_current_span(name="parent-span"):
+        with elasticdash_client.start_as_current_span(name="parent-span"):
             # Set attributes BEFORE creating any children
             with propagate_attributes(user_id="user_123"):
-                child1 = langfuse_client.start_span(name="child-1")
+                child1 = elasticdash_client.start_span(name="child-1")
                 child1.end()
 
-                child2 = langfuse_client.start_span(name="child-2")
+                child2 = elasticdash_client.start_span(name="child-2")
                 child2.end()
 
-                child3 = langfuse_client.start_span(name="child-3")
+                child3 = elasticdash_client.start_span(name="child-3")
                 child3.end()
 
         # Verify ALL children have user_id
@@ -295,18 +295,18 @@ class TestPropagateAttributesTiming(TestPropagateAttributesBase):
             )
 
     def test_late_propagation_only_future_spans_covered(
-        self, langfuse_client, memory_exporter
+        self, elasticdash_client, memory_exporter
     ):
         """Verify late propagation only affects spans created after context entry."""
-        with langfuse_client.start_as_current_span(name="parent-span"):
+        with elasticdash_client.start_as_current_span(name="parent-span"):
             # Create child1 BEFORE propagate_attributes
-            child1 = langfuse_client.start_span(name="child-1")
+            child1 = elasticdash_client.start_span(name="child-1")
             child1.end()
 
             # NOW set attributes
             with propagate_attributes(user_id="user_123"):
                 # Create child2 AFTER propagate_attributes
-                child2 = langfuse_client.start_span(name="child-2")
+                child2 = elasticdash_client.start_span(name="child-2")
                 child2.end()
 
         # Verify: child1 does NOT have user_id, child2 DOES
@@ -320,9 +320,9 @@ class TestPropagateAttributesTiming(TestPropagateAttributesBase):
             child2_span, ElasticDashOtelSpanAttributes.TRACE_USER_ID, "user_123"
         )
 
-    def test_current_span_gets_attributes(self, langfuse_client, memory_exporter):
+    def test_current_span_gets_attributes(self, elasticdash_client, memory_exporter):
         """Verify the currently active span gets attributes when propagate_attributes is called."""
-        with langfuse_client.start_as_current_span(name="parent-span"):
+        with elasticdash_client.start_as_current_span(name="parent-span"):
             # Call propagate_attributes while parent-span is active
             with propagate_attributes(user_id="user_123"):
                 pass
@@ -333,20 +333,20 @@ class TestPropagateAttributesTiming(TestPropagateAttributesBase):
             parent_span, ElasticDashOtelSpanAttributes.TRACE_USER_ID, "user_123"
         )
 
-    def test_spans_outside_context_unaffected(self, langfuse_client, memory_exporter):
+    def test_spans_outside_context_unaffected(self, elasticdash_client, memory_exporter):
         """Verify spans created outside context don't get attributes."""
-        with langfuse_client.start_as_current_span(name="parent-span"):
+        with elasticdash_client.start_as_current_span(name="parent-span"):
             # Span before context
-            span1 = langfuse_client.start_span(name="span-1")
+            span1 = elasticdash_client.start_span(name="span-1")
             span1.end()
 
             # Span inside context
             with propagate_attributes(user_id="user_123"):
-                span2 = langfuse_client.start_span(name="span-2")
+                span2 = elasticdash_client.start_span(name="span-2")
                 span2.end()
 
             # Span after context
-            span3 = langfuse_client.start_span(name="span-3")
+            span3 = elasticdash_client.start_span(name="span-3")
             span3.end()
 
         # Verify: only span2 has user_id
@@ -369,13 +369,13 @@ class TestPropagateAttributesTiming(TestPropagateAttributesBase):
 class TestPropagateAttributesValidation(TestPropagateAttributesBase):
     """Tests for validation of propagated attribute values."""
 
-    def test_user_id_over_200_chars_dropped(self, langfuse_client, memory_exporter):
+    def test_user_id_over_200_chars_dropped(self, elasticdash_client, memory_exporter):
         """Verify user_id over 200 characters is dropped with warning."""
         long_user_id = "x" * 201
 
-        with langfuse_client.start_as_current_span(name="parent-span"):
+        with elasticdash_client.start_as_current_span(name="parent-span"):
             with propagate_attributes(user_id=long_user_id):
-                child = langfuse_client.start_span(name="child-span")
+                child = elasticdash_client.start_span(name="child-span")
                 child.end()
 
         # Verify child does NOT have user_id
@@ -384,13 +384,13 @@ class TestPropagateAttributesValidation(TestPropagateAttributesBase):
             child_span, ElasticDashOtelSpanAttributes.TRACE_USER_ID
         )
 
-    def test_session_id_over_200_chars_dropped(self, langfuse_client, memory_exporter):
+    def test_session_id_over_200_chars_dropped(self, elasticdash_client, memory_exporter):
         """Verify session_id over 200 characters is dropped with warning."""
         long_session_id = "y" * 201
 
-        with langfuse_client.start_as_current_span(name="parent-span"):
+        with elasticdash_client.start_as_current_span(name="parent-span"):
             with propagate_attributes(session_id=long_session_id):
-                child = langfuse_client.start_span(name="child-span")
+                child = elasticdash_client.start_span(name="child-span")
                 child.end()
 
         # Verify child does NOT have session_id
@@ -400,12 +400,12 @@ class TestPropagateAttributesValidation(TestPropagateAttributesBase):
         )
 
     def test_metadata_value_over_200_chars_dropped(
-        self, langfuse_client, memory_exporter
+        self, elasticdash_client, memory_exporter
     ):
         """Verify metadata values over 200 characters are dropped with warning."""
-        with langfuse_client.start_as_current_span(name="parent-span"):
+        with elasticdash_client.start_as_current_span(name="parent-span"):
             with propagate_attributes(metadata={"key": "z" * 201}):
-                child = langfuse_client.start_span(name="child-span")
+                child = elasticdash_client.start_span(name="child-span")
                 child.end()
 
         # Verify child does NOT have metadata.key
@@ -414,13 +414,13 @@ class TestPropagateAttributesValidation(TestPropagateAttributesBase):
             child_span, f"{ElasticDashOtelSpanAttributes.TRACE_METADATA}.key"
         )
 
-    def test_exactly_200_chars_accepted(self, langfuse_client, memory_exporter):
+    def test_exactly_200_chars_accepted(self, elasticdash_client, memory_exporter):
         """Verify exactly 200 characters is accepted (boundary test)."""
         user_id_200 = "x" * 200
 
-        with langfuse_client.start_as_current_span(name="parent-span"):
+        with elasticdash_client.start_as_current_span(name="parent-span"):
             with propagate_attributes(user_id=user_id_200):
-                child = langfuse_client.start_span(name="child-span")
+                child = elasticdash_client.start_span(name="child-span")
                 child.end()
 
         # Verify child HAS user_id
@@ -429,13 +429,13 @@ class TestPropagateAttributesValidation(TestPropagateAttributesBase):
             child_span, ElasticDashOtelSpanAttributes.TRACE_USER_ID, user_id_200
         )
 
-    def test_201_chars_rejected(self, langfuse_client, memory_exporter):
+    def test_201_chars_rejected(self, elasticdash_client, memory_exporter):
         """Verify 201 characters is rejected (boundary test)."""
         user_id_201 = "x" * 201
 
-        with langfuse_client.start_as_current_span(name="parent-span"):
+        with elasticdash_client.start_as_current_span(name="parent-span"):
             with propagate_attributes(user_id=user_id_201):
-                child = langfuse_client.start_span(name="child-span")
+                child = elasticdash_client.start_span(name="child-span")
                 child.end()
 
         # Verify child does NOT have user_id
@@ -444,11 +444,11 @@ class TestPropagateAttributesValidation(TestPropagateAttributesBase):
             child_span, ElasticDashOtelSpanAttributes.TRACE_USER_ID
         )
 
-    def test_non_string_user_id_dropped(self, langfuse_client, memory_exporter):
+    def test_non_string_user_id_dropped(self, elasticdash_client, memory_exporter):
         """Verify non-string user_id is dropped with warning."""
-        with langfuse_client.start_as_current_span(name="parent-span"):
+        with elasticdash_client.start_as_current_span(name="parent-span"):
             with propagate_attributes(user_id=12345):  # type: ignore
-                child = langfuse_client.start_span(name="child-span")
+                child = elasticdash_client.start_span(name="child-span")
                 child.end()
 
         # Verify child does NOT have user_id
@@ -457,9 +457,9 @@ class TestPropagateAttributesValidation(TestPropagateAttributesBase):
             child_span, ElasticDashOtelSpanAttributes.TRACE_USER_ID
         )
 
-    def test_mixed_valid_invalid_metadata(self, langfuse_client, memory_exporter):
+    def test_mixed_valid_invalid_metadata(self, elasticdash_client, memory_exporter):
         """Verify mixed valid/invalid metadata - valid entries kept, invalid dropped."""
-        with langfuse_client.start_as_current_span(name="parent-span"):
+        with elasticdash_client.start_as_current_span(name="parent-span"):
             with propagate_attributes(
                 metadata={
                     "valid_key": "valid_value",
@@ -467,7 +467,7 @@ class TestPropagateAttributesValidation(TestPropagateAttributesBase):
                     "another_valid": "ok",
                 }
             ):
-                child = langfuse_client.start_span(name="child-span")
+                child = elasticdash_client.start_span(name="child-span")
                 child.end()
 
         # Verify: valid keys present, invalid key absent
@@ -490,17 +490,17 @@ class TestPropagateAttributesValidation(TestPropagateAttributesBase):
 class TestPropagateAttributesNesting(TestPropagateAttributesBase):
     """Tests for nested propagate_attributes contexts."""
 
-    def test_nested_contexts_inner_overwrites(self, langfuse_client, memory_exporter):
+    def test_nested_contexts_inner_overwrites(self, elasticdash_client, memory_exporter):
         """Verify inner context overwrites outer context values."""
-        with langfuse_client.start_as_current_span(name="parent-span"):
+        with elasticdash_client.start_as_current_span(name="parent-span"):
             with propagate_attributes(user_id="user1"):
                 # Create span in outer context
-                span1 = langfuse_client.start_span(name="span-1")
+                span1 = elasticdash_client.start_span(name="span-1")
                 span1.end()
 
                 # Inner context with different user_id
                 with propagate_attributes(user_id="user2"):
-                    span2 = langfuse_client.start_span(name="span-2")
+                    span2 = elasticdash_client.start_span(name="span-2")
                     span2.end()
 
         # Verify: span1 has user1, span2 has user2
@@ -514,21 +514,21 @@ class TestPropagateAttributesNesting(TestPropagateAttributesBase):
             span2_data, ElasticDashOtelSpanAttributes.TRACE_USER_ID, "user2"
         )
 
-    def test_after_inner_context_outer_restored(self, langfuse_client, memory_exporter):
+    def test_after_inner_context_outer_restored(self, elasticdash_client, memory_exporter):
         """Verify outer context is restored after exiting inner context."""
-        with langfuse_client.start_as_current_span(name="parent-span"):
+        with elasticdash_client.start_as_current_span(name="parent-span"):
             with propagate_attributes(user_id="user1"):
                 # Span in outer context
-                span1 = langfuse_client.start_span(name="span-1")
+                span1 = elasticdash_client.start_span(name="span-1")
                 span1.end()
 
                 # Inner context
                 with propagate_attributes(user_id="user2"):
-                    span2 = langfuse_client.start_span(name="span-2")
+                    span2 = elasticdash_client.start_span(name="span-2")
                     span2.end()
 
                 # Back to outer context
-                span3 = langfuse_client.start_span(name="span-3")
+                span3 = elasticdash_client.start_span(name="span-3")
                 span3.end()
 
         # Verify: span1 and span3 have user1, span2 has user2
@@ -547,13 +547,13 @@ class TestPropagateAttributesNesting(TestPropagateAttributesBase):
             span3_data, ElasticDashOtelSpanAttributes.TRACE_USER_ID, "user1"
         )
 
-    def test_nested_different_attributes(self, langfuse_client, memory_exporter):
+    def test_nested_different_attributes(self, elasticdash_client, memory_exporter):
         """Verify nested contexts with different attributes merge correctly."""
-        with langfuse_client.start_as_current_span(name="parent-span"):
+        with elasticdash_client.start_as_current_span(name="parent-span"):
             with propagate_attributes(user_id="user1"):
                 # Inner context adds session_id
                 with propagate_attributes(session_id="session1"):
-                    span = langfuse_client.start_span(name="span-1")
+                    span = elasticdash_client.start_span(name="span-1")
                     span.end()
 
         # Verify: span has BOTH user_id and session_id
@@ -565,23 +565,23 @@ class TestPropagateAttributesNesting(TestPropagateAttributesBase):
             span_data, ElasticDashOtelSpanAttributes.TRACE_SESSION_ID, "session1"
         )
 
-    def test_nested_metadata_merges_additively(self, langfuse_client, memory_exporter):
+    def test_nested_metadata_merges_additively(self, elasticdash_client, memory_exporter):
         """Verify nested contexts merge metadata keys additively."""
-        with langfuse_client.start_as_current_span(name="parent-span"):
+        with elasticdash_client.start_as_current_span(name="parent-span"):
             with propagate_attributes(metadata={"env": "prod", "region": "us-east"}):
                 # Outer span should have outer metadata
-                outer_span = langfuse_client.start_span(name="outer-span")
+                outer_span = elasticdash_client.start_span(name="outer-span")
                 outer_span.end()
 
                 # Inner context adds more metadata
                 with propagate_attributes(
                     metadata={"experiment": "A", "version": "2.0"}
                 ):
-                    inner_span = langfuse_client.start_span(name="inner-span")
+                    inner_span = elasticdash_client.start_span(name="inner-span")
                     inner_span.end()
 
                 # Back to outer context
-                after_span = langfuse_client.start_span(name="after-span")
+                after_span = elasticdash_client.start_span(name="after-span")
                 after_span.end()
 
         # Verify: outer span has only outer metadata
@@ -640,10 +640,10 @@ class TestPropagateAttributesNesting(TestPropagateAttributesBase):
         )
 
     def test_nested_metadata_inner_overwrites_conflicting_keys(
-        self, langfuse_client, memory_exporter
+        self, elasticdash_client, memory_exporter
     ):
         """Verify nested contexts: inner metadata overwrites outer for same keys."""
-        with langfuse_client.start_as_current_span(name="parent-span"):
+        with elasticdash_client.start_as_current_span(name="parent-span"):
             with propagate_attributes(
                 metadata={"env": "staging", "version": "1.0", "region": "us-west"}
             ):
@@ -651,7 +651,7 @@ class TestPropagateAttributesNesting(TestPropagateAttributesBase):
                 with propagate_attributes(
                     metadata={"env": "production", "experiment": "B"}
                 ):
-                    span = langfuse_client.start_span(name="span-1")
+                    span = elasticdash_client.start_span(name="span-1")
                     span.end()
 
         # Verify: inner values overwrite outer for conflicting keys
@@ -683,13 +683,13 @@ class TestPropagateAttributesNesting(TestPropagateAttributesBase):
             "B",  # From inner
         )
 
-    def test_triple_nested_metadata_accumulates(self, langfuse_client, memory_exporter):
+    def test_triple_nested_metadata_accumulates(self, elasticdash_client, memory_exporter):
         """Verify metadata accumulates across three levels of nesting."""
-        with langfuse_client.start_as_current_span(name="parent-span"):
+        with elasticdash_client.start_as_current_span(name="parent-span"):
             with propagate_attributes(metadata={"level": "1", "a": "outer"}):
                 with propagate_attributes(metadata={"level": "2", "b": "middle"}):
                     with propagate_attributes(metadata={"level": "3", "c": "inner"}):
-                        span = langfuse_client.start_span(name="deep-span")
+                        span = elasticdash_client.start_span(name="deep-span")
                         span.end()
 
         # Verify: deepest span has all metadata with innermost level winning
@@ -719,13 +719,13 @@ class TestPropagateAttributesNesting(TestPropagateAttributesBase):
             "inner",
         )
 
-    def test_metadata_merge_with_empty_inner(self, langfuse_client, memory_exporter):
+    def test_metadata_merge_with_empty_inner(self, elasticdash_client, memory_exporter):
         """Verify empty inner metadata dict doesn't clear outer metadata."""
-        with langfuse_client.start_as_current_span(name="parent-span"):
+        with elasticdash_client.start_as_current_span(name="parent-span"):
             with propagate_attributes(metadata={"key1": "value1", "key2": "value2"}):
                 # Inner context with empty metadata
                 with propagate_attributes(metadata={}):
-                    span = langfuse_client.start_span(name="span-1")
+                    span = elasticdash_client.start_span(name="span-1")
                     span.end()
 
         # Verify: outer metadata is preserved
@@ -742,17 +742,17 @@ class TestPropagateAttributesNesting(TestPropagateAttributesBase):
         )
 
     def test_metadata_merge_preserves_user_session(
-        self, langfuse_client, memory_exporter
+        self, elasticdash_client, memory_exporter
     ):
         """Verify metadata merging doesn't affect user_id/session_id."""
-        with langfuse_client.start_as_current_span(name="parent-span"):
+        with elasticdash_client.start_as_current_span(name="parent-span"):
             with propagate_attributes(
                 user_id="user1",
                 session_id="session1",
                 metadata={"outer": "value"},
             ):
                 with propagate_attributes(metadata={"inner": "value"}):
-                    span = langfuse_client.start_span(name="span-1")
+                    span = elasticdash_client.start_span(name="span-1")
                     span.end()
 
         # Verify: user_id and session_id are preserved, metadata merged
@@ -778,22 +778,22 @@ class TestPropagateAttributesNesting(TestPropagateAttributesBase):
 class TestPropagateAttributesEdgeCases(TestPropagateAttributesBase):
     """Tests for edge cases and unusual scenarios."""
 
-    def test_propagate_attributes_with_no_args(self, langfuse_client, memory_exporter):
+    def test_propagate_attributes_with_no_args(self, elasticdash_client, memory_exporter):
         """Verify calling propagate_attributes() with no args doesn't error."""
-        with langfuse_client.start_as_current_span(name="parent-span"):
+        with elasticdash_client.start_as_current_span(name="parent-span"):
             with propagate_attributes():
-                child = langfuse_client.start_span(name="child-span")
+                child = elasticdash_client.start_span(name="child-span")
                 child.end()
 
         # Should not crash, spans created normally
         child_span = self.get_span_by_name(memory_exporter, "child-span")
         assert child_span is not None
 
-    def test_none_values_ignored(self, langfuse_client, memory_exporter):
+    def test_none_values_ignored(self, elasticdash_client, memory_exporter):
         """Verify None values are ignored without error."""
-        with langfuse_client.start_as_current_span(name="parent-span"):
+        with elasticdash_client.start_as_current_span(name="parent-span"):
             with propagate_attributes(user_id=None, session_id=None, metadata=None):
-                child = langfuse_client.start_span(name="child-span")
+                child = elasticdash_client.start_span(name="child-span")
                 child.end()
 
         # Should not crash, no attributes set
@@ -805,27 +805,27 @@ class TestPropagateAttributesEdgeCases(TestPropagateAttributesBase):
             child_span, ElasticDashOtelSpanAttributes.TRACE_SESSION_ID
         )
 
-    def test_empty_metadata_dict(self, langfuse_client, memory_exporter):
+    def test_empty_metadata_dict(self, elasticdash_client, memory_exporter):
         """Verify empty metadata dict doesn't cause errors."""
-        with langfuse_client.start_as_current_span(name="parent-span"):
+        with elasticdash_client.start_as_current_span(name="parent-span"):
             with propagate_attributes(metadata={}):
-                child = langfuse_client.start_span(name="child-span")
+                child = elasticdash_client.start_span(name="child-span")
                 child.end()
 
         # Should not crash, no metadata attributes set
         child_span = self.get_span_by_name(memory_exporter, "child-span")
         assert child_span is not None
 
-    def test_all_invalid_metadata_values(self, langfuse_client, memory_exporter):
+    def test_all_invalid_metadata_values(self, elasticdash_client, memory_exporter):
         """Verify all invalid metadata values results in no metadata attributes."""
-        with langfuse_client.start_as_current_span(name="parent-span"):
+        with elasticdash_client.start_as_current_span(name="parent-span"):
             with propagate_attributes(
                 metadata={
                     "key1": "x" * 201,  # Too long
                     "key2": "y" * 201,  # Too long
                 }
             ):
-                child = langfuse_client.start_span(name="child-span")
+                child = elasticdash_client.start_span(name="child-span")
                 child.end()
 
         # No metadata attributes should be set
@@ -837,12 +837,12 @@ class TestPropagateAttributesEdgeCases(TestPropagateAttributesBase):
             child_span, f"{ElasticDashOtelSpanAttributes.TRACE_METADATA}.key2"
         )
 
-    def test_propagate_with_no_active_span(self, langfuse_client, memory_exporter):
+    def test_propagate_with_no_active_span(self, elasticdash_client, memory_exporter):
         """Verify propagate_attributes works even with no active span."""
         # Call propagate_attributes without creating a parent span first
         with propagate_attributes(user_id="user_123"):
             # Now create a span
-            with langfuse_client.start_as_current_span(name="span-1"):
+            with elasticdash_client.start_as_current_span(name="span-1"):
                 pass
 
         # Should not crash, span should have user_id
@@ -856,12 +856,12 @@ class TestPropagateAttributesFormat(TestPropagateAttributesBase):
     """Tests for correct attribute formatting and naming."""
 
     def test_user_id_uses_correct_attribute_name(
-        self, langfuse_client, memory_exporter
+        self, elasticdash_client, memory_exporter
     ):
         """Verify user_id uses the correct OTel attribute name."""
-        with langfuse_client.start_as_current_span(name="parent-span"):
+        with elasticdash_client.start_as_current_span(name="parent-span"):
             with propagate_attributes(user_id="user_123"):
-                child = langfuse_client.start_span(name="child-span")
+                child = elasticdash_client.start_span(name="child-span")
                 child.end()
 
         child_span = self.get_span_by_name(memory_exporter, "child-span")
@@ -873,12 +873,12 @@ class TestPropagateAttributesFormat(TestPropagateAttributesBase):
         )
 
     def test_session_id_uses_correct_attribute_name(
-        self, langfuse_client, memory_exporter
+        self, elasticdash_client, memory_exporter
     ):
         """Verify session_id uses the correct OTel attribute name."""
-        with langfuse_client.start_as_current_span(name="parent-span"):
+        with elasticdash_client.start_as_current_span(name="parent-span"):
             with propagate_attributes(session_id="session_abc"):
-                child = langfuse_client.start_span(name="child-span")
+                child = elasticdash_client.start_span(name="child-span")
                 child.end()
 
         child_span = self.get_span_by_name(memory_exporter, "child-span")
@@ -889,13 +889,13 @@ class TestPropagateAttributesFormat(TestPropagateAttributesBase):
             == "session_abc"
         )
 
-    def test_metadata_keys_properly_prefixed(self, langfuse_client, memory_exporter):
+    def test_metadata_keys_properly_prefixed(self, elasticdash_client, memory_exporter):
         """Verify metadata keys are properly prefixed with TRACE_METADATA."""
-        with langfuse_client.start_as_current_span(name="parent-span"):
+        with elasticdash_client.start_as_current_span(name="parent-span"):
             with propagate_attributes(
                 metadata={"experiment": "A", "version": "1.0", "env": "prod"}
             ):
-                child = langfuse_client.start_span(name="child-span")
+                child = elasticdash_client.start_span(name="child-span")
                 child.end()
 
         child_span = self.get_span_by_name(memory_exporter, "child-span")
@@ -911,11 +911,11 @@ class TestPropagateAttributesFormat(TestPropagateAttributesBase):
         for key in expected_keys:
             assert key in attributes, f"Expected key '{key}' not found in attributes"
 
-    def test_multiple_metadata_keys_independent(self, langfuse_client, memory_exporter):
+    def test_multiple_metadata_keys_independent(self, elasticdash_client, memory_exporter):
         """Verify multiple metadata keys are stored as independent attributes."""
-        with langfuse_client.start_as_current_span(name="parent-span"):
+        with elasticdash_client.start_as_current_span(name="parent-span"):
             with propagate_attributes(metadata={"k1": "v1", "k2": "v2", "k3": "v3"}):
-                child = langfuse_client.start_span(name="child-span")
+                child = elasticdash_client.start_span(name="child-span")
                 child.end()
 
         child_span = self.get_span_by_name(memory_exporter, "child-span")
@@ -939,17 +939,17 @@ class TestPropagateAttributesThreading(TestPropagateAttributesBase):
         instrumentor.uninstrument()
 
     def test_propagation_with_threadpoolexecutor(
-        self, langfuse_client, memory_exporter
+        self, elasticdash_client, memory_exporter
     ):
         """Verify attributes propagate from main thread to worker threads."""
 
         def worker_function(span_name: str):
             """Worker creates a span in thread pool."""
-            span = langfuse_client.start_span(name=span_name)
+            span = elasticdash_client.start_span(name=span_name)
             span.end()
             return span_name
 
-        with langfuse_client.start_as_current_span(name="main-span"):
+        with elasticdash_client.start_as_current_span(name="main-span"):
             with propagate_attributes(user_id="main_user", session_id="main_session"):
                 # Execute work in thread pool
                 with concurrent.futures.ThreadPoolExecutor(max_workers=3) as executor:
@@ -974,15 +974,15 @@ class TestPropagateAttributesThreading(TestPropagateAttributesBase):
             )
 
     def test_propagation_isolated_between_threads(
-        self, langfuse_client, memory_exporter
+        self, elasticdash_client, memory_exporter
     ):
         """Verify each thread's context is isolated from others."""
 
         def create_trace_with_user(user_id: str):
             """Create a trace with specific user_id."""
-            with langfuse_client.start_as_current_span(name=f"trace-{user_id}"):
+            with elasticdash_client.start_as_current_span(name=f"trace-{user_id}"):
                 with propagate_attributes(user_id=user_id):
-                    span = langfuse_client.start_span(name=f"span-{user_id}")
+                    span = elasticdash_client.start_span(name=f"span-{user_id}")
                     span.end()
 
         # Run two traces concurrently with different user_ids
@@ -1003,19 +1003,19 @@ class TestPropagateAttributesThreading(TestPropagateAttributesBase):
         )
 
     def test_nested_propagation_across_thread_boundary(
-        self, langfuse_client, memory_exporter
+        self, elasticdash_client, memory_exporter
     ):
         """Verify nested spans across thread boundaries inherit attributes."""
 
         def worker_creates_child():
             """Worker thread creates a child span."""
-            child = langfuse_client.start_span(name="worker-child-span")
+            child = elasticdash_client.start_span(name="worker-child-span")
             child.end()
 
-        with langfuse_client.start_as_current_span(name="main-parent-span"):
+        with elasticdash_client.start_as_current_span(name="main-parent-span"):
             with propagate_attributes(user_id="main_user"):
                 # Create span in main thread
-                main_child = langfuse_client.start_span(name="main-child-span")
+                main_child = elasticdash_client.start_span(name="main-child-span")
                 main_child.end()
 
                 # Create span in worker thread
@@ -1035,20 +1035,20 @@ class TestPropagateAttributesThreading(TestPropagateAttributesBase):
         )
 
     def test_worker_thread_can_override_propagated_attrs(
-        self, langfuse_client, memory_exporter
+        self, elasticdash_client, memory_exporter
     ):
         """Verify worker thread can override propagated attributes."""
 
         def worker_overrides_user():
             """Worker thread sets its own user_id."""
             with propagate_attributes(user_id="worker_user"):
-                span = langfuse_client.start_span(name="worker-span")
+                span = elasticdash_client.start_span(name="worker-span")
                 span.end()
 
-        with langfuse_client.start_as_current_span(name="main-span"):
+        with elasticdash_client.start_as_current_span(name="main-span"):
             with propagate_attributes(user_id="main_user"):
                 # Create span in main thread
-                main_span = langfuse_client.start_span(name="main-child-span")
+                main_span = elasticdash_client.start_span(name="main-child-span")
                 main_span.end()
 
                 # Worker overrides with its own user_id
@@ -1068,16 +1068,16 @@ class TestPropagateAttributesThreading(TestPropagateAttributesBase):
         )
 
     def test_multiple_workers_with_same_propagated_context(
-        self, langfuse_client, memory_exporter
+        self, elasticdash_client, memory_exporter
     ):
         """Verify multiple workers all inherit same propagated context."""
 
         def worker_function(worker_id: int):
             """Worker creates a span."""
-            span = langfuse_client.start_span(name=f"worker-{worker_id}")
+            span = elasticdash_client.start_span(name=f"worker-{worker_id}")
             span.end()
 
-        with langfuse_client.start_as_current_span(name="main-span"):
+        with elasticdash_client.start_as_current_span(name="main-span"):
             with propagate_attributes(session_id="shared_session"):
                 # Submit 5 workers
                 with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
@@ -1094,15 +1094,15 @@ class TestPropagateAttributesThreading(TestPropagateAttributesBase):
             )
 
     def test_concurrent_traces_with_different_attributes(
-        self, langfuse_client, memory_exporter
+        self, elasticdash_client, memory_exporter
     ):
         """Verify concurrent traces with different attributes don't mix."""
 
         def create_trace(trace_id: int):
             """Create a trace with unique user_id."""
-            with langfuse_client.start_as_current_span(name=f"trace-{trace_id}"):
+            with elasticdash_client.start_as_current_span(name=f"trace-{trace_id}"):
                 with propagate_attributes(user_id=f"user_{trace_id}"):
-                    span = langfuse_client.start_span(name=f"span-{trace_id}")
+                    span = elasticdash_client.start_span(name=f"span-{trace_id}")
                     span.end()
 
         # Create 10 traces concurrently
@@ -1118,20 +1118,20 @@ class TestPropagateAttributesThreading(TestPropagateAttributesBase):
             )
 
     def test_exception_in_worker_preserves_context(
-        self, langfuse_client, memory_exporter
+        self, elasticdash_client, memory_exporter
     ):
         """Verify exception in worker doesn't corrupt main thread context."""
 
         def worker_raises_exception():
             """Worker creates span then raises exception."""
-            span = langfuse_client.start_span(name="worker-span")
+            span = elasticdash_client.start_span(name="worker-span")
             span.end()
             raise ValueError("Test exception")
 
-        with langfuse_client.start_as_current_span(name="main-span"):
+        with elasticdash_client.start_as_current_span(name="main-span"):
             with propagate_attributes(user_id="main_user"):
                 # Create span before worker
-                span1 = langfuse_client.start_span(name="span-before")
+                span1 = elasticdash_client.start_span(name="span-before")
                 span1.end()
 
                 # Worker raises exception (catch it)
@@ -1143,7 +1143,7 @@ class TestPropagateAttributesThreading(TestPropagateAttributesBase):
                         pass  # Expected
 
                 # Create span after exception
-                span2 = langfuse_client.start_span(name="span-after")
+                span2 = elasticdash_client.start_span(name="span-after")
                 span2.end()
 
         # Verify both main thread spans still have correct user_id
@@ -1162,31 +1162,31 @@ class TestPropagateAttributesCrossTracer(TestPropagateAttributesBase):
     """Tests for propagate_attributes with different OpenTelemetry tracers."""
 
     def test_different_tracer_spans_get_attributes(
-        self, langfuse_client, memory_exporter, tracer_provider
+        self, elasticdash_client, memory_exporter, tracer_provider
     ):
         """Verify spans from different tracers get propagated attributes."""
         # Get a different tracer (not the ElasticDash tracer)
         other_tracer = tracer_provider.get_tracer("other-library", "1.0.0")
 
-        with langfuse_client.start_as_current_span(name="langfuse-parent"):
+        with elasticdash_client.start_as_current_span(name="elasticdash-parent"):
             with propagate_attributes(user_id="user_123", session_id="session_abc"):
                 # Create span with ElasticDash tracer
-                langfuse_span = langfuse_client.start_span(name="langfuse-child")
-                langfuse_span.end()
+                elasticdash_span = elasticdash_client.start_span(name="elasticdash-child")
+                elasticdash_span.end()
 
                 # Create span with different tracer
                 with other_tracer.start_as_current_span(name="other-library-span"):
                     pass
 
         # Verify both spans have the propagated attributes
-        langfuse_span_data = self.get_span_by_name(memory_exporter, "langfuse-child")
+        elasticdash_span_data = self.get_span_by_name(memory_exporter, "elasticdash-child")
         self.verify_span_attribute(
-            langfuse_span_data,
+            elasticdash_span_data,
             ElasticDashOtelSpanAttributes.TRACE_USER_ID,
             "user_123",
         )
         self.verify_span_attribute(
-            langfuse_span_data,
+            elasticdash_span_data,
             ElasticDashOtelSpanAttributes.TRACE_SESSION_ID,
             "session_abc",
         )
@@ -1204,24 +1204,24 @@ class TestPropagateAttributesCrossTracer(TestPropagateAttributesBase):
         )
 
     def test_nested_spans_from_multiple_tracers(
-        self, langfuse_client, memory_exporter, tracer_provider
+        self, elasticdash_client, memory_exporter, tracer_provider
     ):
         """Verify nested spans from multiple tracers all get propagated attributes."""
         tracer_a = tracer_provider.get_tracer("library-a", "1.0.0")
         tracer_b = tracer_provider.get_tracer("library-b", "2.0.0")
 
-        with langfuse_client.start_as_current_span(name="root"):
+        with elasticdash_client.start_as_current_span(name="root"):
             with propagate_attributes(
                 user_id="user_123", metadata={"experiment": "cross_tracer"}
             ):
                 # Create nested spans from different tracers
                 with tracer_a.start_as_current_span(name="library-a-span"):
                     with tracer_b.start_as_current_span(name="library-b-span"):
-                        langfuse_leaf = langfuse_client.start_span(name="langfuse-leaf")
-                        langfuse_leaf.end()
+                        elasticdash_leaf = elasticdash_client.start_span(name="elasticdash-leaf")
+                        elasticdash_leaf.end()
 
         # Verify all spans have the attributes
-        for span_name in ["library-a-span", "library-b-span", "langfuse-leaf"]:
+        for span_name in ["library-a-span", "library-b-span", "elasticdash-leaf"]:
             span_data = self.get_span_by_name(memory_exporter, span_name)
             self.verify_span_attribute(
                 span_data,
@@ -1235,12 +1235,12 @@ class TestPropagateAttributesCrossTracer(TestPropagateAttributesBase):
             )
 
     def test_other_tracer_span_before_propagate_context(
-        self, langfuse_client, memory_exporter, tracer_provider
+        self, elasticdash_client, memory_exporter, tracer_provider
     ):
         """Verify spans created before propagate_attributes don't get attributes."""
         other_tracer = tracer_provider.get_tracer("other-library", "1.0.0")
 
-        with langfuse_client.start_as_current_span(name="root"):
+        with elasticdash_client.start_as_current_span(name="root"):
             # Create span BEFORE propagate_attributes
             with other_tracer.start_as_current_span(name="span-before"):
                 pass
@@ -1263,12 +1263,12 @@ class TestPropagateAttributesCrossTracer(TestPropagateAttributesBase):
         )
 
     def test_mixed_tracers_with_metadata(
-        self, langfuse_client, memory_exporter, tracer_provider
+        self, elasticdash_client, memory_exporter, tracer_provider
     ):
         """Verify metadata propagates correctly to spans from different tracers."""
         other_tracer = tracer_provider.get_tracer("instrumented-library", "1.0.0")
 
-        with langfuse_client.start_as_current_span(name="main"):
+        with elasticdash_client.start_as_current_span(name="main"):
             with propagate_attributes(
                 metadata={
                     "env": "production",
@@ -1277,14 +1277,14 @@ class TestPropagateAttributesCrossTracer(TestPropagateAttributesBase):
                 }
             ):
                 # Create spans from both tracers
-                langfuse_span = langfuse_client.start_span(name="langfuse-operation")
-                langfuse_span.end()
+                elasticdash_span = elasticdash_client.start_span(name="elasticdash-operation")
+                elasticdash_span.end()
 
                 with other_tracer.start_as_current_span(name="library-operation"):
                     pass
 
         # Verify both spans have all metadata
-        for span_name in ["langfuse-operation", "library-operation"]:
+        for span_name in ["elasticdash-operation", "library-operation"]:
             span_data = self.get_span_by_name(memory_exporter, span_name)
             self.verify_span_attribute(
                 span_data,
@@ -1302,8 +1302,8 @@ class TestPropagateAttributesCrossTracer(TestPropagateAttributesBase):
                 "enabled",
             )
 
-    def test_propagate_without_langfuse_parent(
-        self, langfuse_client, memory_exporter, tracer_provider
+    def test_propagate_without_elasticdash_parent(
+        self, elasticdash_client, memory_exporter, tracer_provider
     ):
         """Verify propagate_attributes works even when parent span is from different tracer."""
         other_tracer = tracer_provider.get_tracer("other-library", "1.0.0")
@@ -1315,11 +1315,11 @@ class TestPropagateAttributesCrossTracer(TestPropagateAttributesBase):
                 with other_tracer.start_as_current_span(name="other-child"):
                     pass
 
-                langfuse_child = langfuse_client.start_span(name="langfuse-child")
-                langfuse_child.end()
+                elasticdash_child = elasticdash_client.start_span(name="elasticdash-child")
+                elasticdash_child.end()
 
         # Verify all spans have attributes (including non-ElasticDash parent)
-        for span_name in ["other-parent", "other-child", "langfuse-child"]:
+        for span_name in ["other-parent", "other-child", "elasticdash-child"]:
             span_data = self.get_span_by_name(memory_exporter, span_name)
             self.verify_span_attribute(
                 span_data,
@@ -1333,14 +1333,14 @@ class TestPropagateAttributesCrossTracer(TestPropagateAttributesBase):
             )
 
     def test_attributes_persist_across_tracer_changes(
-        self, langfuse_client, memory_exporter, tracer_provider
+        self, elasticdash_client, memory_exporter, tracer_provider
     ):
         """Verify attributes persist as execution moves between different tracers."""
         tracer_1 = tracer_provider.get_tracer("library-1", "1.0.0")
         tracer_2 = tracer_provider.get_tracer("library-2", "1.0.0")
         tracer_3 = tracer_provider.get_tracer("library-3", "1.0.0")
 
-        with langfuse_client.start_as_current_span(name="root"):
+        with elasticdash_client.start_as_current_span(name="root"):
             with propagate_attributes(user_id="persistent_user"):
                 # Bounce between different tracers
                 with tracer_1.start_as_current_span(name="step-1"):
@@ -1350,8 +1350,8 @@ class TestPropagateAttributesCrossTracer(TestPropagateAttributesBase):
                     with tracer_3.start_as_current_span(name="step-3"):
                         pass
 
-                langfuse_span = langfuse_client.start_span(name="step-4")
-                langfuse_span.end()
+                elasticdash_span = elasticdash_client.start_span(name="step-4")
+                elasticdash_span.end()
 
         # Verify all steps have the user_id
         for step_name in ["step-1", "step-2", "step-3", "step-4"]:
@@ -1367,15 +1367,15 @@ class TestPropagateAttributesAsync(TestPropagateAttributesBase):
     """Tests for propagate_attributes with async/await."""
 
     @pytest.mark.asyncio
-    async def test_async_propagation_basic(self, langfuse_client, memory_exporter):
+    async def test_async_propagation_basic(self, elasticdash_client, memory_exporter):
         """Verify attributes propagate in async context."""
 
         async def async_operation():
             """Async function that creates a span."""
-            span = langfuse_client.start_span(name="async-span")
+            span = elasticdash_client.start_span(name="async-span")
             span.end()
 
-        with langfuse_client.start_as_current_span(name="parent"):
+        with elasticdash_client.start_as_current_span(name="parent"):
             with propagate_attributes(user_id="async_user", session_id="async_session"):
                 await async_operation()
 
@@ -1389,24 +1389,24 @@ class TestPropagateAttributesAsync(TestPropagateAttributesBase):
         )
 
     @pytest.mark.asyncio
-    async def test_async_nested_operations(self, langfuse_client, memory_exporter):
+    async def test_async_nested_operations(self, elasticdash_client, memory_exporter):
         """Verify attributes propagate through nested async operations."""
 
         async def level_3():
-            span = langfuse_client.start_span(name="level-3-span")
+            span = elasticdash_client.start_span(name="level-3-span")
             span.end()
 
         async def level_2():
-            span = langfuse_client.start_span(name="level-2-span")
+            span = elasticdash_client.start_span(name="level-2-span")
             span.end()
             await level_3()
 
         async def level_1():
-            span = langfuse_client.start_span(name="level-1-span")
+            span = elasticdash_client.start_span(name="level-1-span")
             span.end()
             await level_2()
 
-        with langfuse_client.start_as_current_span(name="root"):
+        with elasticdash_client.start_as_current_span(name="root"):
             with propagate_attributes(
                 user_id="nested_user", metadata={"level": "nested"}
             ):
@@ -1425,12 +1425,12 @@ class TestPropagateAttributesAsync(TestPropagateAttributesBase):
             )
 
     @pytest.mark.asyncio
-    async def test_async_context_manager(self, langfuse_client, memory_exporter):
+    async def test_async_context_manager(self, elasticdash_client, memory_exporter):
         """Verify propagate_attributes works as context manager in async function."""
-        with langfuse_client.start_as_current_span(name="parent"):
+        with elasticdash_client.start_as_current_span(name="parent"):
             # propagate_attributes supports both sync and async contexts via regular 'with'
             with propagate_attributes(user_id="async_ctx_user"):
-                span = langfuse_client.start_span(name="inside-async-ctx")
+                span = elasticdash_client.start_span(name="inside-async-ctx")
                 span.end()
 
         span_data = self.get_span_by_name(memory_exporter, "inside-async-ctx")
@@ -1440,17 +1440,17 @@ class TestPropagateAttributesAsync(TestPropagateAttributesBase):
 
     @pytest.mark.asyncio
     async def test_multiple_async_tasks_concurrent(
-        self, langfuse_client, memory_exporter
+        self, elasticdash_client, memory_exporter
     ):
         """Verify context isolation between concurrent async tasks."""
         import asyncio
 
         async def create_trace_with_user(user_id: str):
             """Create a trace with specific user_id."""
-            with langfuse_client.start_as_current_span(name=f"trace-{user_id}"):
+            with elasticdash_client.start_as_current_span(name=f"trace-{user_id}"):
                 with propagate_attributes(user_id=user_id):
                     await asyncio.sleep(0.01)  # Simulate async work
-                    span = langfuse_client.start_span(name=f"span-{user_id}")
+                    span = elasticdash_client.start_span(name=f"span-{user_id}")
                     span.end()
 
         # Run multiple traces concurrently
@@ -1468,21 +1468,21 @@ class TestPropagateAttributesAsync(TestPropagateAttributesBase):
             )
 
     @pytest.mark.asyncio
-    async def test_async_with_sync_nested(self, langfuse_client, memory_exporter):
+    async def test_async_with_sync_nested(self, elasticdash_client, memory_exporter):
         """Verify attributes propagate from async to sync code."""
 
         def sync_operation():
             """Sync function called from async context."""
-            span = langfuse_client.start_span(name="sync-in-async")
+            span = elasticdash_client.start_span(name="sync-in-async")
             span.end()
 
         async def async_operation():
             """Async function that calls sync code."""
-            span1 = langfuse_client.start_span(name="async-span")
+            span1 = elasticdash_client.start_span(name="async-span")
             span1.end()
             sync_operation()
 
-        with langfuse_client.start_as_current_span(name="root"):
+        with elasticdash_client.start_as_current_span(name="root"):
             with propagate_attributes(user_id="mixed_user"):
                 await async_operation()
 
@@ -1499,19 +1499,19 @@ class TestPropagateAttributesAsync(TestPropagateAttributesBase):
 
     @pytest.mark.asyncio
     async def test_async_exception_preserves_context(
-        self, langfuse_client, memory_exporter
+        self, elasticdash_client, memory_exporter
     ):
         """Verify context is preserved even when async operation raises exception."""
 
         async def failing_operation():
             """Async operation that raises exception."""
-            span = langfuse_client.start_span(name="span-before-error")
+            span = elasticdash_client.start_span(name="span-before-error")
             span.end()
             raise ValueError("Test error")
 
-        with langfuse_client.start_as_current_span(name="root"):
+        with elasticdash_client.start_as_current_span(name="root"):
             with propagate_attributes(user_id="error_user"):
-                span1 = langfuse_client.start_span(name="span-before-async")
+                span1 = elasticdash_client.start_span(name="span-before-async")
                 span1.end()
 
                 try:
@@ -1519,7 +1519,7 @@ class TestPropagateAttributesAsync(TestPropagateAttributesBase):
                 except ValueError:
                     pass  # Expected
 
-                span2 = langfuse_client.start_span(name="span-after-error")
+                span2 = elasticdash_client.start_span(name="span-after-error")
                 span2.end()
 
         # Verify all spans have attributes
@@ -1530,14 +1530,14 @@ class TestPropagateAttributesAsync(TestPropagateAttributesBase):
             )
 
     @pytest.mark.asyncio
-    async def test_async_with_metadata(self, langfuse_client, memory_exporter):
+    async def test_async_with_metadata(self, elasticdash_client, memory_exporter):
         """Verify metadata propagates correctly in async context."""
 
         async def async_with_metadata():
-            span = langfuse_client.start_span(name="async-metadata-span")
+            span = elasticdash_client.start_span(name="async-metadata-span")
             span.end()
 
-        with langfuse_client.start_as_current_span(name="root"):
+        with elasticdash_client.start_as_current_span(name="root"):
             with propagate_attributes(
                 user_id="metadata_user",
                 metadata={"async": "true", "operation": "test"},
@@ -1563,12 +1563,12 @@ class TestPropagateAttributesAsync(TestPropagateAttributesBase):
 class TestPropagateAttributesBaggage(TestPropagateAttributesBase):
     """Tests for as_baggage=True parameter and OpenTelemetry baggage propagation."""
 
-    def test_baggage_is_set_when_as_baggage_true(self, langfuse_client):
+    def test_baggage_is_set_when_as_baggage_true(self, elasticdash_client):
         """Verify baggage entries are created with correct keys when as_baggage=True."""
         from opentelemetry import baggage
         from opentelemetry import context as otel_context
 
-        with langfuse_client.start_as_current_span(name="parent"):
+        with elasticdash_client.start_as_current_span(name="parent"):
             with propagate_attributes(
                 user_id="user_123",
                 session_id="session_abc",
@@ -1580,23 +1580,23 @@ class TestPropagateAttributesBaggage(TestPropagateAttributesBase):
                 baggage_entries = baggage.get_all(context=current_context)
 
                 # Verify baggage entries exist with correct keys
-                assert "langfuse_user_id" in baggage_entries
-                assert baggage_entries["langfuse_user_id"] == "user_123"
+                assert "elasticdash_user_id" in baggage_entries
+                assert baggage_entries["elasticdash_user_id"] == "user_123"
 
-                assert "langfuse_session_id" in baggage_entries
-                assert baggage_entries["langfuse_session_id"] == "session_abc"
+                assert "elasticdash_session_id" in baggage_entries
+                assert baggage_entries["elasticdash_session_id"] == "session_abc"
 
-                assert "langfuse_metadata_env" in baggage_entries
-                assert baggage_entries["langfuse_metadata_env"] == "test"
+                assert "elasticdash_metadata_env" in baggage_entries
+                assert baggage_entries["elasticdash_metadata_env"] == "test"
 
-                assert "langfuse_metadata_version" in baggage_entries
-                assert baggage_entries["langfuse_metadata_version"] == "2.0"
+                assert "elasticdash_metadata_version" in baggage_entries
+                assert baggage_entries["elasticdash_metadata_version"] == "2.0"
 
     def test_spans_receive_attributes_from_baggage(
-        self, langfuse_client, memory_exporter
+        self, elasticdash_client, memory_exporter
     ):
         """Verify child spans get attributes when parent uses as_baggage=True."""
-        with langfuse_client.start_as_current_span(name="parent"):
+        with elasticdash_client.start_as_current_span(name="parent"):
             with propagate_attributes(
                 user_id="baggage_user",
                 session_id="baggage_session",
@@ -1604,7 +1604,7 @@ class TestPropagateAttributesBaggage(TestPropagateAttributesBase):
                 as_baggage=True,
             ):
                 # Create child span
-                child = langfuse_client.start_span(name="child-span")
+                child = elasticdash_client.start_span(name="child-span")
                 child.end()
 
         # Verify child span has all attributes
@@ -1623,12 +1623,12 @@ class TestPropagateAttributesBaggage(TestPropagateAttributesBase):
             "baggage",
         )
 
-    def test_baggage_disabled_by_default(self, langfuse_client):
+    def test_baggage_disabled_by_default(self, elasticdash_client):
         """Verify as_baggage=False (default) doesn't create baggage entries."""
         from opentelemetry import baggage
         from opentelemetry import context as otel_context
 
-        with langfuse_client.start_as_current_span(name="parent"):
+        with elasticdash_client.start_as_current_span(name="parent"):
             with propagate_attributes(
                 user_id="user_123",
                 session_id="session_abc",
@@ -1639,15 +1639,15 @@ class TestPropagateAttributesBaggage(TestPropagateAttributesBase):
                 assert len(baggage_entries) == 0
 
     def test_metadata_key_with_user_id_substring_doesnt_collide(
-        self, langfuse_client, memory_exporter
+        self, elasticdash_client, memory_exporter
     ):
         """Verify metadata key containing 'user_id' substring doesn't map to TRACE_USER_ID."""
-        with langfuse_client.start_as_current_span(name="parent"):
+        with elasticdash_client.start_as_current_span(name="parent"):
             with propagate_attributes(
                 metadata={"user_info": "some_data", "user_id_copy": "another"},
                 as_baggage=True,
             ):
-                child = langfuse_client.start_span(name="child-span")
+                child = elasticdash_client.start_span(name="child-span")
                 child.end()
 
         child_span = self.get_span_by_name(memory_exporter, "child-span")
@@ -1670,15 +1670,15 @@ class TestPropagateAttributesBaggage(TestPropagateAttributesBase):
         )
 
     def test_metadata_key_with_session_substring_doesnt_collide(
-        self, langfuse_client, memory_exporter
+        self, elasticdash_client, memory_exporter
     ):
         """Verify metadata key containing 'session_id' substring doesn't map to TRACE_SESSION_ID."""
-        with langfuse_client.start_as_current_span(name="parent"):
+        with elasticdash_client.start_as_current_span(name="parent"):
             with propagate_attributes(
                 metadata={"session_data": "value1", "session_id_backup": "value2"},
                 as_baggage=True,
             ):
-                child = langfuse_client.start_span(name="child-span")
+                child = elasticdash_client.start_span(name="child-span")
                 child.end()
 
         child_span = self.get_span_by_name(memory_exporter, "child-span")
@@ -1701,10 +1701,10 @@ class TestPropagateAttributesBaggage(TestPropagateAttributesBase):
         )
 
     def test_metadata_keys_extract_correctly_from_baggage(
-        self, langfuse_client, memory_exporter
+        self, elasticdash_client, memory_exporter
     ):
         """Verify metadata keys are correctly formatted in baggage and extracted back."""
-        with langfuse_client.start_as_current_span(name="parent"):
+        with elasticdash_client.start_as_current_span(name="parent"):
             with propagate_attributes(
                 metadata={
                     "env": "production",
@@ -1713,7 +1713,7 @@ class TestPropagateAttributesBaggage(TestPropagateAttributesBase):
                 },
                 as_baggage=True,
             ):
-                child = langfuse_client.start_span(name="child-span")
+                child = elasticdash_client.start_span(name="child-span")
                 child.end()
 
         child_span = self.get_span_by_name(memory_exporter, "child-span")
@@ -1735,9 +1735,9 @@ class TestPropagateAttributesBaggage(TestPropagateAttributesBase):
             "exp_123",
         )
 
-    def test_baggage_and_context_both_propagate(self, langfuse_client, memory_exporter):
+    def test_baggage_and_context_both_propagate(self, elasticdash_client, memory_exporter):
         """Verify attributes propagate when both baggage and context mechanisms are active."""
-        with langfuse_client.start_as_current_span(name="parent"):
+        with elasticdash_client.start_as_current_span(name="parent"):
             # Enable baggage
             with propagate_attributes(
                 user_id="user_both",
@@ -1746,8 +1746,8 @@ class TestPropagateAttributesBaggage(TestPropagateAttributesBase):
                 as_baggage=True,
             ):
                 # Create multiple levels of nesting
-                with langfuse_client.start_as_current_span(name="middle"):
-                    child = langfuse_client.start_span(name="leaf")
+                with elasticdash_client.start_as_current_span(name="middle"):
+                    child = elasticdash_client.start_span(name="leaf")
                     child.end()
 
         # Verify all spans have attributes
@@ -1765,12 +1765,12 @@ class TestPropagateAttributesBaggage(TestPropagateAttributesBase):
                 "both",
             )
 
-    def test_baggage_survives_context_isolation(self, langfuse_client, memory_exporter):
+    def test_baggage_survives_context_isolation(self, elasticdash_client, memory_exporter):
         """Simulate cross-process scenario: baggage persists when context is detached/reattached."""
         from opentelemetry import context as otel_context
 
         # Step 1: Create context with baggage
-        with langfuse_client.start_as_current_span(name="original-process"):
+        with elasticdash_client.start_as_current_span(name="original-process"):
             with propagate_attributes(
                 user_id="cross_process_user",
                 session_id="cross_process_session",
@@ -1783,8 +1783,8 @@ class TestPropagateAttributesBaggage(TestPropagateAttributesBase):
         # This mimics what happens when receiving an HTTP request with baggage headers
         token = otel_context.attach(context_with_baggage)
         try:
-            with langfuse_client.start_as_current_span(name="remote-process"):
-                child = langfuse_client.start_span(name="remote-child")
+            with elasticdash_client.start_as_current_span(name="remote-process"):
+                child = elasticdash_client.start_span(name="remote-child")
                 child.end()
         finally:
             otel_context.detach(token)
@@ -1806,14 +1806,14 @@ class TestPropagateAttributesBaggage(TestPropagateAttributesBase):
 class TestPropagateAttributesVersion(TestPropagateAttributesBase):
     """Tests for version parameter propagation."""
 
-    def test_version_propagates_to_child_spans(self, langfuse_client, memory_exporter):
+    def test_version_propagates_to_child_spans(self, elasticdash_client, memory_exporter):
         """Verify version propagates to all child spans within context."""
-        with langfuse_client.start_as_current_span(name="parent-span"):
+        with elasticdash_client.start_as_current_span(name="parent-span"):
             with propagate_attributes(version="v1.2.3"):
-                child1 = langfuse_client.start_span(name="child-span-1")
+                child1 = elasticdash_client.start_span(name="child-span-1")
                 child1.end()
 
-                child2 = langfuse_client.start_span(name="child-span-2")
+                child2 = elasticdash_client.start_span(name="child-span-2")
                 child2.end()
 
         # Verify both children have version
@@ -1831,15 +1831,15 @@ class TestPropagateAttributesVersion(TestPropagateAttributesBase):
             "v1.2.3",
         )
 
-    def test_version_with_user_and_session(self, langfuse_client, memory_exporter):
+    def test_version_with_user_and_session(self, elasticdash_client, memory_exporter):
         """Verify version works together with user_id and session_id."""
-        with langfuse_client.start_as_current_span(name="parent-span"):
+        with elasticdash_client.start_as_current_span(name="parent-span"):
             with propagate_attributes(
                 user_id="user_123",
                 session_id="session_abc",
                 version="2.0.0",
             ):
-                child = langfuse_client.start_span(name="child-span")
+                child = elasticdash_client.start_span(name="child-span")
                 child.end()
 
         # Verify child has all attributes
@@ -1854,14 +1854,14 @@ class TestPropagateAttributesVersion(TestPropagateAttributesBase):
             child_span, ElasticDashOtelSpanAttributes.VERSION, "2.0.0"
         )
 
-    def test_version_with_metadata(self, langfuse_client, memory_exporter):
+    def test_version_with_metadata(self, elasticdash_client, memory_exporter):
         """Verify version works together with metadata."""
-        with langfuse_client.start_as_current_span(name="parent-span"):
+        with elasticdash_client.start_as_current_span(name="parent-span"):
             with propagate_attributes(
                 version="1.0.0",
                 metadata={"env": "production", "region": "us-east"},
             ):
-                child = langfuse_client.start_span(name="child-span")
+                child = elasticdash_client.start_span(name="child-span")
                 child.end()
 
         child_span = self.get_span_by_name(memory_exporter, "child-span")
@@ -1879,26 +1879,26 @@ class TestPropagateAttributesVersion(TestPropagateAttributesBase):
             "us-east",
         )
 
-    def test_version_validation_over_200_chars(self, langfuse_client, memory_exporter):
+    def test_version_validation_over_200_chars(self, elasticdash_client, memory_exporter):
         """Verify version over 200 characters is dropped with warning."""
         long_version = "v" + "1.0.0" * 50  # Create a very long version string
 
-        with langfuse_client.start_as_current_span(name="parent-span"):
+        with elasticdash_client.start_as_current_span(name="parent-span"):
             with propagate_attributes(version=long_version):
-                child = langfuse_client.start_span(name="child-span")
+                child = elasticdash_client.start_span(name="child-span")
                 child.end()
 
         # Verify child does NOT have version
         child_span = self.get_span_by_name(memory_exporter, "child-span")
         self.verify_missing_attribute(child_span, ElasticDashOtelSpanAttributes.VERSION)
 
-    def test_version_exactly_200_chars(self, langfuse_client, memory_exporter):
+    def test_version_exactly_200_chars(self, elasticdash_client, memory_exporter):
         """Verify exactly 200 character version is accepted."""
         version_200 = "v" * 200
 
-        with langfuse_client.start_as_current_span(name="parent-span"):
+        with elasticdash_client.start_as_current_span(name="parent-span"):
             with propagate_attributes(version=version_200):
-                child = langfuse_client.start_span(name="child-span")
+                child = elasticdash_client.start_span(name="child-span")
                 child.end()
 
         # Verify child HAS version
@@ -1908,22 +1908,22 @@ class TestPropagateAttributesVersion(TestPropagateAttributesBase):
         )
 
     def test_version_nested_contexts_inner_overwrites(
-        self, langfuse_client, memory_exporter
+        self, elasticdash_client, memory_exporter
     ):
         """Verify inner context overwrites outer version."""
-        with langfuse_client.start_as_current_span(name="parent-span"):
+        with elasticdash_client.start_as_current_span(name="parent-span"):
             with propagate_attributes(version="1.0.0"):
                 # Create span in outer context
-                span1 = langfuse_client.start_span(name="span-1")
+                span1 = elasticdash_client.start_span(name="span-1")
                 span1.end()
 
                 # Inner context with different version
                 with propagate_attributes(version="2.0.0"):
-                    span2 = langfuse_client.start_span(name="span-2")
+                    span2 = elasticdash_client.start_span(name="span-2")
                     span2.end()
 
                 # Back to outer context
-                span3 = langfuse_client.start_span(name="span-3")
+                span3 = elasticdash_client.start_span(name="span-3")
                 span3.end()
 
         # Verify: span1 and span3 have version 1.0.0, span2 has 2.0.0
@@ -1942,15 +1942,15 @@ class TestPropagateAttributesVersion(TestPropagateAttributesBase):
             span3_data, ElasticDashOtelSpanAttributes.VERSION, "1.0.0"
         )
 
-    def test_version_with_baggage(self, langfuse_client, memory_exporter):
+    def test_version_with_baggage(self, elasticdash_client, memory_exporter):
         """Verify version propagates through baggage."""
-        with langfuse_client.start_as_current_span(name="parent-span"):
+        with elasticdash_client.start_as_current_span(name="parent-span"):
             with propagate_attributes(
                 version="baggage_version",
                 user_id="user_123",
                 as_baggage=True,
             ):
-                child = langfuse_client.start_span(name="child-span")
+                child = elasticdash_client.start_span(name="child-span")
                 child.end()
 
         # Verify child has version
@@ -1963,7 +1963,7 @@ class TestPropagateAttributesVersion(TestPropagateAttributesBase):
         )
 
     def test_version_semantic_versioning_formats(
-        self, langfuse_client, memory_exporter
+        self, elasticdash_client, memory_exporter
     ):
         """Verify various semantic versioning formats work correctly."""
         test_versions = [
@@ -1975,10 +1975,10 @@ class TestPropagateAttributesVersion(TestPropagateAttributesBase):
             "0.1.0",
         ]
 
-        with langfuse_client.start_as_current_span(name="parent-span"):
+        with elasticdash_client.start_as_current_span(name="parent-span"):
             for idx, version in enumerate(test_versions):
                 with propagate_attributes(version=version):
-                    span = langfuse_client.start_span(name=f"span-{idx}")
+                    span = elasticdash_client.start_span(name=f"span-{idx}")
                     span.end()
 
         # Verify all versions are correctly set
@@ -1988,11 +1988,11 @@ class TestPropagateAttributesVersion(TestPropagateAttributesBase):
                 span_data, ElasticDashOtelSpanAttributes.VERSION, expected_version
             )
 
-    def test_version_non_string_dropped(self, langfuse_client, memory_exporter):
+    def test_version_non_string_dropped(self, elasticdash_client, memory_exporter):
         """Verify non-string version is dropped with warning."""
-        with langfuse_client.start_as_current_span(name="parent-span"):
+        with elasticdash_client.start_as_current_span(name="parent-span"):
             with propagate_attributes(version=123):  # type: ignore
-                child = langfuse_client.start_span(name="child-span")
+                child = elasticdash_client.start_span(name="child-span")
                 child.end()
 
         # Verify child does NOT have version
@@ -2000,13 +2000,13 @@ class TestPropagateAttributesVersion(TestPropagateAttributesBase):
         self.verify_missing_attribute(child_span, ElasticDashOtelSpanAttributes.VERSION)
 
     def test_version_propagates_to_grandchildren(
-        self, langfuse_client, memory_exporter
+        self, elasticdash_client, memory_exporter
     ):
         """Verify version propagates through multiple levels of nesting."""
-        with langfuse_client.start_as_current_span(name="parent-span"):
+        with elasticdash_client.start_as_current_span(name="parent-span"):
             with propagate_attributes(version="nested_v1"):
-                with langfuse_client.start_as_current_span(name="child-span"):
-                    grandchild = langfuse_client.start_span(name="grandchild-span")
+                with elasticdash_client.start_as_current_span(name="child-span"):
+                    grandchild = elasticdash_client.start_span(name="grandchild-span")
                     grandchild.end()
 
         # Verify all three levels have version
@@ -2020,14 +2020,14 @@ class TestPropagateAttributesVersion(TestPropagateAttributesBase):
             )
 
     @pytest.mark.asyncio
-    async def test_version_with_async(self, langfuse_client, memory_exporter):
+    async def test_version_with_async(self, elasticdash_client, memory_exporter):
         """Verify version propagates in async context."""
 
         async def async_operation():
-            span = langfuse_client.start_span(name="async-span")
+            span = elasticdash_client.start_span(name="async-span")
             span.end()
 
-        with langfuse_client.start_as_current_span(name="parent"):
+        with elasticdash_client.start_as_current_span(name="parent"):
             with propagate_attributes(version="async_v1.0"):
                 await async_operation()
 
@@ -2036,11 +2036,11 @@ class TestPropagateAttributesVersion(TestPropagateAttributesBase):
             async_span, ElasticDashOtelSpanAttributes.VERSION, "async_v1.0"
         )
 
-    def test_version_attribute_key_format(self, langfuse_client, memory_exporter):
+    def test_version_attribute_key_format(self, elasticdash_client, memory_exporter):
         """Verify version uses correct attribute key format."""
-        with langfuse_client.start_as_current_span(name="parent-span"):
+        with elasticdash_client.start_as_current_span(name="parent-span"):
             with propagate_attributes(version="key_test_v1"):
-                child = langfuse_client.start_span(name="child-span")
+                child = elasticdash_client.start_span(name="child-span")
                 child.end()
 
         child_span = self.get_span_by_name(memory_exporter, "child-span")
@@ -2054,14 +2054,14 @@ class TestPropagateAttributesVersion(TestPropagateAttributesBase):
 class TestPropagateAttributesTags(TestPropagateAttributesBase):
     """Tests for tags parameter propagation."""
 
-    def test_tags_propagate_to_child_spans(self, langfuse_client, memory_exporter):
+    def test_tags_propagate_to_child_spans(self, elasticdash_client, memory_exporter):
         """Verify tags propagate to all child spans within context."""
-        with langfuse_client.start_as_current_span(name="parent-span"):
+        with elasticdash_client.start_as_current_span(name="parent-span"):
             with propagate_attributes(tags=["production", "api-v2", "critical"]):
-                child1 = langfuse_client.start_span(name="child-span-1")
+                child1 = elasticdash_client.start_span(name="child-span-1")
                 child1.end()
 
-                child2 = langfuse_client.start_span(name="child-span-2")
+                child2 = elasticdash_client.start_span(name="child-span-2")
                 child2.end()
 
         # Verify both children have tags
@@ -2079,11 +2079,11 @@ class TestPropagateAttributesTags(TestPropagateAttributesBase):
             tuple(["production", "api-v2", "critical"]),
         )
 
-    def test_tags_with_single_tag(self, langfuse_client, memory_exporter):
+    def test_tags_with_single_tag(self, elasticdash_client, memory_exporter):
         """Verify single tag works correctly."""
-        with langfuse_client.start_as_current_span(name="parent-span"):
+        with elasticdash_client.start_as_current_span(name="parent-span"):
             with propagate_attributes(tags=["experiment"]):
-                child = langfuse_client.start_span(name="child-span")
+                child = elasticdash_client.start_span(name="child-span")
                 child.end()
 
         child_span = self.get_span_by_name(memory_exporter, "child-span")
@@ -2093,26 +2093,26 @@ class TestPropagateAttributesTags(TestPropagateAttributesBase):
             tuple(["experiment"]),
         )
 
-    def test_empty_tags_list(self, langfuse_client, memory_exporter):
+    def test_empty_tags_list(self, elasticdash_client, memory_exporter):
         """Verify empty tags list is handled correctly."""
-        with langfuse_client.start_as_current_span(name="parent-span"):
+        with elasticdash_client.start_as_current_span(name="parent-span"):
             with propagate_attributes(tags=[]):
-                child = langfuse_client.start_span(name="child-span")
+                child = elasticdash_client.start_span(name="child-span")
                 child.end()
 
         # With empty list, tags should not be set
         child_span = self.get_span_by_name(memory_exporter, "child-span")
         self.verify_missing_attribute(child_span, ElasticDashOtelSpanAttributes.TRACE_TAGS)
 
-    def test_tags_with_user_and_session(self, langfuse_client, memory_exporter):
+    def test_tags_with_user_and_session(self, elasticdash_client, memory_exporter):
         """Verify tags work together with user_id and session_id."""
-        with langfuse_client.start_as_current_span(name="parent-span"):
+        with elasticdash_client.start_as_current_span(name="parent-span"):
             with propagate_attributes(
                 user_id="user_123",
                 session_id="session_abc",
                 tags=["test", "debug"],
             ):
-                child = langfuse_client.start_span(name="child-span")
+                child = elasticdash_client.start_span(name="child-span")
                 child.end()
 
         # Verify child has all attributes
@@ -2129,14 +2129,14 @@ class TestPropagateAttributesTags(TestPropagateAttributesBase):
             tuple(["test", "debug"]),
         )
 
-    def test_tags_with_metadata(self, langfuse_client, memory_exporter):
+    def test_tags_with_metadata(self, elasticdash_client, memory_exporter):
         """Verify tags work together with metadata."""
-        with langfuse_client.start_as_current_span(name="parent-span"):
+        with elasticdash_client.start_as_current_span(name="parent-span"):
             with propagate_attributes(
                 tags=["experiment-a", "variant-1"],
                 metadata={"env": "staging"},
             ):
-                child = langfuse_client.start_span(name="child-span")
+                child = elasticdash_client.start_span(name="child-span")
                 child.end()
 
         child_span = self.get_span_by_name(memory_exporter, "child-span")
@@ -2151,13 +2151,13 @@ class TestPropagateAttributesTags(TestPropagateAttributesBase):
             "staging",
         )
 
-    def test_tags_validation_with_invalid_tag(self, langfuse_client, memory_exporter):
+    def test_tags_validation_with_invalid_tag(self, elasticdash_client, memory_exporter):
         """Verify tags with one invalid entry drops all tags."""
         long_tag = "x" * 201  # Over 200 chars
 
-        with langfuse_client.start_as_current_span(name="parent-span"):
+        with elasticdash_client.start_as_current_span(name="parent-span"):
             with propagate_attributes(tags=["valid_tag", long_tag]):
-                child = langfuse_client.start_span(name="child-span")
+                child = elasticdash_client.start_span(name="child-span")
                 child.end()
 
         child_span = self.get_span_by_name(memory_exporter, "child-span")
@@ -2165,21 +2165,21 @@ class TestPropagateAttributesTags(TestPropagateAttributesBase):
             child_span, ElasticDashOtelSpanAttributes.TRACE_TAGS, tuple(["valid_tag"])
         )
 
-    def test_tags_nested_contexts_inner_appends(self, langfuse_client, memory_exporter):
+    def test_tags_nested_contexts_inner_appends(self, elasticdash_client, memory_exporter):
         """Verify inner context appends to outer tags."""
-        with langfuse_client.start_as_current_span(name="parent-span"):
+        with elasticdash_client.start_as_current_span(name="parent-span"):
             with propagate_attributes(tags=["outer", "tag1"]):
                 # Create span in outer context
-                span1 = langfuse_client.start_span(name="span-1")
+                span1 = elasticdash_client.start_span(name="span-1")
                 span1.end()
 
                 # Inner context with more tags
                 with propagate_attributes(tags=["inner", "tag2"]):
-                    span2 = langfuse_client.start_span(name="span-2")
+                    span2 = elasticdash_client.start_span(name="span-2")
                     span2.end()
 
                 # Back to outer context
-                span3 = langfuse_client.start_span(name="span-3")
+                span3 = elasticdash_client.start_span(name="span-3")
                 span3.end()
 
         # Verify: span1 and span3 have outer tags, span2 has inner tags
@@ -2207,14 +2207,14 @@ class TestPropagateAttributesTags(TestPropagateAttributesBase):
             span3_data, ElasticDashOtelSpanAttributes.TRACE_TAGS, tuple(["outer", "tag1"])
         )
 
-    def test_tags_with_baggage(self, langfuse_client, memory_exporter):
+    def test_tags_with_baggage(self, elasticdash_client, memory_exporter):
         """Verify tags propagate through baggage."""
-        with langfuse_client.start_as_current_span(name="parent-span"):
+        with elasticdash_client.start_as_current_span(name="parent-span"):
             with propagate_attributes(
                 tags=["baggage_tag1", "baggage_tag2"],
                 as_baggage=True,
             ):
-                child = langfuse_client.start_span(name="child-span")
+                child = elasticdash_client.start_span(name="child-span")
                 child.end()
 
         # Verify child has tags
@@ -2225,12 +2225,12 @@ class TestPropagateAttributesTags(TestPropagateAttributesBase):
             tuple(["baggage_tag1", "baggage_tag2"]),
         )
 
-    def test_tags_propagate_to_grandchildren(self, langfuse_client, memory_exporter):
+    def test_tags_propagate_to_grandchildren(self, elasticdash_client, memory_exporter):
         """Verify tags propagate through multiple levels of nesting."""
-        with langfuse_client.start_as_current_span(name="parent-span"):
+        with elasticdash_client.start_as_current_span(name="parent-span"):
             with propagate_attributes(tags=["level1", "level2", "level3"]):
-                with langfuse_client.start_as_current_span(name="child-span"):
-                    grandchild = langfuse_client.start_span(name="grandchild-span")
+                with elasticdash_client.start_as_current_span(name="child-span"):
+                    grandchild = elasticdash_client.start_span(name="grandchild-span")
                     grandchild.end()
 
         # Verify all three levels have tags
@@ -2246,14 +2246,14 @@ class TestPropagateAttributesTags(TestPropagateAttributesBase):
             )
 
     @pytest.mark.asyncio
-    async def test_tags_with_async(self, langfuse_client, memory_exporter):
+    async def test_tags_with_async(self, elasticdash_client, memory_exporter):
         """Verify tags propagate in async context."""
 
         async def async_operation():
-            span = langfuse_client.start_span(name="async-span")
+            span = elasticdash_client.start_span(name="async-span")
             span.end()
 
-        with langfuse_client.start_as_current_span(name="parent"):
+        with elasticdash_client.start_as_current_span(name="parent"):
             with propagate_attributes(tags=["async", "test"]):
                 await async_operation()
 
@@ -2262,11 +2262,11 @@ class TestPropagateAttributesTags(TestPropagateAttributesBase):
             async_span, ElasticDashOtelSpanAttributes.TRACE_TAGS, tuple(["async", "test"])
         )
 
-    def test_tags_attribute_key_format(self, langfuse_client, memory_exporter):
+    def test_tags_attribute_key_format(self, elasticdash_client, memory_exporter):
         """Verify tags use correct attribute key format."""
-        with langfuse_client.start_as_current_span(name="parent-span"):
+        with elasticdash_client.start_as_current_span(name="parent-span"):
             with propagate_attributes(tags=["key_test"]):
-                child = langfuse_client.start_span(name="child-span")
+                child = elasticdash_client.start_span(name="child-span")
                 child.end()
 
         child_span = self.get_span_by_name(memory_exporter, "child-span")
@@ -2281,7 +2281,7 @@ class TestPropagateAttributesExperiment(TestPropagateAttributesBase):
     """Tests for experiment attribute propagation."""
 
     def test_experiment_attributes_propagate_without_dataset(
-        self, langfuse_client, memory_exporter
+        self, elasticdash_client, memory_exporter
     ):
         """Test experiment attribute propagation with local data (no ElasticDash dataset)."""
         # Create local dataset with metadata
@@ -2296,17 +2296,17 @@ class TestPropagateAttributesExperiment(TestPropagateAttributesBase):
         # Task function that creates child spans
         def task_with_child_spans(*, item, **kwargs):
             # Create child spans to verify propagation
-            child1 = langfuse_client.start_span(name="child-span-1")
+            child1 = elasticdash_client.start_span(name="child-span-1")
             child1.end()
 
-            child2 = langfuse_client.start_span(name="child-span-2")
+            child2 = elasticdash_client.start_span(name="child-span-2")
             child2.end()
 
             return f"processed: {item.get('input') if isinstance(item, dict) else item.input}"
 
         # Run experiment with local data
         experiment_metadata = {"version": "1.0", "model": "test-model"}
-        result = langfuse_client.run_experiment(
+        result = elasticdash_client.run_experiment(
             name="Test Experiment",
             description="Test experiment description",
             data=local_data,
@@ -2315,7 +2315,7 @@ class TestPropagateAttributesExperiment(TestPropagateAttributesBase):
         )
 
         # Flush to ensure spans are exported
-        langfuse_client.flush()
+        elasticdash_client.flush()
         time.sleep(0.1)
 
         # Get the root span
@@ -2434,19 +2434,19 @@ class TestPropagateAttributesExperiment(TestPropagateAttributesBase):
             )
 
     def test_experiment_attributes_propagate_with_dataset(
-        self, langfuse_client, memory_exporter, monkeypatch
+        self, elasticdash_client, memory_exporter, monkeypatch
     ):
         """Test experiment attribute propagation with ElasticDash dataset."""
         import time
         from datetime import datetime
 
-        from langfuse._client.attributes import _serialize
-        from langfuse._client.datasets import DatasetClient, DatasetItemClient
-        from langfuse.model import Dataset, DatasetItem, DatasetStatus
+        from elasticdash._client.attributes import _serialize
+        from elasticdash._client.datasets import DatasetClient, DatasetItemClient
+        from elasticdash.model import Dataset, DatasetItem, DatasetStatus
 
         # Mock the async API to create dataset run items
         async def mock_create_dataset_run_item(*args, **kwargs):
-            from langfuse.api.resources.dataset_run_items.types import DatasetRunItem
+            from elasticdash.api.resources.dataset_run_items.types import DatasetRunItem
 
             request = kwargs.get("request")
             return DatasetRunItem(
@@ -2457,7 +2457,7 @@ class TestPropagateAttributesExperiment(TestPropagateAttributesBase):
             )
 
         monkeypatch.setattr(
-            langfuse_client.async_api.dataset_run_items,
+            elasticdash_client.async_api.dataset_run_items,
             "create",
             mock_create_dataset_run_item,
         )
@@ -2491,15 +2491,15 @@ class TestPropagateAttributesExperiment(TestPropagateAttributesBase):
         )
 
         # Create dataset client with items
-        dataset_item_client = DatasetItemClient(mock_dataset_item, langfuse_client)
+        dataset_item_client = DatasetItemClient(mock_dataset_item, elasticdash_client)
         dataset = DatasetClient(mock_dataset, [dataset_item_client])
 
         # Task with child spans
         def task_with_children(*, item, **kwargs):
-            child1 = langfuse_client.start_span(name="dataset-child-1")
+            child1 = elasticdash_client.start_span(name="dataset-child-1")
             child1.end()
 
-            child2 = langfuse_client.start_span(name="dataset-child-2")
+            child2 = elasticdash_client.start_span(name="dataset-child-2")
             child2.end()
 
             return f"Capital: {item.expected_output}"
@@ -2513,7 +2513,7 @@ class TestPropagateAttributesExperiment(TestPropagateAttributesBase):
             metadata=experiment_metadata,
         )
 
-        langfuse_client.flush()
+        elasticdash_client.flush()
         time.sleep(0.1)
 
         # Verify root has dataset-specific attributes
@@ -2615,23 +2615,23 @@ class TestPropagateAttributesExperiment(TestPropagateAttributesBase):
             )
 
     def test_experiment_attributes_propagate_to_nested_children(
-        self, langfuse_client, memory_exporter
+        self, elasticdash_client, memory_exporter
     ):
         """Test experiment attributes propagate to deeply nested child spans."""
         local_data = [{"input": "test", "expected_output": "result"}]
 
         # Task with deeply nested spans
         def task_with_nested_spans(*, item, **kwargs):
-            with langfuse_client.start_as_current_span(name="child-span"):
-                with langfuse_client.start_as_current_span(name="grandchild-span"):
-                    great_grandchild = langfuse_client.start_span(
+            with elasticdash_client.start_as_current_span(name="child-span"):
+                with elasticdash_client.start_as_current_span(name="grandchild-span"):
+                    great_grandchild = elasticdash_client.start_span(
                         name="great-grandchild-span"
                     )
                     great_grandchild.end()
 
             return "processed"
 
-        result = langfuse_client.run_experiment(
+        result = elasticdash_client.run_experiment(
             name="Nested Test",
             description="Nested test",
             data=local_data,
@@ -2639,7 +2639,7 @@ class TestPropagateAttributesExperiment(TestPropagateAttributesBase):
             metadata={"depth": "test"},
         )
 
-        langfuse_client.flush()
+        elasticdash_client.flush()
         time.sleep(0.1)
 
         root_spans = self.get_spans_by_name(memory_exporter, "experiment-item-run")
@@ -2696,11 +2696,11 @@ class TestPropagateAttributesExperiment(TestPropagateAttributesBase):
                 ElasticDashOtelSpanAttributes.EXPERIMENT_ITEM_EXPECTED_OUTPUT,
             )
 
-    def test_experiment_metadata_merging(self, langfuse_client, memory_exporter):
+    def test_experiment_metadata_merging(self, elasticdash_client, memory_exporter):
         """Test that experiment metadata and item metadata are both propagated correctly."""
         import time
 
-        from langfuse._client.attributes import _serialize
+        from elasticdash._client.attributes import _serialize
 
         # Rich metadata
         experiment_metadata = {
@@ -2723,11 +2723,11 @@ class TestPropagateAttributesExperiment(TestPropagateAttributesBase):
         ]
 
         def task_with_child(*, item, **kwargs):
-            child = langfuse_client.start_span(name="metadata-child")
+            child = elasticdash_client.start_span(name="metadata-child")
             child.end()
             return "result"
 
-        langfuse_client.run_experiment(
+        elasticdash_client.run_experiment(
             name="Metadata Test",
             description="Metadata test",
             data=local_data,
@@ -2735,7 +2735,7 @@ class TestPropagateAttributesExperiment(TestPropagateAttributesBase):
             metadata=experiment_metadata,
         )
 
-        langfuse_client.flush()
+        elasticdash_client.flush()
         time.sleep(0.1)
 
         # Verify root span has environment set
@@ -2775,15 +2775,15 @@ class TestPropagateAttributesTraceName(TestPropagateAttributesBase):
     """Tests for trace_name parameter propagation."""
 
     def test_trace_name_propagates_to_child_spans(
-        self, langfuse_client, memory_exporter
+        self, elasticdash_client, memory_exporter
     ):
         """Verify trace_name propagates to all child spans within context."""
-        with langfuse_client.start_as_current_span(name="parent-span"):
+        with elasticdash_client.start_as_current_span(name="parent-span"):
             with propagate_attributes(trace_name="my-trace-name"):
-                child1 = langfuse_client.start_span(name="child-span-1")
+                child1 = elasticdash_client.start_span(name="child-span-1")
                 child1.end()
 
-                child2 = langfuse_client.start_span(name="child-span-2")
+                child2 = elasticdash_client.start_span(name="child-span-2")
                 child2.end()
 
         # Verify both children have trace_name
@@ -2802,13 +2802,13 @@ class TestPropagateAttributesTraceName(TestPropagateAttributesBase):
         )
 
     def test_trace_name_propagates_to_grandchildren(
-        self, langfuse_client, memory_exporter
+        self, elasticdash_client, memory_exporter
     ):
         """Verify trace_name propagates through multiple levels of nesting."""
-        with langfuse_client.start_as_current_span(name="parent-span"):
+        with elasticdash_client.start_as_current_span(name="parent-span"):
             with propagate_attributes(trace_name="nested-trace"):
-                with langfuse_client.start_as_current_span(name="child-span"):
-                    grandchild = langfuse_client.start_span(name="grandchild-span")
+                with elasticdash_client.start_as_current_span(name="child-span"):
+                    grandchild = elasticdash_client.start_span(name="grandchild-span")
                     grandchild.end()
 
         # Verify all three levels have trace_name
@@ -2821,15 +2821,15 @@ class TestPropagateAttributesTraceName(TestPropagateAttributesBase):
                 span, ElasticDashOtelSpanAttributes.TRACE_NAME, "nested-trace"
             )
 
-    def test_trace_name_with_user_and_session(self, langfuse_client, memory_exporter):
+    def test_trace_name_with_user_and_session(self, elasticdash_client, memory_exporter):
         """Verify trace_name works together with user_id and session_id."""
-        with langfuse_client.start_as_current_span(name="parent-span"):
+        with elasticdash_client.start_as_current_span(name="parent-span"):
             with propagate_attributes(
                 user_id="user_123",
                 session_id="session_abc",
                 trace_name="combined-trace",
             ):
-                child = langfuse_client.start_span(name="child-span")
+                child = elasticdash_client.start_span(name="child-span")
                 child.end()
 
         # Verify child has all attributes
@@ -2844,14 +2844,14 @@ class TestPropagateAttributesTraceName(TestPropagateAttributesBase):
             child_span, ElasticDashOtelSpanAttributes.TRACE_NAME, "combined-trace"
         )
 
-    def test_trace_name_with_version(self, langfuse_client, memory_exporter):
+    def test_trace_name_with_version(self, elasticdash_client, memory_exporter):
         """Verify trace_name works together with version."""
-        with langfuse_client.start_as_current_span(name="parent-span"):
+        with elasticdash_client.start_as_current_span(name="parent-span"):
             with propagate_attributes(
                 trace_name="versioned-trace",
                 version="1.0.0",
             ):
-                child = langfuse_client.start_span(name="child-span")
+                child = elasticdash_client.start_span(name="child-span")
                 child.end()
 
         child_span = self.get_span_by_name(memory_exporter, "child-span")
@@ -2862,14 +2862,14 @@ class TestPropagateAttributesTraceName(TestPropagateAttributesBase):
             child_span, ElasticDashOtelSpanAttributes.VERSION, "1.0.0"
         )
 
-    def test_trace_name_with_metadata(self, langfuse_client, memory_exporter):
+    def test_trace_name_with_metadata(self, elasticdash_client, memory_exporter):
         """Verify trace_name works together with metadata."""
-        with langfuse_client.start_as_current_span(name="parent-span"):
+        with elasticdash_client.start_as_current_span(name="parent-span"):
             with propagate_attributes(
                 trace_name="metadata-trace",
                 metadata={"env": "production", "region": "us-east"},
             ):
-                child = langfuse_client.start_span(name="child-span")
+                child = elasticdash_client.start_span(name="child-span")
                 child.end()
 
         child_span = self.get_span_by_name(memory_exporter, "child-span")
@@ -2888,27 +2888,27 @@ class TestPropagateAttributesTraceName(TestPropagateAttributesBase):
         )
 
     def test_trace_name_validation_over_200_chars(
-        self, langfuse_client, memory_exporter
+        self, elasticdash_client, memory_exporter
     ):
         """Verify trace_name over 200 characters is dropped with warning."""
         long_name = "trace-" + "a" * 200  # Create a very long trace name
 
-        with langfuse_client.start_as_current_span(name="parent-span"):
+        with elasticdash_client.start_as_current_span(name="parent-span"):
             with propagate_attributes(trace_name=long_name):
-                child = langfuse_client.start_span(name="child-span")
+                child = elasticdash_client.start_span(name="child-span")
                 child.end()
 
         # Verify child does NOT have trace_name
         child_span = self.get_span_by_name(memory_exporter, "child-span")
         self.verify_missing_attribute(child_span, ElasticDashOtelSpanAttributes.TRACE_NAME)
 
-    def test_trace_name_exactly_200_chars(self, langfuse_client, memory_exporter):
+    def test_trace_name_exactly_200_chars(self, elasticdash_client, memory_exporter):
         """Verify exactly 200 character trace_name is accepted."""
         trace_name_200 = "t" * 200
 
-        with langfuse_client.start_as_current_span(name="parent-span"):
+        with elasticdash_client.start_as_current_span(name="parent-span"):
             with propagate_attributes(trace_name=trace_name_200):
-                child = langfuse_client.start_span(name="child-span")
+                child = elasticdash_client.start_span(name="child-span")
                 child.end()
 
         # Verify child HAS trace_name
@@ -2918,22 +2918,22 @@ class TestPropagateAttributesTraceName(TestPropagateAttributesBase):
         )
 
     def test_trace_name_nested_contexts_inner_overwrites(
-        self, langfuse_client, memory_exporter
+        self, elasticdash_client, memory_exporter
     ):
         """Verify inner context overwrites outer trace_name."""
-        with langfuse_client.start_as_current_span(name="parent-span"):
+        with elasticdash_client.start_as_current_span(name="parent-span"):
             with propagate_attributes(trace_name="outer-trace"):
                 # Create span in outer context
-                span1 = langfuse_client.start_span(name="span-1")
+                span1 = elasticdash_client.start_span(name="span-1")
                 span1.end()
 
                 # Inner context with different trace_name
                 with propagate_attributes(trace_name="inner-trace"):
-                    span2 = langfuse_client.start_span(name="span-2")
+                    span2 = elasticdash_client.start_span(name="span-2")
                     span2.end()
 
                 # Back to outer context
-                span3 = langfuse_client.start_span(name="span-3")
+                span3 = elasticdash_client.start_span(name="span-3")
                 span3.end()
 
         # Verify: span1 and span3 have outer-trace, span2 has inner-trace
@@ -2952,9 +2952,9 @@ class TestPropagateAttributesTraceName(TestPropagateAttributesBase):
             span3_data, ElasticDashOtelSpanAttributes.TRACE_NAME, "outer-trace"
         )
 
-    def test_trace_name_sets_on_current_span(self, langfuse_client, memory_exporter):
+    def test_trace_name_sets_on_current_span(self, elasticdash_client, memory_exporter):
         """Verify trace_name is set on the current span when entering context."""
-        with langfuse_client.start_as_current_span(name="parent-span"):
+        with elasticdash_client.start_as_current_span(name="parent-span"):
             with propagate_attributes(trace_name="current-trace"):
                 pass  # Just enter and exit context
 
@@ -2964,26 +2964,26 @@ class TestPropagateAttributesTraceName(TestPropagateAttributesBase):
             parent_span, ElasticDashOtelSpanAttributes.TRACE_NAME, "current-trace"
         )
 
-    def test_trace_name_non_string_dropped(self, langfuse_client, memory_exporter):
+    def test_trace_name_non_string_dropped(self, elasticdash_client, memory_exporter):
         """Verify non-string trace_name is dropped with warning."""
-        with langfuse_client.start_as_current_span(name="parent-span"):
+        with elasticdash_client.start_as_current_span(name="parent-span"):
             with propagate_attributes(trace_name=123):  # type: ignore
-                child = langfuse_client.start_span(name="child-span")
+                child = elasticdash_client.start_span(name="child-span")
                 child.end()
 
         # Verify child does NOT have trace_name
         child_span = self.get_span_by_name(memory_exporter, "child-span")
         self.verify_missing_attribute(child_span, ElasticDashOtelSpanAttributes.TRACE_NAME)
 
-    def test_trace_name_with_baggage(self, langfuse_client, memory_exporter):
+    def test_trace_name_with_baggage(self, elasticdash_client, memory_exporter):
         """Verify trace_name propagates through baggage."""
-        with langfuse_client.start_as_current_span(name="parent-span"):
+        with elasticdash_client.start_as_current_span(name="parent-span"):
             with propagate_attributes(
                 trace_name="baggage-trace",
                 user_id="user_123",
                 as_baggage=True,
             ):
-                child = langfuse_client.start_span(name="child-span")
+                child = elasticdash_client.start_span(name="child-span")
                 child.end()
 
         # Verify child has trace_name

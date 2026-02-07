@@ -10,7 +10,7 @@ from ....core.pydantic_utilities import deep_union_pydantic_dicts, pydantic_v1
 class GetMediaResponse(pydantic_v1.BaseModel):
     media_id: str = pydantic_v1.Field(alias="mediaId")
     """
-    The unique langfuse identifier of a media record
+    The unique elasticdash identifier of a media record
     """
 
     content_type: str = pydantic_v1.Field(alias="contentType")

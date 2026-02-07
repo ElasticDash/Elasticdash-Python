@@ -1,6 +1,6 @@
 """.. include:: ../README.md"""
 
-from langfuse.batch_evaluation import (
+from elasticdash.batch_evaluation import (
     BatchEvaluationResult,
     BatchEvaluationResumeToken,
     CompositeEvaluatorFunction,
@@ -8,7 +8,7 @@ from langfuse.batch_evaluation import (
     EvaluatorStats,
     MapperFunction,
 )
-from langfuse.experiment import Evaluation
+from elasticdash.experiment import Evaluation
 
 from ._client import client as _client_module
 from ._client.attributes import ElasticDashOtelSpanAttributes

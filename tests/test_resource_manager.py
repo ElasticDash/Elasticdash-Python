@@ -1,8 +1,8 @@
 """Test the ElasticDashResourceManager and get_client() function."""
 
-from langfuse import ElasticDash
-from langfuse._client.get_client import get_client
-from langfuse._client.resource_manager import ElasticDashResourceManager
+from elasticdash import ElasticDash
+from elasticdash._client.get_client import get_client
+from elasticdash._client.resource_manager import ElasticDashResourceManager
 
 
 def test_get_client_preserves_all_settings():

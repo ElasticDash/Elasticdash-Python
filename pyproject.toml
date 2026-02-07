@@ -1,9 +1,9 @@
 [tool.poetry]
-name = "langfuse"
+name = "elasticdash"
 
-version = "3.12.1"
-description = "A client library for accessing langfuse"
-authors = ["langfuse <developers@langfuse.com>"]
+version = "0.0.1"
+description = "A client library for accessing elasticdash"
+authors = ["elasticdash <developers@elasticdash.com>"]
 license = "MIT"
 readme = "README.md"
 
@@ -95,9 +95,9 @@ ignore_missing_imports = true
 
 [[tool.mypy.overrides]]
 module = [
-    "langfuse.api.resources.*",
-    "langfuse.api.core.*",
-    "langfuse.api.client"
+    "elasticdash.api.resources.*",
+    "elasticdash.api.core.*",
+    "elasticdash.api.client"
 ]
 ignore_errors = true
 

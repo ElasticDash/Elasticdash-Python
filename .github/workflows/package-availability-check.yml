@@ -20,4 +20,4 @@ jobs:
           python-version: ${{ matrix.python-version }}
       - name: Install dependencies using pip
         run: |
-          pip install llama-index-callbacks-langfuse langfuse
+          pip install llama-index-callbacks-elasticdash elasticdash

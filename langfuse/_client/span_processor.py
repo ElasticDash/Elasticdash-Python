@@ -22,16 +22,16 @@ from opentelemetry.sdk.trace import ReadableSpan, Span
 from opentelemetry.sdk.trace.export import BatchSpanProcessor
 from opentelemetry.trace import format_span_id
 
-from langfuse._client.constants import ELASTICDASH_TRACER_NAME
-from langfuse._client.environment_variables import (
+from elasticdash._client.constants import ELASTICDASH_TRACER_NAME
+from elasticdash._client.environment_variables import (
     ELASTICDASH_FLUSH_AT,
     ELASTICDASH_FLUSH_INTERVAL,
     ELASTICDASH_OTEL_TRACES_EXPORT_PATH,
 )
-from langfuse._client.propagation import _get_propagated_attributes_from_context
-from langfuse._client.utils import span_formatter
-from langfuse.logger import langfuse_logger
-from langfuse.version import __version__ as langfuse_version
+from elasticdash._client.propagation import _get_propagated_attributes_from_context
+from elasticdash._client.utils import span_formatter
+from elasticdash.logger import elasticdash_logger
+from elasticdash.version import __version__ as elasticdash_version
 
 
 class ElasticDashSpanProcessor(BatchSpanProcessor):
@@ -87,9 +87,9 @@ class ElasticDashSpanProcessor(BatchSpanProcessor):
         # Prepare default headers
         default_headers = {
             "Authorization": basic_auth_header,
-            "x-langfuse-sdk-name": "python",
-            "x-langfuse-sdk-version": langfuse_version,
-            "x-langfuse-public-key": public_key,
+            "x-elasticdash-sdk-name": "python",
+            "x-elasticdash-sdk-version": elasticdash_version,
+            "x-elasticdash-public-key": public_key,
         }
 
         # Merge additional headers if provided
@@ -103,14 +103,14 @@ class ElasticDashSpanProcessor(BatchSpanProcessor):
             else f"{base_url}/api/public/otel/v1/traces"
         )
 
-        langfuse_span_exporter = OTLPSpanExporter(
+        elasticdash_span_exporter = OTLPSpanExporter(
             endpoint=endpoint,
             headers=headers,
             timeout=timeout,
         )
 
         super().__init__(
-            span_exporter=langfuse_span_exporter,
+            span_exporter=elasticdash_span_exporter,
             export_timeout_millis=timeout * 1_000 if timeout else None,
             max_export_batch_size=flush_at,
             schedule_delay_millis=flush_interval * 1_000
@@ -125,7 +125,7 @@ class ElasticDashSpanProcessor(BatchSpanProcessor):
         if propagated_attributes:
             span.set_attributes(propagated_attributes)
 
-            langfuse_logger.debug(
+            elasticdash_logger.debug(
                 f"Propagated {len(propagated_attributes)} attributes to span '{format_span_id(span.context.span_id)}': {propagated_attributes}"
             )
 
@@ -134,8 +134,8 @@ class ElasticDashSpanProcessor(BatchSpanProcessor):
     def on_end(self, span: ReadableSpan) -> None:
         # Only export spans that belong to the scoped project
         # This is important to not send spans to wrong project in multi-project setups
-        if self._is_langfuse_span(span) and not self._is_langfuse_project_span(span):
-            langfuse_logger.debug(
+        if self._is_elasticdash_span(span) and not self._is_elasticdash_project_span(span):
+            elasticdash_logger.debug(
                 f"Security: Span rejected - belongs to project '{span.instrumentation_scope.attributes.get('public_key') if span.instrumentation_scope and span.instrumentation_scope.attributes else None}' but processor is for '{self.public_key}'. "
                 f"This prevents cross-project data leakage in multi-project environments."
             )
@@ -145,14 +145,14 @@ class ElasticDashSpanProcessor(BatchSpanProcessor):
         if self._is_blocked_instrumentation_scope(span):
             return
 
-        langfuse_logger.debug(
+        elasticdash_logger.debug(
             f"Trace: Processing span name='{span._name}' | Full details:\n{span_formatter(span)}"
         )
 
         super().on_end(span)
 
     @staticmethod
-    def _is_langfuse_span(span: ReadableSpan) -> bool:
+    def _is_elasticdash_span(span: ReadableSpan) -> bool:
         return (
             span.instrumentation_scope is not None
             and span.instrumentation_scope.name == ELASTICDASH_TRACER_NAME
@@ -164,8 +164,8 @@ class ElasticDashSpanProcessor(BatchSpanProcessor):
             and span.instrumentation_scope.name in self.blocked_instrumentation_scopes
         )
 
-    def _is_langfuse_project_span(self, span: ReadableSpan) -> bool:
-        if not ElasticDashSpanProcessor._is_langfuse_span(span):
+    def _is_elasticdash_project_span(self, span: ReadableSpan) -> bool:
+        if not ElasticDashSpanProcessor._is_elasticdash_span(span):
             return False
 
         if span.instrumentation_scope is not None:

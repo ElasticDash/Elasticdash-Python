@@ -2,13 +2,13 @@ from contextlib import contextmanager
 from contextvars import ContextVar
 from typing import Iterator, Optional
 
-from langfuse._client.client import ElasticDash
-from langfuse._client.resource_manager import ElasticDashResourceManager
-from langfuse.logger import langfuse_logger
+from elasticdash._client.client import ElasticDash
+from elasticdash._client.resource_manager import ElasticDashResourceManager
+from elasticdash.logger import elasticdash_logger
 
-# Context variable to track the current langfuse_public_key in execution context
+# Context variable to track the current elasticdash_public_key in execution context
 _current_public_key: ContextVar[Optional[str]] = ContextVar(
-    "langfuse_public_key", default=None
+    "elasticdash_public_key", default=None
 )
 
 
@@ -122,8 +122,8 @@ def get_client(*, public_key: Optional[str] = None) -> ElasticDash:
             else:
                 # Multiple clients exist but no key specified - disable tracing
                 # to prevent cross-project data leakage
-                langfuse_logger.warning(
-                    "No 'langfuse_public_key' passed to decorated function, but multiple langfuse clients are instantiated in current process. Skipping tracing for this function to avoid cross-project leakage."
+                elasticdash_logger.warning(
+                    "No 'elasticdash_public_key' passed to decorated function, but multiple elasticdash clients are instantiated in current process. Skipping tracing for this function to avoid cross-project leakage."
                 )
                 return ElasticDash(
                     tracing_enabled=False, public_key="fake", secret_key="fake"
@@ -137,7 +137,7 @@ def get_client(*, public_key: Optional[str] = None) -> ElasticDash:
 
             if target_instance is None:
                 # No instance found with this key - client not initialized properly
-                langfuse_logger.warning(
+                elasticdash_logger.warning(
                     f"No ElasticDash client with public key {public_key} has been initialized. Skipping tracing for decorated function."
                 )
                 return ElasticDash(

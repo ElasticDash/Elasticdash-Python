@@ -53,7 +53,7 @@ poetry run pre-commit run --all-files
 poetry build
 
 # Generate documentation
-poetry run pdoc -o docs/ --docformat google --logo "https://langfuse.com/langfuse_logo.svg" langfuse
+poetry run pdoc -o docs/ --docformat google --logo "https://elasticdash.com/elasticdash_logo.svg" elasticdash
 ```
 
 Releases are automated via GitHub Actions. To release:
@@ -68,23 +68,23 @@ The workflow handles versioning, building, PyPI publishing (via OIDC), and GitHu
 
 ### Core Components
 
-- **`langfuse/_client/`**: Main SDK implementation built on OpenTelemetry
+- **`elasticdash/_client/`**: Main SDK implementation built on OpenTelemetry
   - `client.py`: Core ElasticDash client with OTel integration
   - `span.py`: ElasticDashSpan, ElasticDashGeneration, ElasticDashEvent classes
   - `observe.py`: Decorator for automatic instrumentation
   - `datasets.py`: Dataset management functionality
 
-- **`langfuse/api/`**: Auto-generated Fern API client
+- **`elasticdash/api/`**: Auto-generated Fern API client
   - Contains all API resources and types
   - Generated from OpenAPI spec - do not manually edit these files
 
-- **`langfuse/_task_manager/`**: Background processing
+- **`elasticdash/_task_manager/`**: Background processing
   - Media upload handling and queue management
   - Score ingestion consumer
 
 - **Integration modules**:
-  - `langfuse/openai.py`: OpenAI instrumentation
-  - `langfuse/langchain/`: Langchain integration via CallbackHandler
+  - `elasticdash/openai.py`: OpenAI instrumentation
+  - `elasticdash/langchain/`: Langchain integration via CallbackHandler
 
 ### Key Design Patterns
 
@@ -99,7 +99,7 @@ The client follows an async-first design with automatic batching of events and b
 
 Environment variables (defined in `_client/environment_variables.py`):
 - `ELASTICDASH_PUBLIC_KEY` / `ELASTICDASH_SECRET_KEY`: API credentials
-- `ELASTICDASH_HOST`: API endpoint (defaults to https://cloud.langfuse.com)
+- `ELASTICDASH_HOST`: API endpoint (defaults to https://cloud.elasticdash.com)
 - `ELASTICDASH_DEBUG`: Enable debug logging
 - `ELASTICDASH_TRACING_ENABLED`: Enable/disable tracing
 - `ELASTICDASH_SAMPLE_RATE`: Sampling rate for traces
@@ -116,14 +116,14 @@ Environment variables (defined in `_client/environment_variables.py`):
 - `pyproject.toml`: Poetry configuration, dependencies, and tool settings
 - `ruff.toml`: Local development linting config (stricter)
 - `ci.ruff.toml`: CI linting config (more permissive)
-- `langfuse/version.py`: Version string (updated by CI release workflow)
+- `elasticdash/version.py`: Version string (updated by CI release workflow)
 
 ## API Generation
 
-The `langfuse/api/` directory is auto-generated from the ElasticDash OpenAPI specification using Fern. To update:
+The `elasticdash/api/` directory is auto-generated from the ElasticDash OpenAPI specification using Fern. To update:
 
 1. Generate new SDK in main ElasticDash repo
-2. Copy generated files from `generated/python` to `langfuse/api/`
+2. Copy generated files from `generated/python` to `elasticdash/api/`
 3. Run `poetry run ruff format .` to format the generated code
 
 ## Testing Guidelines

@@ -14,61 +14,61 @@ import json
 from datetime import datetime
 from typing import Any, Dict, List, Literal, Optional, Union
 
-from langfuse._client.constants import (
+from elasticdash._client.constants import (
     ObservationTypeGenerationLike,
     ObservationTypeSpanLike,
 )
-from langfuse._utils.serializer import EventSerializer
-from langfuse.model import PromptClient
-from langfuse.types import MapValue, SpanLevel
+from elasticdash._utils.serializer import EventSerializer
+from elasticdash.model import PromptClient
+from elasticdash.types import MapValue, SpanLevel
 
 
 class ElasticDashOtelSpanAttributes:
     # ElasticDash-Trace attributes
-    TRACE_NAME = "langfuse.trace.name"
+    TRACE_NAME = "elasticdash.trace.name"
     TRACE_USER_ID = "user.id"
     TRACE_SESSION_ID = "session.id"
-    TRACE_TAGS = "langfuse.trace.tags"
-    TRACE_PUBLIC = "langfuse.trace.public"
-    TRACE_METADATA = "langfuse.trace.metadata"
-    TRACE_INPUT = "langfuse.trace.input"
-    TRACE_OUTPUT = "langfuse.trace.output"
+    TRACE_TAGS = "elasticdash.trace.tags"
+    TRACE_PUBLIC = "elasticdash.trace.public"
+    TRACE_METADATA = "elasticdash.trace.metadata"
+    TRACE_INPUT = "elasticdash.trace.input"
+    TRACE_OUTPUT = "elasticdash.trace.output"
 
     # ElasticDash-observation attributes
-    OBSERVATION_TYPE = "langfuse.observation.type"
-    OBSERVATION_METADATA = "langfuse.observation.metadata"
-    OBSERVATION_LEVEL = "langfuse.observation.level"
-    OBSERVATION_STATUS_MESSAGE = "langfuse.observation.status_message"
-    OBSERVATION_INPUT = "langfuse.observation.input"
-    OBSERVATION_OUTPUT = "langfuse.observation.output"
+    OBSERVATION_TYPE = "elasticdash.observation.type"
+    OBSERVATION_METADATA = "elasticdash.observation.metadata"
+    OBSERVATION_LEVEL = "elasticdash.observation.level"
+    OBSERVATION_STATUS_MESSAGE = "elasticdash.observation.status_message"
+    OBSERVATION_INPUT = "elasticdash.observation.input"
+    OBSERVATION_OUTPUT = "elasticdash.observation.output"
 
     # ElasticDash-observation of type Generation attributes
-    OBSERVATION_COMPLETION_START_TIME = "langfuse.observation.completion_start_time"
-    OBSERVATION_MODEL = "langfuse.observation.model.name"
-    OBSERVATION_MODEL_PARAMETERS = "langfuse.observation.model.parameters"
-    OBSERVATION_USAGE_DETAILS = "langfuse.observation.usage_details"
-    OBSERVATION_COST_DETAILS = "langfuse.observation.cost_details"
-    OBSERVATION_PROMPT_NAME = "langfuse.observation.prompt.name"
-    OBSERVATION_PROMPT_VERSION = "langfuse.observation.prompt.version"
+    OBSERVATION_COMPLETION_START_TIME = "elasticdash.observation.completion_start_time"
+    OBSERVATION_MODEL = "elasticdash.observation.model.name"
+    OBSERVATION_MODEL_PARAMETERS = "elasticdash.observation.model.parameters"
+    OBSERVATION_USAGE_DETAILS = "elasticdash.observation.usage_details"
+    OBSERVATION_COST_DETAILS = "elasticdash.observation.cost_details"
+    OBSERVATION_PROMPT_NAME = "elasticdash.observation.prompt.name"
+    OBSERVATION_PROMPT_VERSION = "elasticdash.observation.prompt.version"
 
     # General
-    ENVIRONMENT = "langfuse.environment"
-    RELEASE = "langfuse.release"
-    VERSION = "langfuse.version"
+    ENVIRONMENT = "elasticdash.environment"
+    RELEASE = "elasticdash.release"
+    VERSION = "elasticdash.version"
 
     # Internal
-    AS_ROOT = "langfuse.internal.as_root"
+    AS_ROOT = "elasticdash.internal.as_root"
 
     # Experiments
-    EXPERIMENT_ID = "langfuse.experiment.id"
-    EXPERIMENT_NAME = "langfuse.experiment.name"
-    EXPERIMENT_DESCRIPTION = "langfuse.experiment.description"
-    EXPERIMENT_METADATA = "langfuse.experiment.metadata"
-    EXPERIMENT_DATASET_ID = "langfuse.experiment.dataset.id"
-    EXPERIMENT_ITEM_ID = "langfuse.experiment.item.id"
-    EXPERIMENT_ITEM_EXPECTED_OUTPUT = "langfuse.experiment.item.expected_output"
-    EXPERIMENT_ITEM_METADATA = "langfuse.experiment.item.metadata"
-    EXPERIMENT_ITEM_ROOT_OBSERVATION_ID = "langfuse.experiment.item.root_observation_id"
+    EXPERIMENT_ID = "elasticdash.experiment.id"
+    EXPERIMENT_NAME = "elasticdash.experiment.name"
+    EXPERIMENT_DESCRIPTION = "elasticdash.experiment.description"
+    EXPERIMENT_METADATA = "elasticdash.experiment.metadata"
+    EXPERIMENT_DATASET_ID = "elasticdash.experiment.dataset.id"
+    EXPERIMENT_ITEM_ID = "elasticdash.experiment.item.id"
+    EXPERIMENT_ITEM_EXPECTED_OUTPUT = "elasticdash.experiment.item.expected_output"
+    EXPERIMENT_ITEM_METADATA = "elasticdash.experiment.item.metadata"
+    EXPERIMENT_ITEM_ROOT_OBSERVATION_ID = "elasticdash.experiment.item.root_observation_id"
 
 
 def create_trace_attributes(

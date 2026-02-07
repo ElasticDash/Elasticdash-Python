@@ -1,7 +1,7 @@
 """Logger configuration for ElasticDash OpenTelemetry integration.
 
 This module initializes and configures loggers used by the ElasticDash OpenTelemetry integration.
-It sets up the main 'langfuse' logger and configures the httpx logger to reduce noise.
+It sets up the main 'elasticdash' logger and configures the httpx logger to reduce noise.
 
 Log levels used throughout ElasticDash:
 - DEBUG: Detailed tracing information useful for development and diagnostics
@@ -14,8 +14,8 @@ Log levels used throughout ElasticDash:
 import logging
 
 # Create the main ElasticDash logger
-langfuse_logger = logging.getLogger("langfuse")
-langfuse_logger.setLevel(logging.WARNING)
+elasticdash_logger = logging.getLogger("elasticdash")
+elasticdash_logger.setLevel(logging.WARNING)
 
 # Configure httpx logger to reduce noise from HTTP requests
 httpx_logger = logging.getLogger("httpx")

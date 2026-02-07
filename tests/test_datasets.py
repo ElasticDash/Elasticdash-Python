@@ -6,42 +6,42 @@ from typing import Sequence
 from langchain_core.prompts import PromptTemplate
 from langchain_openai import OpenAI
 
-from langfuse import ElasticDash, observe
-from langfuse.api.resources.commons.types.dataset_status import DatasetStatus
-from langfuse.api.resources.commons.types.observation import Observation
-from langfuse.langchain import CallbackHandler
+from elasticdash import ElasticDash, observe
+from elasticdash.api.resources.commons.types.dataset_status import DatasetStatus
+from elasticdash.api.resources.commons.types.observation import Observation
+from elasticdash.langchain import CallbackHandler
 from tests.utils import create_uuid, get_api
 
 
 def test_create_and_get_dataset():
-    langfuse = ElasticDash(debug=False)
+    elasticdash = ElasticDash(debug=False)
 
     name = "Text with spaces " + create_uuid()[:5]
-    langfuse.create_dataset(name=name)
-    dataset = langfuse.get_dataset(name)
+    elasticdash.create_dataset(name=name)
+    dataset = elasticdash.get_dataset(name)
     assert dataset.name == name
 
     name = create_uuid()
-    langfuse.create_dataset(
+    elasticdash.create_dataset(
         name=name, description="This is a test dataset", metadata={"key": "value"}
     )
-    dataset = langfuse.get_dataset(name)
+    dataset = elasticdash.get_dataset(name)
     assert dataset.name == name
     assert dataset.description == "This is a test dataset"
     assert dataset.metadata == {"key": "value"}
 
 
 def test_create_dataset_item():
-    langfuse = ElasticDash(debug=False)
+    elasticdash = ElasticDash(debug=False)
     name = create_uuid()
-    langfuse.create_dataset(name=name)
+    elasticdash.create_dataset(name=name)
 
-    generation = langfuse.start_generation(name="test").end()
-    langfuse.flush()
+    generation = elasticdash.start_generation(name="test").end()
+    elasticdash.flush()
 
     input = {"input": "Hello World"}
-    langfuse.create_dataset_item(dataset_name=name, input=input)
-    langfuse.create_dataset_item(
+    elasticdash.create_dataset_item(dataset_name=name, input=input)
+    elasticdash.create_dataset_item(
         dataset_name=name,
         input=input,
         expected_output="Output",
@@ -49,12 +49,12 @@ def test_create_dataset_item():
         source_observation_id=generation.id,
         source_trace_id=generation.trace_id,
     )
-    langfuse.create_dataset_item(
+    elasticdash.create_dataset_item(
         input="Hello",
         dataset_name=name,
     )
 
-    dataset = langfuse.get_dataset(name)
+    dataset = elasticdash.get_dataset(name)
 
     assert len(dataset.items) == 3
     assert dataset.items[2].input == input
@@ -77,35 +77,35 @@ def test_create_dataset_item():
 
 
 def test_get_all_items():
-    langfuse = ElasticDash(debug=False)
+    elasticdash = ElasticDash(debug=False)
     name = create_uuid()
-    langfuse.create_dataset(name=name)
+    elasticdash.create_dataset(name=name)
 
     input = {"input": "Hello World"}
     for _ in range(99):
-        langfuse.create_dataset_item(dataset_name=name, input=input)
+        elasticdash.create_dataset_item(dataset_name=name, input=input)
 
-    dataset = langfuse.get_dataset(name)
+    dataset = elasticdash.get_dataset(name)
     assert len(dataset.items) == 99
 
-    dataset_2 = langfuse.get_dataset(name, fetch_items_page_size=9)
+    dataset_2 = elasticdash.get_dataset(name, fetch_items_page_size=9)
     assert len(dataset_2.items) == 99
 
-    dataset_3 = langfuse.get_dataset(name, fetch_items_page_size=2)
+    dataset_3 = elasticdash.get_dataset(name, fetch_items_page_size=2)
     assert len(dataset_3.items) == 99
 
 
 def test_upsert_and_get_dataset_item():
-    langfuse = ElasticDash(debug=False)
+    elasticdash = ElasticDash(debug=False)
     name = create_uuid()
-    langfuse.create_dataset(name=name)
+    elasticdash.create_dataset(name=name)
     input = {"input": "Hello World"}
-    item = langfuse.create_dataset_item(
+    item = elasticdash.create_dataset_item(
         dataset_name=name, input=input, expected_output=input
     )
 
     # Instead, get all dataset items and find the one with matching ID
-    dataset = langfuse.get_dataset(name)
+    dataset = elasticdash.get_dataset(name)
     get_item = None
     for i in dataset.items:
         if i.id == item.id:
@@ -118,7 +118,7 @@ def test_upsert_and_get_dataset_item():
     assert get_item.expected_output == input
 
     new_input = {"input": "Hello World 2"}
-    langfuse.create_dataset_item(
+    elasticdash.create_dataset_item(
         dataset_name=name,
         input=new_input,
         id=item.id,
@@ -127,7 +127,7 @@ def test_upsert_and_get_dataset_item():
     )
 
     # Refresh dataset and find updated item
-    dataset = langfuse.get_dataset(name)
+    dataset = elasticdash.get_dataset(name)
     get_new_item = None
     for i in dataset.items:
         if i.id == item.id:
@@ -142,15 +142,15 @@ def test_upsert_and_get_dataset_item():
 
 
 def test_dataset_run_with_metadata_and_description():
-    langfuse = ElasticDash(debug=False)
+    elasticdash = ElasticDash(debug=False)
 
     dataset_name = create_uuid()
-    langfuse.create_dataset(name=dataset_name)
+    elasticdash.create_dataset(name=dataset_name)
 
     input = {"input": "Hello World"}
-    langfuse.create_dataset_item(dataset_name=dataset_name, input=input)
+    elasticdash.create_dataset_item(dataset_name=dataset_name, input=input)
 
-    dataset = langfuse.get_dataset(dataset_name)
+    dataset = elasticdash.get_dataset(dataset_name)
     assert len(dataset.items) == 1
     assert dataset.items[0].input == input
 
@@ -165,7 +165,7 @@ def test_dataset_run_with_metadata_and_description():
         ) as span:
             span.update_trace(name=run_name, metadata={"key": "value"})
 
-    langfuse.flush()
+    elasticdash.flush()
     time.sleep(1)  # Give API time to process
 
     # Get trace using the API directly
@@ -183,15 +183,15 @@ def test_dataset_run_with_metadata_and_description():
 
 
 def test_get_dataset_runs():
-    langfuse = ElasticDash(debug=False)
+    elasticdash = ElasticDash(debug=False)
 
     dataset_name = create_uuid()
-    langfuse.create_dataset(name=dataset_name)
+    elasticdash.create_dataset(name=dataset_name)
 
     input = {"input": "Hello World"}
-    langfuse.create_dataset_item(dataset_name=dataset_name, input=input)
+    elasticdash.create_dataset_item(dataset_name=dataset_name, input=input)
 
-    dataset = langfuse.get_dataset(dataset_name)
+    dataset = elasticdash.get_dataset(dataset_name)
     assert len(dataset.items) == 1
     assert dataset.items[0].input == input
 
@@ -205,7 +205,7 @@ def test_get_dataset_runs():
         ):
             pass
 
-    langfuse.flush()
+    elasticdash.flush()
     time.sleep(1)  # Give API time to process
 
     run_name_2 = create_uuid()
@@ -218,9 +218,9 @@ def test_get_dataset_runs():
         ):
             pass
 
-    langfuse.flush()
+    elasticdash.flush()
     time.sleep(1)  # Give API time to process
-    runs = langfuse.get_dataset_runs(dataset_name=dataset_name)
+    runs = elasticdash.get_dataset_runs(dataset_name=dataset_name)
 
     assert len(runs.data) == 2
     assert runs.data[0].name == run_name_2
@@ -234,14 +234,14 @@ def test_get_dataset_runs():
 
 
 def test_langchain_dataset():
-    langfuse = ElasticDash(debug=False)
+    elasticdash = ElasticDash(debug=False)
     dataset_name = create_uuid()
-    langfuse.create_dataset(name=dataset_name)
+    elasticdash.create_dataset(name=dataset_name)
 
     input = json.dumps({"input": "Hello World"})
-    langfuse.create_dataset_item(dataset_name=dataset_name, input=input)
+    elasticdash.create_dataset_item(dataset_name=dataset_name, input=input)
 
-    dataset = langfuse.get_dataset(dataset_name)
+    dataset = elasticdash.get_dataset(dataset_name)
 
     run_name = create_uuid()
 
@@ -270,7 +270,7 @@ def test_langchain_dataset():
                 "Tragedy at sunset on the beach", config={"callbacks": [handler]}
             )
 
-    langfuse.flush()
+    elasticdash.flush()
     time.sleep(1)  # Give API time to process
 
     # Get the trace directly
@@ -351,23 +351,23 @@ def sorted_dependencies(
 
 def test_observe_dataset_run():
     # Create dataset
-    langfuse = ElasticDash()
+    elasticdash = ElasticDash()
     dataset_name = create_uuid()
-    langfuse.create_dataset(name=dataset_name)
+    elasticdash.create_dataset(name=dataset_name)
 
     items_data = []
     num_items = 3
 
     for i in range(num_items):
-        trace_id = langfuse.create_trace_id()
+        trace_id = elasticdash.create_trace_id()
         dataset_item_input = "Hello World " + str(i)
-        langfuse.create_dataset_item(
+        elasticdash.create_dataset_item(
             dataset_name=dataset_name, input=dataset_item_input
         )
 
         items_data.append((dataset_item_input, trace_id))
 
-    dataset = langfuse.get_dataset(dataset_name)
+    dataset = elasticdash.get_dataset(dataset_name)
     assert len(dataset.items) == num_items
 
     run_name = create_uuid()
@@ -403,7 +403,7 @@ def test_observe_dataset_run():
             )
             trace_ids.append(result.result())
 
-    langfuse.flush()
+    elasticdash.flush()
     time.sleep(1)  # Give API time to process
 
     # Verify each trace individually
@@ -423,29 +423,29 @@ def test_observe_dataset_run():
 
 def test_get_dataset_with_folder_name():
     """Test that get_dataset works with folder-format names containing slashes."""
-    langfuse = ElasticDash(debug=False)
+    elasticdash = ElasticDash(debug=False)
 
     # Create a dataset with slashes in the name (folder format)
     folder_name = f"folder/subfolder/dataset-{create_uuid()[:8]}"
-    langfuse.create_dataset(name=folder_name)
+    elasticdash.create_dataset(name=folder_name)
 
     # Fetch the dataset using the wrapper method
-    dataset = langfuse.get_dataset(folder_name)
+    dataset = elasticdash.get_dataset(folder_name)
     assert dataset.name == folder_name
     assert "/" in dataset.name  # Verify slashes are preserved
 
 
 def test_get_dataset_runs_with_folder_name():
     """Test that get_dataset_runs works with folder-format dataset names."""
-    langfuse = ElasticDash(debug=False)
+    elasticdash = ElasticDash(debug=False)
 
     # Create a dataset with slashes in the name
     folder_name = f"folder/subfolder/dataset-{create_uuid()[:8]}"
-    langfuse.create_dataset(name=folder_name)
+    elasticdash.create_dataset(name=folder_name)
 
     # Create a dataset item
-    langfuse.create_dataset_item(dataset_name=folder_name, input={"test": "data"})
-    dataset = langfuse.get_dataset(folder_name)
+    elasticdash.create_dataset_item(dataset_name=folder_name, input={"test": "data"})
+    dataset = elasticdash.get_dataset(folder_name)
     assert len(dataset.items) == 1
 
     # Create a run
@@ -454,26 +454,26 @@ def test_get_dataset_runs_with_folder_name():
         with item.run(run_name=run_name):
             pass
 
-    langfuse.flush()
+    elasticdash.flush()
     time.sleep(1)  # Give API time to process
 
     # Fetch runs using the new wrapper method
-    runs = langfuse.get_dataset_runs(dataset_name=folder_name)
+    runs = elasticdash.get_dataset_runs(dataset_name=folder_name)
     assert len(runs.data) == 1
     assert runs.data[0].name == run_name
 
 
 def test_get_dataset_run_with_folder_names():
     """Test that get_dataset_run works with folder-format dataset and run names."""
-    langfuse = ElasticDash(debug=False)
+    elasticdash = ElasticDash(debug=False)
 
     # Create a dataset with slashes in the name
     folder_name = f"folder/subfolder/dataset-{create_uuid()[:8]}"
-    langfuse.create_dataset(name=folder_name)
+    elasticdash.create_dataset(name=folder_name)
 
     # Create a dataset item
-    langfuse.create_dataset_item(dataset_name=folder_name, input={"test": "data"})
-    dataset = langfuse.get_dataset(folder_name)
+    elasticdash.create_dataset_item(dataset_name=folder_name, input={"test": "data"})
+    dataset = elasticdash.get_dataset(folder_name)
     assert len(dataset.items) == 1
 
     # Create a run with slashes in the name
@@ -482,11 +482,11 @@ def test_get_dataset_run_with_folder_names():
         with item.run(run_name=run_name, run_metadata={"key": "value"}):
             pass
 
-    langfuse.flush()
+    elasticdash.flush()
     time.sleep(1)  # Give API time to process
 
     # Fetch the specific run using the new wrapper method
-    run = langfuse.get_dataset_run(dataset_name=folder_name, run_name=run_name)
+    run = elasticdash.get_dataset_run(dataset_name=folder_name, run_name=run_name)
     assert run.name == run_name
     assert run.dataset_name == folder_name
     assert run.metadata == {"key": "value"}
@@ -495,15 +495,15 @@ def test_get_dataset_run_with_folder_names():
 
 def test_delete_dataset_run_with_folder_names():
     """Test that delete_dataset_run works with folder-format dataset and run names."""
-    langfuse = ElasticDash(debug=False)
+    elasticdash = ElasticDash(debug=False)
 
     # Create a dataset with slashes in the name
     folder_name = f"folder/subfolder/dataset-{create_uuid()[:8]}"
-    langfuse.create_dataset(name=folder_name)
+    elasticdash.create_dataset(name=folder_name)
 
     # Create a dataset item
-    langfuse.create_dataset_item(dataset_name=folder_name, input={"test": "data"})
-    dataset = langfuse.get_dataset(folder_name)
+    elasticdash.create_dataset_item(dataset_name=folder_name, input={"test": "data"})
+    dataset = elasticdash.get_dataset(folder_name)
 
     # Create a run with slashes in the name
     run_name = f"run/to/delete/{create_uuid()[:8]}"
@@ -511,19 +511,19 @@ def test_delete_dataset_run_with_folder_names():
         with item.run(run_name=run_name):
             pass
 
-    langfuse.flush()
+    elasticdash.flush()
     time.sleep(1)  # Give API time to process
 
     # Verify the run exists
-    runs_before = langfuse.get_dataset_runs(dataset_name=folder_name)
+    runs_before = elasticdash.get_dataset_runs(dataset_name=folder_name)
     assert len(runs_before.data) == 1
 
     # Delete the run using the new wrapper method
-    result = langfuse.delete_dataset_run(dataset_name=folder_name, run_name=run_name)
+    result = elasticdash.delete_dataset_run(dataset_name=folder_name, run_name=run_name)
     assert result.message is not None
 
     time.sleep(1)  # Give API time to process deletion
 
     # Verify the run is deleted
-    runs_after = langfuse.get_dataset_runs(dataset_name=folder_name)
+    runs_after = elasticdash.get_dataset_runs(dataset_name=folder_name)
     assert len(runs_after.data) == 0

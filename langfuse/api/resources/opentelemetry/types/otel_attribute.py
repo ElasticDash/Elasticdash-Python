@@ -15,7 +15,7 @@ class OtelAttribute(pydantic_v1.BaseModel):
 
     key: typing.Optional[str] = pydantic_v1.Field(default=None)
     """
-    Attribute key (e.g., "service.name", "langfuse.observation.type")
+    Attribute key (e.g., "service.name", "elasticdash.observation.type")
     """
 
     value: typing.Optional[OtelAttributeValue] = pydantic_v1.Field(default=None)

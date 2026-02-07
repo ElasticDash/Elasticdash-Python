@@ -5,7 +5,7 @@ from typing import Any, Dict, List, Literal, Optional, cast
 
 # NOTE ON DEPENDENCIES:
 # - since Jan 2024, there is https://pypi.org/project/langchain-openai/ which is a separate package and imports openai models.
-#   Decided to not make this a dependency of langfuse as few people will have this. Need to match these models manually
+#   Decided to not make this a dependency of elasticdash as few people will have this. Need to match these models manually
 # - langchain_community is loaded as a dependency of langchain, but extremely unreliable. Decided to not depend on it.
 
 

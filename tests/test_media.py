@@ -4,8 +4,8 @@ from uuid import uuid4
 
 import pytest
 
-from langfuse._client.client import ElasticDash
-from langfuse.media import ElasticDashMedia
+from elasticdash._client.client import ElasticDash
+from elasticdash.media import ElasticDashMedia
 from tests.utils import get_api
 
 # Test data
@@ -66,12 +66,12 @@ def test_reference_string():
     reference = media._reference_string
     assert (
         reference
-        == "@@@langfuseMedia:type=image/jpeg|id=MwoGlsMS6lW8ijWeRyZKfD|source=bytes@@@"
+        == "@@@elasticdashMedia:type=image/jpeg|id=MwoGlsMS6lW8ijWeRyZKfD|source=bytes@@@"
     )
 
 
 def test_parse_reference_string():
-    valid_ref = "@@@langfuseMedia:type=image/jpeg|id=test-id|source=base64_data_uri@@@"
+    valid_ref = "@@@elasticdashMedia:type=image/jpeg|id=test-id|source=base64_data_uri@@@"
     result = ElasticDashMedia.parse_reference_string(valid_ref)
 
     assert result["media_id"] == "test-id"
@@ -88,7 +88,7 @@ def test_parse_invalid_reference_string():
 
     with pytest.raises(ValueError):
         ElasticDashMedia.parse_reference_string(
-            "@@@langfuseMedia:type=image/jpeg@@@"
+            "@@@elasticdashMedia:type=image/jpeg@@@"
         )  # Missing fields
 
 
@@ -116,12 +116,12 @@ def test_replace_media_reference_string_in_object():
         mock_audio_bytes = f.read()
 
     # Create ElasticDash client and trace with media
-    langfuse = ElasticDash()
+    elasticdash = ElasticDash()
 
     mock_trace_name = f"test-trace-with-audio-{uuid4()}"
     base64_audio = base64.b64encode(mock_audio_bytes).decode()
 
-    span = langfuse.start_span(
+    span = elasticdash.start_span(
         name=mock_trace_name,
         metadata={
             "context": {
@@ -132,18 +132,18 @@ def test_replace_media_reference_string_in_object():
         },
     ).end()
 
-    langfuse.flush()
+    elasticdash.flush()
 
     # Verify media reference string format
     fetched_trace = get_api().trace.get(span.trace_id)
     media_ref = fetched_trace.observations[0].metadata["context"]["nested"]
     assert re.match(
-        r"^@@@langfuseMedia:type=audio/wav\|id=.+\|source=base64_data_uri@@@$",
+        r"^@@@elasticdashMedia:type=audio/wav\|id=.+\|source=base64_data_uri@@@$",
         media_ref,
     )
 
     # Resolve media references back to base64
-    resolved_obs = langfuse.resolve_media_references(
+    resolved_obs = elasticdash.resolve_media_references(
         obj=fetched_trace.observations[0], resolve_with="base64_data_uri"
     )
 
@@ -152,12 +152,12 @@ def test_replace_media_reference_string_in_object():
     assert resolved_obs["metadata"]["context"]["nested"] == expected_base64
 
     # Create second trace reusing the media reference
-    span2 = langfuse.start_span(
+    span2 = elasticdash.start_span(
         name=f"2-{mock_trace_name}",
         metadata={"context": {"nested": resolved_obs["metadata"]["context"]["nested"]}},
     ).end()
 
-    langfuse.flush()
+    elasticdash.flush()
 
     # Verify second trace has same media reference
     fetched_trace2 = get_api().trace.get(span2.trace_id)

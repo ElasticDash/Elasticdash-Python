@@ -8,10 +8,10 @@ from queue import Empty, Queue
 from threading import Thread
 from typing import Callable, Dict, List, Optional, Set
 
-from langfuse._client.environment_variables import (
+from elasticdash._client.environment_variables import (
     ELASTICDASH_PROMPT_CACHE_DEFAULT_TTL_SECONDS,
 )
-from langfuse.model import PromptClient
+from elasticdash.model import PromptClient
 
 DEFAULT_PROMPT_CACHE_TTL_SECONDS = int(
     os.getenv(ELASTICDASH_PROMPT_CACHE_DEFAULT_TTL_SECONDS, 60)
@@ -34,7 +34,7 @@ class PromptCacheItem:
 
 
 class PromptCacheRefreshConsumer(Thread):
-    _log = logging.getLogger("langfuse")
+    _log = logging.getLogger("elasticdash")
     _queue: Queue
     _identifier: int
     running: bool = True
@@ -70,7 +70,7 @@ class PromptCacheRefreshConsumer(Thread):
 
 
 class PromptCacheTaskManager(object):
-    _log = logging.getLogger("langfuse")
+    _log = logging.getLogger("elasticdash")
     _consumers: List[PromptCacheRefreshConsumer]
     _threads: int
     _queue: Queue
@@ -140,7 +140,7 @@ class PromptCache:
     _task_manager: PromptCacheTaskManager
     """Task manager for refreshing cache"""
 
-    _log = logging.getLogger("langfuse")
+    _log = logging.getLogger("elasticdash")
 
     def __init__(
         self, max_prompt_refresh_workers: int = DEFAULT_PROMPT_CACHE_REFRESH_WORKERS
