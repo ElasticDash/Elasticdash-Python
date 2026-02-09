@@ -54,11 +54,13 @@ elasticdash = get_client()
 # Create a span using a context manager
 with elasticdash.start_as_current_observation(as_type="span", name="process-request") as span:
     # Your processing logic here
-    span.update(output="Processing complete")
+    span.update(input="Llm input here")
  
     # Create a nested generation for an LLM call
     with elasticdash.start_as_current_observation(as_type="generation", name="llm-response", model="gpt-3.5-turbo") as generation:
+        generation.update(input="Llm input here")
         # Your LLM call logic here
+        span.update(output="Processing complete")
         generation.update(output="Generated response")
  
 # All spans are automatically closed when exiting their context blocks

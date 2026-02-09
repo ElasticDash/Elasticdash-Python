@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "elasticdash"
 
-version = "0.0.3"
+version = "0.0.4"
 description = "A client library for accessing elasticdash"
 authors = ["elasticdash <developers@elasticdash.com>"]
 license = "MIT"
