@@ -69,3 +69,48 @@ with elasticdash.start_as_current_observation(as_type="span", name="process-requ
 # Flush events in short-lived applications
 elasticdash.flush()
 ```
+
+### Sample Usage
+
+Always include the http.method, http.route and http.body (optional) in the span.
+
+Make sure to include the input and output of the LLM in the observation.
+
+Each LLM call should have an observation, while all LLM calls should be under (contained by) the span.
+
+```
+with elasticdash.start_as_current_span(
+    name="POST /chat/gemini/send/",
+) as span:
+    span.update(metadata={
+        "http.method": "POST", 
+        "http.route": "/chat/gemini/send/",
+        "http.body": body
+    })
+    with elasticdash.start_as_current_observation(
+        as_type="generation", 
+        name="gemini-response", 
+        model="gemini-2.5-flash",
+        input={
+            "message": user_message, 
+            "history": history
+        }
+    ) as generation:
+
+        history.insert(0, {
+            "role": "user",
+            "parts": [{"text": system_instruction}]
+        })
+        
+        # Start chat with history
+        chat = genaiClient.chats.create(
+            model="gemini-2.5-flash",
+            history=history,
+        )
+        
+        # Send message and get response
+        response = chat.send_message(user_message)
+        bot_response = response.text
+
+        generation.update(output=bot_response)
+```
