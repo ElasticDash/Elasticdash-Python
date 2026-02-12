@@ -3,4 +3,4 @@
 
 target-version = 'py38'
 [lint]
-exclude = ["langfuse/api/**/*.py"]
+exclude = ["elasticdash/api/**/*.py"]

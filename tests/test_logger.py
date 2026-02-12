@@ -1,7 +1,7 @@
 import os
 
-from langfuse import Langfuse
-from langfuse.logger import langfuse_logger
+from elasticdash import ElasticDash
+from elasticdash.logger import elasticdash_logger
 
 """
 Level	Numeric value
@@ -12,25 +12,25 @@ logging.ERROR	40
 """
 
 
-def test_default_langfuse():
-    Langfuse()
+def test_default_elasticdash():
+    ElasticDash()
 
-    assert langfuse_logger.level == 30
+    assert elasticdash_logger.level == 30
 
 
 def test_via_env():
-    os.environ["LANGFUSE_DEBUG"] = "True"
+    os.environ["ELASTICDASH_DEBUG"] = "True"
 
-    Langfuse()
+    ElasticDash()
 
-    assert langfuse_logger.level == 10
+    assert elasticdash_logger.level == 10
 
-    os.environ.pop("LANGFUSE_DEBUG")
+    os.environ.pop("ELASTICDASH_DEBUG")
 
 
-def test_debug_langfuse():
-    Langfuse(debug=True)
-    assert langfuse_logger.level == 10
+def test_debug_elasticdash():
+    ElasticDash(debug=True)
+    assert elasticdash_logger.level == 10
 
     # Reset
-    langfuse_logger.setLevel("WARNING")
+    elasticdash_logger.setLevel("WARNING")

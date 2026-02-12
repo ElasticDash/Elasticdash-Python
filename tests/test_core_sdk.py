@@ -6,10 +6,10 @@ from time import sleep
 
 import pytest
 
-from langfuse import Langfuse
-from langfuse._client.resource_manager import LangfuseResourceManager
-from langfuse._utils import _get_timestamp
-from tests.api_wrapper import LangfuseAPI
+from elasticdash import ElasticDash
+from elasticdash._client.resource_manager import ElasticDashResourceManager
+from elasticdash._utils import _get_timestamp
+from tests.api_wrapper import ElasticDashAPI
 from tests.utils import (
     create_uuid,
     get_api,
@@ -20,14 +20,14 @@ from tests.utils import (
 async def test_concurrency():
     _get_timestamp()
 
-    async def update_generation(i, langfuse: Langfuse):
+    async def update_generation(i, elasticdash: ElasticDash):
         # Create a new trace with a generation
-        with langfuse.start_as_current_span(name=f"parent-{i}") as parent_span:
+        with elasticdash.start_as_current_span(name=f"parent-{i}") as parent_span:
             # Set trace name
             parent_span.update_trace(name=str(i))
 
             # Create generation as a child
-            generation = langfuse.start_generation(name=str(i))
+            generation = elasticdash.start_generation(name=str(i))
 
             # Update generation with metadata
             generation.update(metadata={"count": str(i)})
@@ -35,13 +35,13 @@ async def test_concurrency():
             # End the generation
             generation.end()
 
-    # Create Langfuse client
-    langfuse = Langfuse()
+    # Create ElasticDash client
+    elasticdash = ElasticDash()
 
     # Run concurrent operations
-    await gather(*(update_generation(i, langfuse) for i in range(100)))
+    await gather(*(update_generation(i, elasticdash) for i in range(100)))
 
-    langfuse.flush()
+    elasticdash.flush()
 
     # Allow time for all operations to be processed
     sleep(10)
@@ -63,19 +63,19 @@ async def test_concurrency():
 
 
 def test_flush():
-    # Initialize Langfuse client with debug disabled
-    langfuse = Langfuse()
+    # Initialize ElasticDash client with debug disabled
+    elasticdash = ElasticDash()
 
     trace_ids = []
     for i in range(2):
         # Create spans and set the trace name using update_trace
-        with langfuse.start_as_current_span(name="span-" + str(i)) as span:
+        with elasticdash.start_as_current_span(name="span-" + str(i)) as span:
             span.update_trace(name=str(i))
             # Store the trace ID for later verification
-            trace_ids.append(langfuse.get_current_trace_id())
+            trace_ids.append(elasticdash.get_current_trace_id())
 
-    # Flush all pending spans to the Langfuse API
-    langfuse.flush()
+    # Flush all pending spans to the ElasticDash API
+    elasticdash.flush()
 
     # Allow time for API to process
     sleep(2)
@@ -88,10 +88,10 @@ def test_flush():
 
 
 def test_invalid_score_data_does_not_raise_exception():
-    langfuse = Langfuse()
+    elasticdash = ElasticDash()
 
     # Create a span and set trace properties
-    with langfuse.start_as_current_span(name="test-span") as span:
+    with elasticdash.start_as_current_span(name="test-span") as span:
         span.update_trace(
             name="this-is-so-great-new",
             user_id="test",
@@ -101,11 +101,11 @@ def test_invalid_score_data_does_not_raise_exception():
         trace_id = span.trace_id
 
     # Ensure data is sent
-    langfuse.flush()
+    elasticdash.flush()
 
     # Create a score with invalid data (negative value for a BOOLEAN)
     score_id = create_uuid()
-    langfuse.create_score(
+    elasticdash.create_score(
         score_id=score_id,
         trace_id=trace_id,
         name="this-is-a-score",
@@ -114,16 +114,16 @@ def test_invalid_score_data_does_not_raise_exception():
     )
 
     # Verify the operation didn't crash
-    langfuse.flush()
+    elasticdash.flush()
     # We can't assert queue size in OTEL implementation, but we can verify it completes without exception
 
 
 def test_create_numeric_score():
-    langfuse = Langfuse()
-    api_wrapper = LangfuseAPI()
+    elasticdash = ElasticDash()
+    api_wrapper = ElasticDashAPI()
 
     # Create a span and set trace properties
-    with langfuse.start_as_current_span(name="test-span") as span:
+    with elasticdash.start_as_current_span(name="test-span") as span:
         span.update_trace(
             name="this-is-so-great-new",
             user_id="test",
@@ -133,12 +133,12 @@ def test_create_numeric_score():
         trace_id = span.trace_id
 
     # Ensure data is sent
-    langfuse.flush()
+    elasticdash.flush()
     sleep(2)
 
     # Create a numeric score
     score_id = create_uuid()
-    langfuse.create_score(
+    elasticdash.create_score(
         score_id=score_id,
         trace_id=trace_id,
         name="this-is-a-score",
@@ -146,13 +146,13 @@ def test_create_numeric_score():
     )
 
     # Create a generation in the same trace
-    generation = langfuse.start_generation(
+    generation = elasticdash.start_generation(
         name="yet another child", metadata="test", trace_context={"trace_id": trace_id}
     )
     generation.end()
 
     # Ensure data is sent
-    langfuse.flush()
+    elasticdash.flush()
     sleep(2)
 
     # Retrieve and verify
@@ -165,11 +165,11 @@ def test_create_numeric_score():
 
 
 def test_create_boolean_score():
-    langfuse = Langfuse()
-    api_wrapper = LangfuseAPI()
+    elasticdash = ElasticDash()
+    api_wrapper = ElasticDashAPI()
 
     # Create a span and set trace properties
-    with langfuse.start_as_current_span(name="test-span") as span:
+    with elasticdash.start_as_current_span(name="test-span") as span:
         span.update_trace(
             name="this-is-so-great-new",
             user_id="test",
@@ -179,12 +179,12 @@ def test_create_boolean_score():
         trace_id = span.trace_id
 
     # Ensure data is sent
-    langfuse.flush()
+    elasticdash.flush()
     sleep(2)
 
     # Create a boolean score
     score_id = create_uuid()
-    langfuse.create_score(
+    elasticdash.create_score(
         score_id=score_id,
         trace_id=trace_id,
         name="this-is-a-score",
@@ -193,13 +193,13 @@ def test_create_boolean_score():
     )
 
     # Create a generation in the same trace
-    generation = langfuse.start_generation(
+    generation = elasticdash.start_generation(
         name="yet another child", metadata="test", trace_context={"trace_id": trace_id}
     )
     generation.end()
 
     # Ensure data is sent
-    langfuse.flush()
+    elasticdash.flush()
     sleep(2)
 
     # Retrieve and verify
@@ -212,11 +212,11 @@ def test_create_boolean_score():
 
 
 def test_create_categorical_score():
-    langfuse = Langfuse()
-    api_wrapper = LangfuseAPI()
+    elasticdash = ElasticDash()
+    api_wrapper = ElasticDashAPI()
 
     # Create a span and set trace properties
-    with langfuse.start_as_current_span(name="test-span") as span:
+    with elasticdash.start_as_current_span(name="test-span") as span:
         span.update_trace(
             name="this-is-so-great-new",
             user_id="test",
@@ -226,12 +226,12 @@ def test_create_categorical_score():
         trace_id = span.trace_id
 
     # Ensure data is sent
-    langfuse.flush()
+    elasticdash.flush()
     sleep(2)
 
     # Create a categorical score
     score_id = create_uuid()
-    langfuse.create_score(
+    elasticdash.create_score(
         score_id=score_id,
         trace_id=trace_id,
         name="this-is-a-score",
@@ -239,13 +239,13 @@ def test_create_categorical_score():
     )
 
     # Create a generation in the same trace
-    generation = langfuse.start_generation(
+    generation = elasticdash.start_generation(
         name="yet another child", metadata="test", trace_context={"trace_id": trace_id}
     )
     generation.end()
 
     # Ensure data is sent
-    langfuse.flush()
+    elasticdash.flush()
     sleep(2)
 
     # Retrieve and verify
@@ -258,11 +258,11 @@ def test_create_categorical_score():
 
 
 def test_create_score_with_custom_timestamp():
-    langfuse = Langfuse()
-    api_wrapper = LangfuseAPI()
+    elasticdash = ElasticDash()
+    api_wrapper = ElasticDashAPI()
 
     # Create a span and set trace properties
-    with langfuse.start_as_current_span(name="test-span") as span:
+    with elasticdash.start_as_current_span(name="test-span") as span:
         span.update_trace(
             name="test-custom-timestamp",
             user_id="test",
@@ -272,12 +272,12 @@ def test_create_score_with_custom_timestamp():
         trace_id = span.trace_id
 
     # Ensure data is sent
-    langfuse.flush()
+    elasticdash.flush()
     sleep(2)
 
     custom_timestamp = datetime.now(timezone.utc) - timedelta(hours=1)
     score_id = create_uuid()
-    langfuse.create_score(
+    elasticdash.create_score(
         score_id=score_id,
         trace_id=trace_id,
         name="custom-timestamp-score",
@@ -287,7 +287,7 @@ def test_create_score_with_custom_timestamp():
     )
 
     # Ensure data is sent
-    langfuse.flush()
+    elasticdash.flush()
     sleep(2)
 
     # Retrieve and verify
@@ -312,11 +312,11 @@ def test_create_score_with_custom_timestamp():
 
 
 def test_create_trace():
-    langfuse = Langfuse()
+    elasticdash = ElasticDash()
     trace_name = create_uuid()
 
     # Create a span and update the trace properties
-    with langfuse.start_as_current_span(name="test-span") as span:
+    with elasticdash.start_as_current_span(name="test-span") as span:
         span.update_trace(
             name=trace_name,
             user_id="test",
@@ -325,14 +325,14 @@ def test_create_trace():
             public=True,
         )
         # Get trace ID for later verification
-        trace_id = langfuse.get_current_trace_id()
+        trace_id = elasticdash.get_current_trace_id()
 
     # Ensure data is sent to the API
-    langfuse.flush()
+    elasticdash.flush()
     sleep(2)
 
     # Retrieve the trace from the API
-    trace = LangfuseAPI().get_trace(trace_id)
+    trace = ElasticDashAPI().get_trace(trace_id)
 
     # Verify all trace properties
     assert trace["name"] == trace_name
@@ -344,12 +344,12 @@ def test_create_trace():
 
 
 def test_create_update_trace():
-    langfuse = Langfuse()
+    elasticdash = ElasticDash()
 
     trace_name = create_uuid()
 
     # Create initial span with trace properties
-    with langfuse.start_as_current_span(name="test-span") as span:
+    with elasticdash.start_as_current_span(name="test-span") as span:
         span.update_trace(
             name=trace_name,
             user_id="test",
@@ -366,7 +366,7 @@ def test_create_update_trace():
         span.update_trace(metadata={"key2": "value2"}, public=False)
 
     # Ensure data is sent to the API
-    langfuse.flush()
+    elasticdash.flush()
     sleep(2)
 
     assert isinstance(trace_id, str)
@@ -381,13 +381,13 @@ def test_create_update_trace():
 
 
 def test_create_update_current_trace():
-    langfuse = Langfuse()
+    elasticdash = ElasticDash()
 
     trace_name = create_uuid()
 
     # Create initial span with trace properties using update_current_trace
-    with langfuse.start_as_current_span(name="test-span-current") as span:
-        langfuse.update_current_trace(
+    with elasticdash.start_as_current_span(name="test-span-current") as span:
+        elasticdash.update_current_trace(
             name=trace_name,
             user_id="test",
             metadata={"key": "value"},
@@ -401,12 +401,12 @@ def test_create_update_current_trace():
         sleep(1)
 
         # Update trace properties using update_current_trace
-        langfuse.update_current_trace(
+        elasticdash.update_current_trace(
             metadata={"key2": "value2"}, public=False, version="1.0"
         )
 
     # Ensure data is sent to the API
-    langfuse.flush()
+    elasticdash.flush()
     sleep(2)
 
     assert isinstance(trace_id, str)
@@ -424,10 +424,10 @@ def test_create_update_current_trace():
 
 
 def test_create_generation():
-    langfuse = Langfuse()
+    elasticdash = ElasticDash()
 
     # Create a generation using OTEL approach
-    generation = langfuse.start_generation(
+    generation = elasticdash.start_generation(
         name="query-generation",
         model="gpt-3.5-turbo-0125",
         model_parameters={
@@ -455,7 +455,7 @@ def test_create_generation():
     generation.end()
 
     # Flush to ensure all data is sent
-    langfuse.flush()
+    elasticdash.flush()
     sleep(2)
 
     # Retrieve the trace from the API
@@ -524,9 +524,9 @@ def test_create_generation_complex(
     expected_output_cost,
     expected_total_cost,
 ):
-    langfuse = Langfuse()
+    elasticdash = ElasticDash()
 
-    generation = langfuse.start_generation(
+    generation = elasticdash.start_generation(
         name="query-generation",
         input=[
             {"role": "system", "content": "You are a helpful assistant."},
@@ -540,7 +540,7 @@ def test_create_generation_complex(
         metadata={"tags": ["yo"]},
     ).end()
 
-    langfuse.flush()
+    elasticdash.flush()
     trace_id = generation.trace_id
     trace = get_api().trace.get(trace_id)
 
@@ -575,10 +575,10 @@ def test_create_generation_complex(
 
 
 def test_create_span():
-    langfuse = Langfuse()
+    elasticdash = ElasticDash()
 
     # Create span using OTEL-based client
-    span = langfuse.start_span(
+    span = elasticdash.start_span(
         name="span",
         input={"key": "value"},
         output={"key": "value"},
@@ -593,7 +593,7 @@ def test_create_span():
     span.end()
 
     # Ensure all data is sent
-    langfuse.flush()
+    elasticdash.flush()
     sleep(2)
 
     # Retrieve from API
@@ -618,27 +618,27 @@ def test_create_span():
 
 
 def test_score_trace():
-    langfuse = Langfuse()
-    api_wrapper = LangfuseAPI()
+    elasticdash = ElasticDash()
+    api_wrapper = ElasticDashAPI()
 
     trace_name = create_uuid()
 
     # Create a span and set trace name
-    with langfuse.start_as_current_span(name="test-span") as span:
+    with elasticdash.start_as_current_span(name="test-span") as span:
         span.update_trace(name=trace_name)
 
         # Get trace ID for later verification
-        trace_id = langfuse.get_current_trace_id()
+        trace_id = elasticdash.get_current_trace_id()
 
         # Create score for the trace
-        langfuse.score_current_trace(
+        elasticdash.score_current_trace(
             name="valuation",
             value=0.5,
             comment="This is a comment",
         )
 
     # Ensure data is sent
-    langfuse.flush()
+    elasticdash.flush()
     sleep(2)
 
     # Retrieve and verify
@@ -657,12 +657,12 @@ def test_score_trace():
 
 
 def test_score_trace_nested_trace():
-    langfuse = Langfuse()
+    elasticdash = ElasticDash()
 
     trace_name = create_uuid()
 
     # Create a trace with span
-    with langfuse.start_as_current_span(name="test-span") as span:
+    with elasticdash.start_as_current_span(name="test-span") as span:
         # Set trace name
         span.update_trace(name=trace_name)
 
@@ -677,7 +677,7 @@ def test_score_trace_nested_trace():
         trace_id = span.trace_id
 
     # Ensure data is sent
-    langfuse.flush()
+    elasticdash.flush()
     sleep(2)
 
     # Retrieve and verify
@@ -696,16 +696,16 @@ def test_score_trace_nested_trace():
 
 
 def test_score_trace_nested_observation():
-    langfuse = Langfuse()
+    elasticdash = ElasticDash()
 
     trace_name = create_uuid()
 
     # Create a parent span and set trace name
-    with langfuse.start_as_current_span(name="parent-span") as parent_span:
+    with elasticdash.start_as_current_span(name="parent-span") as parent_span:
         parent_span.update_trace(name=trace_name)
 
         # Create a child span
-        child_span = langfuse.start_span(name="span")
+        child_span = elasticdash.start_span(name="span")
 
         # Score the child span
         child_span.score(
@@ -722,7 +722,7 @@ def test_score_trace_nested_observation():
         child_span.end()
 
     # Ensure data is sent
-    langfuse.flush()
+    elasticdash.flush()
     sleep(2)
 
     # Retrieve and verify
@@ -741,11 +741,11 @@ def test_score_trace_nested_observation():
 
 
 def test_score_span():
-    langfuse = Langfuse()
-    api_wrapper = LangfuseAPI()
+    elasticdash = ElasticDash()
+    api_wrapper = ElasticDashAPI()
 
     # Create a span
-    span = langfuse.start_span(
+    span = elasticdash.start_span(
         name="span",
         input={"key": "value"},
         output={"key": "value"},
@@ -757,7 +757,7 @@ def test_score_span():
     trace_id = span.trace_id
 
     # Score the span
-    langfuse.create_score(
+    elasticdash.create_score(
         trace_id=trace_id,
         observation_id=span_id,  # API parameter name
         name="valuation",
@@ -769,7 +769,7 @@ def test_score_span():
     span.end()
 
     # Ensure data is sent
-    langfuse.flush()
+    elasticdash.flush()
     sleep(3)
 
     # Retrieve and verify
@@ -788,12 +788,12 @@ def test_score_span():
 
 
 def test_create_trace_and_span():
-    langfuse = Langfuse()
+    elasticdash = ElasticDash()
 
     trace_name = create_uuid()
 
     # Create parent span and set trace name
-    with langfuse.start_as_current_span(name=trace_name) as parent_span:
+    with elasticdash.start_as_current_span(name=trace_name) as parent_span:
         parent_span.update_trace(name=trace_name)
 
         # Create a child span
@@ -806,7 +806,7 @@ def test_create_trace_and_span():
         child_span.end()
 
     # Ensure data is sent
-    langfuse.flush()
+    elasticdash.flush()
     sleep(2)
 
     # Retrieve and verify
@@ -826,12 +826,12 @@ def test_create_trace_and_span():
 
 
 def test_create_trace_and_generation():
-    langfuse = Langfuse()
+    elasticdash = ElasticDash()
 
     trace_name = create_uuid()
 
     # Create parent span and set trace properties
-    with langfuse.start_as_current_span(name=trace_name) as parent_span:
+    with elasticdash.start_as_current_span(name=trace_name) as parent_span:
         parent_span.update_trace(
             name=trace_name, input={"key": "value"}, session_id="test-session-id"
         )
@@ -846,7 +846,7 @@ def test_create_trace_and_generation():
         generation.end()
 
     # Ensure data is sent
-    langfuse.flush()
+    elasticdash.flush()
     sleep(2)
 
     # Retrieve traces in two ways
@@ -874,16 +874,16 @@ def test_create_trace_and_generation():
 
 
 def test_create_generation_and_trace():
-    langfuse = Langfuse()
-    api_wrapper = LangfuseAPI()
+    elasticdash = ElasticDash()
+    api_wrapper = ElasticDashAPI()
 
     trace_name = create_uuid()
 
     # Create trace with a generation
-    trace_context = {"trace_id": langfuse.create_trace_id()}
+    trace_context = {"trace_id": elasticdash.create_trace_id()}
 
     # Create a generation with this context
-    generation = langfuse.start_generation(
+    generation = elasticdash.start_generation(
         name="generation", trace_context=trace_context
     )
 
@@ -896,13 +896,13 @@ def test_create_generation_and_trace():
     sleep(0.1)
 
     # Update trace properties in a separate span
-    with langfuse.start_as_current_span(
+    with elasticdash.start_as_current_span(
         name="trace-update", trace_context={"trace_id": trace_id}
     ) as span:
         span.update_trace(name=trace_name)
 
     # Ensure data is sent
-    langfuse.flush()
+    elasticdash.flush()
     sleep(2)
 
     # Retrieve and verify
@@ -923,10 +923,10 @@ def test_create_generation_and_trace():
 
 
 def test_create_span_and_get_observation():
-    langfuse = Langfuse()
+    elasticdash = ElasticDash()
 
     # Create span
-    span = langfuse.start_span(name="span")
+    span = elasticdash.start_span(name="span")
 
     # Get ID for verification
     span_id = span.id
@@ -935,7 +935,7 @@ def test_create_span_and_get_observation():
     span.end()
 
     # Flush and wait
-    langfuse.flush()
+    elasticdash.flush()
     sleep(2)
 
     # Use API to fetch the observation by ID
@@ -947,10 +947,10 @@ def test_create_span_and_get_observation():
 
 
 def test_update_generation():
-    langfuse = Langfuse()
+    elasticdash = ElasticDash()
 
     # Create a generation
-    generation = langfuse.start_generation(name="generation")
+    generation = elasticdash.start_generation(name="generation")
 
     # Update generation with metadata
     generation.update(metadata={"dict": "value"})
@@ -962,7 +962,7 @@ def test_update_generation():
     generation.end()
 
     # Ensure data is sent
-    langfuse.flush()
+    elasticdash.flush()
     sleep(2)
 
     # Retrieve and verify
@@ -983,10 +983,10 @@ def test_update_generation():
 
 
 def test_update_span():
-    langfuse = Langfuse()
+    elasticdash = ElasticDash()
 
     # Create a span
-    span = langfuse.start_span(name="span")
+    span = elasticdash.start_span(name="span")
 
     # Update the span with metadata
     span.update(metadata={"dict": "value"})
@@ -998,7 +998,7 @@ def test_update_span():
     span.end()
 
     # Ensure data is sent
-    langfuse.flush()
+    elasticdash.flush()
     sleep(2)
 
     # Retrieve and verify
@@ -1016,10 +1016,10 @@ def test_update_span():
 
 
 def test_create_span_and_generation():
-    langfuse = Langfuse()
+    elasticdash = ElasticDash()
 
     # Create initial span
-    span = langfuse.start_span(name="span")
+    span = elasticdash.start_span(name="span")
     sleep(0.1)
     # Get trace ID for later use
     trace_id = span.trace_id
@@ -1027,14 +1027,14 @@ def test_create_span_and_generation():
     span.end()
 
     # Create generation in the same trace
-    generation = langfuse.start_generation(
+    generation = elasticdash.start_generation(
         name="generation", trace_context={"trace_id": trace_id}
     )
     # End the generation
     generation.end()
 
     # Ensure data is sent
-    langfuse.flush()
+    elasticdash.flush()
     sleep(2)
 
     # Retrieve and verify
@@ -1059,16 +1059,16 @@ def test_create_span_and_generation():
 
 
 def test_create_trace_with_id_and_generation():
-    langfuse = Langfuse()
-    api_wrapper = LangfuseAPI()
+    elasticdash = ElasticDash()
+    api_wrapper = ElasticDashAPI()
 
     trace_name = create_uuid()
 
     # Create a trace ID using the utility method
-    trace_id = langfuse.create_trace_id()
+    trace_id = elasticdash.create_trace_id()
 
     # Create a span in this trace using the trace context
-    with langfuse.start_as_current_span(
+    with elasticdash.start_as_current_span(
         name="parent-span", trace_context={"trace_id": trace_id}
     ) as parent_span:
         # Set trace name
@@ -1081,7 +1081,7 @@ def test_create_trace_with_id_and_generation():
         generation.end()
 
     # Ensure data is sent
-    langfuse.flush()
+    elasticdash.flush()
     sleep(2)
 
     # Retrieve and verify
@@ -1102,11 +1102,11 @@ def test_create_trace_with_id_and_generation():
 
 
 def test_end_generation():
-    langfuse = Langfuse()
-    api_wrapper = LangfuseAPI()
+    elasticdash = ElasticDash()
+    api_wrapper = ElasticDashAPI()
 
     # Create a generation
-    generation = langfuse.start_generation(
+    generation = elasticdash.start_generation(
         name="query-generation",
         model="gpt-3.5-turbo",
         model_parameters={"max_tokens": "1000", "temperature": "0.9"},
@@ -1128,7 +1128,7 @@ def test_end_generation():
     generation.end()
 
     # Ensure data is sent
-    langfuse.flush()
+    elasticdash.flush()
     sleep(2)
 
     # Retrieve and verify
@@ -1145,15 +1145,15 @@ def test_end_generation():
 
 
 def test_end_generation_with_data():
-    langfuse = Langfuse()
+    elasticdash = ElasticDash()
 
     # Create a parent span to set trace properties
-    with langfuse.start_as_current_span(name="parent-span") as parent_span:
+    with elasticdash.start_as_current_span(name="parent-span") as parent_span:
         # Get trace ID
         trace_id = parent_span.trace_id
 
         # Create generation
-        generation = langfuse.start_generation(
+        generation = elasticdash.start_generation(
             name="query-generation",
         )
 
@@ -1184,7 +1184,7 @@ def test_end_generation_with_data():
         generation.end()
 
     # Ensure data is sent
-    langfuse.flush()
+    elasticdash.flush()
     sleep(2)
 
     # Retrieve and verify
@@ -1220,10 +1220,10 @@ def test_end_generation_with_data():
 
 
 def test_end_generation_with_openai_token_format():
-    langfuse = Langfuse()
+    elasticdash = ElasticDash()
 
     # Create a generation
-    generation = langfuse.start_generation(
+    generation = elasticdash.start_generation(
         name="query-generation",
     )
 
@@ -1248,7 +1248,7 @@ def test_end_generation_with_openai_token_format():
     generation.end()
 
     # Ensure data is sent
-    langfuse.flush()
+    elasticdash.flush()
     sleep(2)
 
     # Retrieve and verify
@@ -1272,11 +1272,11 @@ def test_end_generation_with_openai_token_format():
 
 
 def test_end_span():
-    langfuse = Langfuse()
-    api_wrapper = LangfuseAPI()
+    elasticdash = ElasticDash()
+    api_wrapper = ElasticDashAPI()
 
     # Create a span
-    span = langfuse.start_span(
+    span = elasticdash.start_span(
         name="span",
         input={"key": "value"},
         output={"key": "value"},
@@ -1290,7 +1290,7 @@ def test_end_span():
     span.end()
 
     # Ensure data is sent
-    langfuse.flush()
+    elasticdash.flush()
     sleep(2)
 
     # Retrieve and verify
@@ -1307,10 +1307,10 @@ def test_end_span():
 
 
 def test_end_span_with_data():
-    langfuse = Langfuse()
+    elasticdash = ElasticDash()
 
     # Create a span
-    span = langfuse.start_span(
+    span = elasticdash.start_span(
         name="span",
         input={"key": "value"},
         output={"key": "value"},
@@ -1325,7 +1325,7 @@ def test_end_span_with_data():
     span.end()
 
     # Ensure data is sent
-    langfuse.flush()
+    elasticdash.flush()
     sleep(2)
 
     # Retrieve and verify
@@ -1344,10 +1344,10 @@ def test_end_span_with_data():
 
 
 def test_get_generations():
-    langfuse = Langfuse()
+    elasticdash = ElasticDash()
 
     # Create a first generation with random name
-    generation1 = langfuse.start_generation(
+    generation1 = elasticdash.start_generation(
         name=create_uuid(),
     )
     generation1.end()
@@ -1355,7 +1355,7 @@ def test_get_generations():
     # Create a second generation with specific name and content
     generation_name = create_uuid()
 
-    generation2 = langfuse.start_generation(
+    generation2 = elasticdash.start_generation(
         name=generation_name,
         input="great-prompt",
         output="great-completion",
@@ -1363,7 +1363,7 @@ def test_get_generations():
     generation2.end()
 
     # Ensure data is sent
-    langfuse.flush()
+    elasticdash.flush()
     sleep(3)
 
     # Fetch generations using API
@@ -1377,14 +1377,14 @@ def test_get_generations():
 
 
 def test_get_generations_by_user():
-    langfuse = Langfuse()
+    elasticdash = ElasticDash()
 
     # Generate unique IDs for test
     user_id = create_uuid()
     generation_name = create_uuid()
 
     # Create a trace with user ID and a generation as its child
-    with langfuse.start_as_current_span(name="test-user") as parent_span:
+    with elasticdash.start_as_current_span(name="test-user") as parent_span:
         # Set user ID on the trace
         parent_span.update_trace(name="test-user", user_id=user_id)
 
@@ -1397,11 +1397,11 @@ def test_get_generations_by_user():
         generation.end()
 
     # Create another generation that doesn't have this user ID
-    other_gen = langfuse.start_generation(name="other-generation")
+    other_gen = elasticdash.start_generation(name="other-generation")
     other_gen.end()
 
     # Ensure data is sent
-    langfuse.flush()
+    elasticdash.flush()
     sleep(3)
 
     # Fetch generations by user ID using the API
@@ -1415,7 +1415,7 @@ def test_get_generations_by_user():
 
 
 def test_kwargs():
-    langfuse = Langfuse()
+    elasticdash = ElasticDash()
 
     # Create kwargs dict with valid parameters for start_span
     kwargs_dict = {
@@ -1425,7 +1425,7 @@ def test_kwargs():
     }
 
     # Create span with specific kwargs instead of using **kwargs_dict
-    span = langfuse.start_span(
+    span = elasticdash.start_span(
         name="span",
         input=kwargs_dict["input"],
         output=kwargs_dict["output"],
@@ -1439,7 +1439,7 @@ def test_kwargs():
     span.end()
 
     # Ensure data is sent
-    langfuse.flush()
+    elasticdash.flush()
     sleep(2)
 
     # Retrieve and verify
@@ -1461,11 +1461,11 @@ def test_timezone_awareness():
     utc_now = datetime.now(timezone.utc)
     assert utc_now.tzinfo is not None
 
-    # Create Langfuse client
-    langfuse = Langfuse()
+    # Create ElasticDash client
+    elasticdash = ElasticDash()
 
     # Create a trace with various observation types
-    with langfuse.start_as_current_span(name="test") as parent_span:
+    with elasticdash.start_as_current_span(name="test") as parent_span:
         # Set the trace name
         parent_span.update_trace(name="test")
 
@@ -1485,7 +1485,7 @@ def test_timezone_awareness():
         event_span.end()
 
     # Ensure data is sent
-    langfuse.flush()
+    elasticdash.flush()
     sleep(2)
 
     # Retrieve and verify
@@ -1522,10 +1522,10 @@ def test_timezone_awareness_setting_timestamps():
     assert utc_now.tzinfo is not None
 
     # Create client
-    langfuse = Langfuse()
+    elasticdash = ElasticDash()
 
     # Create a trace with different observation types
-    with langfuse.start_as_current_span(name="test") as parent_span:
+    with elasticdash.start_as_current_span(name="test") as parent_span:
         # Set trace name
         parent_span.update_trace(name="test")
 
@@ -1545,7 +1545,7 @@ def test_timezone_awareness_setting_timestamps():
         event_span.end()
 
     # Ensure data is sent
-    langfuse.flush()
+    elasticdash.flush()
     sleep(2)
 
     # Retrieve and verify
@@ -1570,24 +1570,24 @@ def test_timezone_awareness_setting_timestamps():
 
 
 def test_get_trace_by_session_id():
-    langfuse = Langfuse()
+    elasticdash = ElasticDash()
 
     # Create unique IDs for test
     trace_name = create_uuid()
     session_id = create_uuid()
 
     # Create a trace with a session_id
-    with langfuse.start_as_current_span(name="test-span") as span:
+    with elasticdash.start_as_current_span(name="test-span") as span:
         span.update_trace(name=trace_name, session_id=session_id)
         # Get trace ID for verification
         trace_id = span.trace_id
 
     # Create another trace without a session_id
-    with langfuse.start_as_current_span(name=create_uuid()):
+    with elasticdash.start_as_current_span(name=create_uuid()):
         pass
 
     # Ensure data is sent
-    langfuse.flush()
+    elasticdash.flush()
     sleep(2)
 
     # Retrieve the trace using the session_id
@@ -1602,19 +1602,19 @@ def test_get_trace_by_session_id():
 
 
 def test_fetch_trace():
-    langfuse = Langfuse()
+    elasticdash = ElasticDash()
 
     # Create a trace
     name = create_uuid()
 
     # Create a span and set trace properties
-    with langfuse.start_as_current_span(name="test-span") as span:
+    with elasticdash.start_as_current_span(name="test-span") as span:
         span.update_trace(name=name)
         # Get trace ID for verification
         trace_id = span.trace_id
 
     # Ensure data is sent
-    langfuse.flush()
+    elasticdash.flush()
     sleep(2)
 
     # Fetch the trace using the get_api client
@@ -1627,7 +1627,7 @@ def test_fetch_trace():
 
 
 def test_fetch_traces():
-    langfuse = Langfuse()
+    elasticdash = ElasticDash()
 
     # Use a unique name for this test
     name = create_uuid()
@@ -1636,7 +1636,7 @@ def test_fetch_traces():
     trace_ids = []
 
     # First trace
-    with langfuse.start_as_current_span(name="test1") as span:
+    with elasticdash.start_as_current_span(name="test1") as span:
         span.update_trace(
             name=name,
             session_id="session-1",
@@ -1648,7 +1648,7 @@ def test_fetch_traces():
     sleep(1)  # Ensure traces have different timestamps
 
     # Second trace
-    with langfuse.start_as_current_span(name="test2") as span:
+    with elasticdash.start_as_current_span(name="test2") as span:
         span.update_trace(
             name=name,
             session_id="session-1",
@@ -1660,7 +1660,7 @@ def test_fetch_traces():
     sleep(1)  # Ensure traces have different timestamps
 
     # Third trace
-    with langfuse.start_as_current_span(name="test3") as span:
+    with elasticdash.start_as_current_span(name="test3") as span:
         span.update_trace(
             name=name,
             session_id="session-1",
@@ -1670,7 +1670,7 @@ def test_fetch_traces():
         trace_ids.append(span.trace_id)
 
     # Ensure data is sent
-    langfuse.flush()
+    elasticdash.flush()
     sleep(3)
 
     # Fetch all traces with the same name
@@ -1697,13 +1697,13 @@ def test_fetch_traces():
 
 
 def test_get_observation():
-    langfuse = Langfuse()
+    elasticdash = ElasticDash()
 
     # Create a trace and a generation
     name = create_uuid()
 
     # Create a span and set trace properties
-    with langfuse.start_as_current_span(name="parent-span") as parent_span:
+    with elasticdash.start_as_current_span(name="parent-span") as parent_span:
         parent_span.update_trace(name=name)
 
         # Create a generation as child
@@ -1716,7 +1716,7 @@ def test_get_observation():
         generation.end()
 
     # Ensure data is sent
-    langfuse.flush()
+    elasticdash.flush()
     sleep(2)
 
     # Fetch the observation using the API
@@ -1729,13 +1729,13 @@ def test_get_observation():
 
 
 def test_get_observations():
-    langfuse = Langfuse()
+    elasticdash = ElasticDash()
 
     # Create a trace with multiple generations
     name = create_uuid()
 
     # Create a span and set trace properties
-    with langfuse.start_as_current_span(name="parent-span") as parent_span:
+    with elasticdash.start_as_current_span(name="parent-span") as parent_span:
         parent_span.update_trace(name=name)
 
         # Create first generation
@@ -1749,7 +1749,7 @@ def test_get_observations():
         gen2.end()
 
     # Ensure data is sent
-    langfuse.flush()
+    elasticdash.flush()
     sleep(2)
 
     # Fetch observations using the API
@@ -1803,7 +1803,7 @@ def test_get_observations_empty():
 
 
 def test_get_sessions():
-    langfuse = Langfuse()
+    elasticdash = ElasticDash()
 
     # unique name
     name = create_uuid()
@@ -1813,18 +1813,18 @@ def test_get_sessions():
 
     # Create multiple traces with different session IDs
     # Create first trace
-    with langfuse.start_as_current_span(name=name) as span1:
+    with elasticdash.start_as_current_span(name=name) as span1:
         span1.update_trace(name=name, session_id=session1)
 
     # Create second trace
-    with langfuse.start_as_current_span(name=name) as span2:
+    with elasticdash.start_as_current_span(name=name) as span2:
         span2.update_trace(name=name, session_id=session2)
 
     # Create third trace
-    with langfuse.start_as_current_span(name=name) as span3:
+    with elasticdash.start_as_current_span(name=name) as span3:
         span3.update_trace(name=name, session_id=session3)
 
-    langfuse.flush()
+    elasticdash.flush()
 
     # Fetch sessions
     sleep(3)
@@ -1844,12 +1844,12 @@ def test_get_sessions():
     "Flaky in concurrent environment as the global tracer provider is already configured"
 )
 def test_create_trace_sampling_zero():
-    langfuse = Langfuse(sample_rate=0)
-    api_wrapper = LangfuseAPI()
+    elasticdash = ElasticDash(sample_rate=0)
+    api_wrapper = ElasticDashAPI()
     trace_name = create_uuid()
 
     # Create a span with trace properties - with sample_rate=0, this will not be sent to the API
-    with langfuse.start_as_current_span(name="test-span") as span:
+    with elasticdash.start_as_current_span(name="test-span") as span:
         span.update_trace(
             name=trace_name,
             user_id="test",
@@ -1861,24 +1861,24 @@ def test_create_trace_sampling_zero():
         trace_id = span.trace_id
 
         # Add a score and a child generation
-        langfuse.score_current_trace(name="score", value=0.5)
+        elasticdash.score_current_trace(name="score", value=0.5)
         generation = span.start_generation(name="generation")
         generation.end()
 
     # Ensure data is sent, but should be dropped due to sampling
-    langfuse.flush()
+    elasticdash.flush()
     sleep(2)
 
     # Try to fetch the trace - should fail as it wasn't sent to the API
     fetched_trace = api_wrapper.get_trace(trace_id)
     assert fetched_trace == {
-        "error": "LangfuseNotFoundError",
+        "error": "ElasticDashNotFoundError",
         "message": f"Trace {trace_id} not found within authorized project",
     }
 
 
 def test_mask_function():
-    LangfuseResourceManager.reset()
+    ElasticDashResourceManager.reset()
 
     def mask_func(data):
         if isinstance(data, dict):
@@ -1889,11 +1889,11 @@ def test_mask_function():
             return "MASKED"
         return data
 
-    langfuse = Langfuse(mask=mask_func)
-    api_wrapper = LangfuseAPI()
+    elasticdash = ElasticDash(mask=mask_func)
+    api_wrapper = ElasticDashAPI()
 
     # Create a root span with trace properties
-    with langfuse.start_as_current_span(name="test-span") as root_span:
+    with elasticdash.start_as_current_span(name="test-span") as root_span:
         root_span.update_trace(name="test_trace", input={"sensitive": "data"})
         # Get trace ID for later use
         trace_id = root_span.trace_id
@@ -1911,7 +1911,7 @@ def test_mask_function():
         sub_span.end()
 
     # Ensure data is sent
-    langfuse.flush()
+    elasticdash.flush()
     sleep(2)
 
     # Retrieve and verify
@@ -1934,7 +1934,7 @@ def test_mask_function():
     assert fetched_span["output"] == "MASKED"
 
     # Create a root span with trace properties
-    with langfuse.start_as_current_span(name="test-span") as root_span:
+    with elasticdash.start_as_current_span(name="test-span") as root_span:
         root_span.update_trace(name="test_trace", input={"should_raise": "data"})
         # Get trace ID for later use
         trace_id = root_span.trace_id
@@ -1942,7 +1942,7 @@ def test_mask_function():
         root_span.update_trace(output={"should_raise": "sensitive"})
 
     # Ensure data is sent
-    langfuse.flush()
+    elasticdash.flush()
     sleep(2)
 
     # Retrieve and verify
@@ -1952,46 +1952,46 @@ def test_mask_function():
 
 
 def test_get_project_id():
-    langfuse = Langfuse()
-    res = langfuse._get_project_id()
+    elasticdash = ElasticDash()
+    res = elasticdash._get_project_id()
     assert res is not None
     assert res == "7a88fb47-b4e2-43b8-a06c-a5ce950dc53a"
 
 
 def test_generate_trace_id():
-    langfuse = Langfuse()
-    trace_id = langfuse.create_trace_id()
+    elasticdash = ElasticDash()
+    trace_id = elasticdash.create_trace_id()
 
     # Create a trace with the specific ID using trace_context
-    with langfuse.start_as_current_span(
+    with elasticdash.start_as_current_span(
         name="test-span", trace_context={"trace_id": trace_id}
     ) as span:
         span.update_trace(name="test_trace")
 
-    langfuse.flush()
+    elasticdash.flush()
 
     # Test the trace URL generation
-    project_id = langfuse._get_project_id()
-    trace_url = langfuse.get_trace_url(trace_id=trace_id)
+    project_id = elasticdash._get_project_id()
+    trace_url = elasticdash.get_trace_url(trace_id=trace_id)
     assert trace_url == f"http://localhost:3000/project/{project_id}/traces/{trace_id}"
 
 
 def test_generate_trace_url_client_disabled():
-    langfuse = Langfuse(tracing_enabled=False)
+    elasticdash = ElasticDash(tracing_enabled=False)
 
-    with langfuse.start_as_current_span(
+    with elasticdash.start_as_current_span(
         name="test-span",
     ):
         # The trace URL should be None because the client is disabled
-        trace_url = langfuse.get_trace_url()
+        trace_url = elasticdash.get_trace_url()
         assert trace_url is None
 
-    langfuse.flush()
+    elasticdash.flush()
 
 
 def test_start_as_current_observation_types():
     """Test creating different observation types using start_as_current_observation."""
-    langfuse = Langfuse()
+    elasticdash = ElasticDash()
 
     observation_types = [
         "span",
@@ -2005,7 +2005,7 @@ def test_start_as_current_observation_types():
         "guardrail",
     ]
 
-    with langfuse.start_as_current_span(name="parent") as parent_span:
+    with elasticdash.start_as_current_span(name="parent") as parent_span:
         parent_span.update_trace(name="observation-types-test")
         trace_id = parent_span.trace_id
 
@@ -2015,7 +2015,7 @@ def test_start_as_current_observation_types():
             ):
                 pass
 
-    langfuse.flush()
+    elasticdash.flush()
     sleep(2)
 
     api = get_api()
@@ -2042,12 +2042,12 @@ def test_start_as_current_observation_types():
 
 def test_that_generation_like_properties_are_actually_created():
     """Test that generation-like observation types properly support generation properties."""
-    from langfuse._client.constants import (
+    from elasticdash._client.constants import (
         ObservationTypeGenerationLike,
         get_observation_types_list,
     )
 
-    langfuse = Langfuse()
+    elasticdash = ElasticDash()
     generation_like_types = get_observation_types_list(ObservationTypeGenerationLike)
 
     test_model = "test-model"
@@ -2056,7 +2056,7 @@ def test_that_generation_like_properties_are_actually_created():
     test_usage_details = {"prompt_tokens": 10, "completion_tokens": 20}
     test_cost_details = {"input": 0.01, "output": 0.02, "total": 0.03}
 
-    with langfuse.start_as_current_span(name="parent") as parent_span:
+    with elasticdash.start_as_current_span(name="parent") as parent_span:
         parent_span.update_trace(name="generation-properties-test")
         trace_id = parent_span.trace_id
 
@@ -2092,7 +2092,7 @@ def test_that_generation_like_properties_are_actually_created():
                         f"{obs_type} should have cost_details property"
                     )
 
-    langfuse.flush()
+    elasticdash.flush()
 
     api = get_api()
     trace = api.trace.get(trace_id)

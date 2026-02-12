@@ -10,9 +10,9 @@ import pytest
 from langchain.messages import HumanMessage
 from pydantic import BaseModel
 
-import langfuse
-from langfuse._utils.serializer import EventSerializer
-from langfuse.api.resources.commons.types.observation_level import ObservationLevel
+import elasticdash
+from elasticdash._utils.serializer import EventSerializer
+from elasticdash.api.resources.commons.types.observation_level import ObservationLevel
 
 
 class TestModel(BaseModel):
@@ -80,7 +80,7 @@ def test_json_decoder_without_langchain_serializer_with_langchain_message():
     with pytest.raises(ImportError):
         from langchain.load.serializable import Serializable  # noqa
 
-    importlib.reload(langfuse)
+    importlib.reload(elasticdash)
     obj = TestModel(foo="bar", bar=datetime(2021, 1, 1, 0, 0, 0, tzinfo=timezone.utc))
     result = json.dumps(obj, cls=EventSerializer)
     assert result == '{"foo": "bar", "bar": "2021-01-01T00:00:00Z"}'
@@ -94,7 +94,7 @@ def test_json_decoder_without_langchain_serializer_with_none():
     with pytest.raises(ImportError):
         from langchain.load.serializable import Serializable  # noqa
 
-    importlib.reload(langfuse)
+    importlib.reload(elasticdash)
     result = json.dumps(None, cls=EventSerializer)
     default = json.dumps(None)
     assert result == "null"

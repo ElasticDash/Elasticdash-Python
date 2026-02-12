@@ -33,4 +33,4 @@ repos:
           - langchain-core
           - langgraph
         args: [--no-error-summary]
-        files: ^langfuse/
+        files: ^elasticdash/

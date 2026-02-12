@@ -8,7 +8,7 @@ from uuid import UUID
 
 from pydantic import BaseModel
 
-from langfuse._utils.serializer import (
+from elasticdash._utils.serializer import (
     EventSerializer,
 )
 

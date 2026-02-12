@@ -1,7 +1,7 @@
 import logging
 import pytest
 
-from langfuse._utils.error_logging import (
+from elasticdash._utils.error_logging import (
     catch_and_log_errors,
     auto_decorate_methods_with,
 )

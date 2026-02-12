@@ -5,8 +5,8 @@ from langchain_core.output_parsers import StrOutputParser
 from langchain_core.prompts import ChatPromptTemplate, PromptTemplate
 from langchain_openai import ChatOpenAI, OpenAI
 
-from langfuse import Langfuse
-from langfuse.langchain import CallbackHandler
+from elasticdash import ElasticDash
+from elasticdash.langchain import CallbackHandler
 from tests.utils import get_api
 
 from .utils import create_uuid
@@ -31,9 +31,9 @@ def test_stream_chat_models(model_name):
     )
     handler = CallbackHandler()
 
-    langfuse_client = handler.client
-    trace_id = Langfuse.create_trace_id()
-    with langfuse_client.start_as_current_span(
+    elasticdash_client = handler.client
+    trace_id = ElasticDash.create_trace_id()
+    with elasticdash_client.start_as_current_span(
         name=name, trace_context={"trace_id": trace_id}
     ):
         res = model.stream(
@@ -45,7 +45,7 @@ def test_stream_chat_models(model_name):
         for chunk in res:
             response_str.append(chunk.content)
 
-    langfuse_client.flush()
+    elasticdash_client.flush()
     assert handler.runs == {}
     api = get_api()
     trace = api.trace.get(trace_id)
@@ -86,9 +86,9 @@ def test_stream_completions_models(model_name):
     model = OpenAI(streaming=True, max_tokens=300, tags=tags, model=model_name)
     handler = CallbackHandler()
 
-    langfuse_client = handler.client
-    trace_id = Langfuse.create_trace_id()
-    with langfuse_client.start_as_current_span(
+    elasticdash_client = handler.client
+    trace_id = ElasticDash.create_trace_id()
+    with elasticdash_client.start_as_current_span(
         name=name, trace_context={"trace_id": trace_id}
     ):
         res = model.stream(
@@ -100,7 +100,7 @@ def test_stream_completions_models(model_name):
         for chunk in res:
             response_str.append(chunk)
 
-    langfuse_client.flush()
+    elasticdash_client.flush()
     assert handler.runs == {}
     api = get_api()
     trace = api.trace.get(trace_id)
@@ -140,9 +140,9 @@ def test_invoke_chat_models(model_name):
     model = ChatOpenAI(max_completion_tokens=300, tags=tags, model=model_name)
     handler = CallbackHandler()
 
-    langfuse_client = handler.client
-    trace_id = Langfuse.create_trace_id()
-    with langfuse_client.start_as_current_span(
+    elasticdash_client = handler.client
+    trace_id = ElasticDash.create_trace_id()
+    with elasticdash_client.start_as_current_span(
         name=name, trace_context={"trace_id": trace_id}
     ):
         _ = model.invoke(
@@ -150,7 +150,7 @@ def test_invoke_chat_models(model_name):
             config={"callbacks": [handler]},
         )
 
-    langfuse_client.flush()
+    elasticdash_client.flush()
     assert handler.runs == {}
     api = get_api()
     trace = api.trace.get(trace_id)
@@ -190,9 +190,9 @@ def test_invoke_in_completions_models(model_name):
     model = OpenAI(max_tokens=300, tags=tags, model=model_name)
     handler = CallbackHandler()
 
-    langfuse_client = handler.client
-    trace_id = Langfuse.create_trace_id()
-    with langfuse_client.start_as_current_span(
+    elasticdash_client = handler.client
+    trace_id = ElasticDash.create_trace_id()
+    with elasticdash_client.start_as_current_span(
         name=name, trace_context={"trace_id": trace_id}
     ):
         test_phrase = "This is a test!"
@@ -201,7 +201,7 @@ def test_invoke_in_completions_models(model_name):
             config={"callbacks": [handler]},
         )
 
-    langfuse_client.flush()
+    elasticdash_client.flush()
     assert handler.runs == {}
     api = get_api()
     trace = api.trace.get(trace_id)
@@ -239,9 +239,9 @@ def test_batch_in_completions_models(model_name):
     model = OpenAI(max_tokens=300, tags=tags, model=model_name)
     handler = CallbackHandler()
 
-    langfuse_client = handler.client
-    trace_id = Langfuse.create_trace_id()
-    with langfuse_client.start_as_current_span(
+    elasticdash_client = handler.client
+    trace_id = ElasticDash.create_trace_id()
+    with elasticdash_client.start_as_current_span(
         name=name, trace_context={"trace_id": trace_id}
     ):
         input1 = "Who is the first president of America ?"
@@ -251,7 +251,7 @@ def test_batch_in_completions_models(model_name):
             config={"callbacks": [handler]},
         )
 
-    langfuse_client.flush()
+    elasticdash_client.flush()
     assert handler.runs == {}
     api = get_api()
     trace = api.trace.get(trace_id)
@@ -288,9 +288,9 @@ def test_batch_in_chat_models(model_name):
     model = ChatOpenAI(max_completion_tokens=300, tags=tags, model=model_name)
     handler = CallbackHandler()
 
-    langfuse_client = handler.client
-    trace_id = Langfuse.create_trace_id()
-    with langfuse_client.start_as_current_span(
+    elasticdash_client = handler.client
+    trace_id = ElasticDash.create_trace_id()
+    with elasticdash_client.start_as_current_span(
         name=name, trace_context={"trace_id": trace_id}
     ):
         input1 = "Who is the first president of America ?"
@@ -300,7 +300,7 @@ def test_batch_in_chat_models(model_name):
             config={"callbacks": [handler]},
         )
 
-    langfuse_client.flush()
+    elasticdash_client.flush()
     assert handler.runs == {}
     api = get_api()
     trace = api.trace.get(trace_id)
@@ -340,9 +340,9 @@ async def test_astream_chat_models(model_name):
     )
     handler = CallbackHandler()
 
-    langfuse_client = handler.client
-    trace_id = Langfuse.create_trace_id()
-    with langfuse_client.start_as_current_span(
+    elasticdash_client = handler.client
+    trace_id = ElasticDash.create_trace_id()
+    with elasticdash_client.start_as_current_span(
         name=name, trace_context={"trace_id": trace_id}
     ):
         res = model.astream(
@@ -354,7 +354,7 @@ async def test_astream_chat_models(model_name):
         async for chunk in res:
             response_str.append(chunk.content)
 
-    langfuse_client.flush()
+    elasticdash_client.flush()
     assert handler.runs == {}
     api = get_api()
     trace = api.trace.get(trace_id)
@@ -395,10 +395,10 @@ async def test_astream_completions_models(model_name):
     model = OpenAI(streaming=True, max_tokens=300, tags=tags, model=model_name)
     handler = CallbackHandler()
 
-    langfuse_client = handler.client
+    elasticdash_client = handler.client
 
-    trace_id = Langfuse.create_trace_id()
-    with langfuse_client.start_as_current_span(
+    trace_id = ElasticDash.create_trace_id()
+    with elasticdash_client.start_as_current_span(
         name=name, trace_context={"trace_id": trace_id}
     ):
         test_phrase = "This is a test!"
@@ -411,7 +411,7 @@ async def test_astream_completions_models(model_name):
         async for chunk in res:
             response_str.append(chunk)
 
-    langfuse_client.flush()
+    elasticdash_client.flush()
     assert handler.runs == {}
     api = get_api()
     trace = api.trace.get(trace_id)
@@ -452,9 +452,9 @@ async def test_ainvoke_chat_models(model_name):
     model = ChatOpenAI(max_completion_tokens=300, tags=tags, model=model_name)
     handler = CallbackHandler()
 
-    langfuse_client = handler.client
-    trace_id = Langfuse.create_trace_id()
-    with langfuse_client.start_as_current_span(
+    elasticdash_client = handler.client
+    trace_id = ElasticDash.create_trace_id()
+    with elasticdash_client.start_as_current_span(
         name=name, trace_context={"trace_id": trace_id}
     ):
         test_phrase = "This is a test!"
@@ -463,7 +463,7 @@ async def test_ainvoke_chat_models(model_name):
             config={"callbacks": [handler]},
         )
 
-    langfuse_client.flush()
+    elasticdash_client.flush()
     assert handler.runs == {}
     api = get_api()
     trace = api.trace.get(trace_id)
@@ -503,9 +503,9 @@ async def test_ainvoke_in_completions_models(model_name):
     model = OpenAI(max_tokens=300, tags=tags, model=model_name)
     handler = CallbackHandler()
 
-    langfuse_client = handler.client
-    trace_id = Langfuse.create_trace_id()
-    with langfuse_client.start_as_current_span(
+    elasticdash_client = handler.client
+    trace_id = ElasticDash.create_trace_id()
+    with elasticdash_client.start_as_current_span(
         name=name, trace_context={"trace_id": trace_id}
     ):
         test_phrase = "This is a test!"
@@ -514,7 +514,7 @@ async def test_ainvoke_in_completions_models(model_name):
             config={"callbacks": [handler]},
         )
 
-    langfuse_client.flush()
+    elasticdash_client.flush()
     assert handler.runs == {}
     api = get_api()
     trace = api.trace.get(trace_id)
@@ -556,9 +556,9 @@ def test_chains_batch_in_chat_models(model_name):
     model = ChatOpenAI(max_completion_tokens=300, tags=tags, model=model_name)
     handler = CallbackHandler()
 
-    langfuse_client = handler.client
-    trace_id = Langfuse.create_trace_id()
-    with langfuse_client.start_as_current_span(
+    elasticdash_client = handler.client
+    trace_id = ElasticDash.create_trace_id()
+    with elasticdash_client.start_as_current_span(
         name=name, trace_context={"trace_id": trace_id}
     ):
         prompt = ChatPromptTemplate.from_template(
@@ -571,7 +571,7 @@ def test_chains_batch_in_chat_models(model_name):
             config={"callbacks": [handler]},
         )
 
-    langfuse_client.flush()
+    elasticdash_client.flush()
     assert handler.runs == {}
     api = get_api()
     trace = api.trace.get(trace_id)
@@ -607,9 +607,9 @@ def test_chains_batch_in_completions_models(model_name):
     model = OpenAI(max_tokens=300, tags=tags, model=model_name)
     handler = CallbackHandler()
 
-    langfuse_client = handler.client
-    trace_id = Langfuse.create_trace_id()
-    with langfuse_client.start_as_current_span(
+    elasticdash_client = handler.client
+    trace_id = ElasticDash.create_trace_id()
+    with elasticdash_client.start_as_current_span(
         name=name, trace_context={"trace_id": trace_id}
     ):
         prompt = ChatPromptTemplate.from_template(
@@ -622,7 +622,7 @@ def test_chains_batch_in_completions_models(model_name):
             config={"callbacks": [handler]},
         )
 
-    langfuse_client.flush()
+    elasticdash_client.flush()
     assert handler.runs == {}
     api = get_api()
     trace = api.trace.get(trace_id)
@@ -660,9 +660,9 @@ async def test_chains_abatch_in_chat_models(model_name):
     model = ChatOpenAI(max_completion_tokens=300, tags=tags, model=model_name)
     handler = CallbackHandler()
 
-    langfuse_client = handler.client
-    trace_id = Langfuse.create_trace_id()
-    with langfuse_client.start_as_current_span(
+    elasticdash_client = handler.client
+    trace_id = ElasticDash.create_trace_id()
+    with elasticdash_client.start_as_current_span(
         name=name, trace_context={"trace_id": trace_id}
     ):
         prompt = ChatPromptTemplate.from_template(
@@ -675,7 +675,7 @@ async def test_chains_abatch_in_chat_models(model_name):
             config={"callbacks": [handler]},
         )
 
-    langfuse_client.flush()
+    elasticdash_client.flush()
     assert handler.runs == {}
     api = get_api()
     trace = api.trace.get(trace_id)
@@ -713,9 +713,9 @@ async def test_chains_abatch_in_completions_models(model_name):
     model = OpenAI(max_tokens=300, tags=tags, model=model_name)
     handler = CallbackHandler()
 
-    langfuse_client = handler.client
-    trace_id = Langfuse.create_trace_id()
-    with langfuse_client.start_as_current_span(
+    elasticdash_client = handler.client
+    trace_id = ElasticDash.create_trace_id()
+    with elasticdash_client.start_as_current_span(
         name=name, trace_context={"trace_id": trace_id}
     ):
         prompt = ChatPromptTemplate.from_template(
@@ -725,7 +725,7 @@ async def test_chains_abatch_in_completions_models(model_name):
         chain = prompt | model | StrOutputParser()
         _ = await chain.abatch(inputs, config={"callbacks": [handler]})
 
-    langfuse_client.flush()
+    elasticdash_client.flush()
     assert handler.runs == {}
     api = get_api()
     trace = api.trace.get(trace_id)
@@ -762,9 +762,9 @@ async def test_chains_ainvoke_chat_models(model_name):
     model = ChatOpenAI(max_completion_tokens=300, tags=tags, model=model_name)
     handler = CallbackHandler()
 
-    langfuse_client = handler.client
-    trace_id = Langfuse.create_trace_id()
-    with langfuse_client.start_as_current_span(
+    elasticdash_client = handler.client
+    trace_id = ElasticDash.create_trace_id()
+    with elasticdash_client.start_as_current_span(
         name=name, trace_context={"trace_id": trace_id}
     ):
         prompt1 = ChatPromptTemplate.from_template(
@@ -778,7 +778,7 @@ async def test_chains_ainvoke_chat_models(model_name):
             config={"callbacks": [handler]},
         )
 
-    langfuse_client.flush()
+    elasticdash_client.flush()
     assert handler.runs == {}
     api = get_api()
     trace = api.trace.get(trace_id)
@@ -818,9 +818,9 @@ async def test_chains_ainvoke_completions_models(model_name):
     model = OpenAI(max_tokens=300, tags=tags, model=model_name)
     handler = CallbackHandler()
 
-    langfuse_client = handler.client
-    trace_id = Langfuse.create_trace_id()
-    with langfuse_client.start_as_current_span(
+    elasticdash_client = handler.client
+    trace_id = ElasticDash.create_trace_id()
+    with elasticdash_client.start_as_current_span(
         name=name, trace_context={"trace_id": trace_id}
     ):
         prompt1 = PromptTemplate.from_template(
@@ -834,7 +834,7 @@ async def test_chains_ainvoke_completions_models(model_name):
             config={"callbacks": [handler]},
         )
 
-    langfuse_client.flush()
+    elasticdash_client.flush()
     assert handler.runs == {}
     api = get_api()
     trace = api.trace.get(trace_id)
@@ -874,9 +874,9 @@ async def test_chains_astream_chat_models(model_name):
     )
     handler = CallbackHandler()
 
-    langfuse_client = handler.client
-    trace_id = Langfuse.create_trace_id()
-    with langfuse_client.start_as_current_span(
+    elasticdash_client = handler.client
+    trace_id = ElasticDash.create_trace_id()
+    with elasticdash_client.start_as_current_span(
         name=name, trace_context={"trace_id": trace_id}
     ):
         prompt1 = PromptTemplate.from_template(
@@ -894,7 +894,7 @@ async def test_chains_astream_chat_models(model_name):
         async for chunk in res:
             response_str.append(chunk)
 
-    langfuse_client.flush()
+    elasticdash_client.flush()
     assert handler.runs == {}
     api = get_api()
     trace = api.trace.get(trace_id)
@@ -936,9 +936,9 @@ async def test_chains_astream_completions_models(model_name):
     model = OpenAI(streaming=True, max_tokens=300, tags=tags, model=model_name)
     handler = CallbackHandler()
 
-    langfuse_client = handler.client
-    trace_id = Langfuse.create_trace_id()
-    with langfuse_client.start_as_current_span(
+    elasticdash_client = handler.client
+    trace_id = ElasticDash.create_trace_id()
+    with elasticdash_client.start_as_current_span(
         name=name, trace_context={"trace_id": trace_id}
     ):
         prompt1 = PromptTemplate.from_template(
@@ -956,7 +956,7 @@ async def test_chains_astream_completions_models(model_name):
         async for chunk in res:
             response_str.append(chunk)
 
-    langfuse_client.flush()
+    elasticdash_client.flush()
     assert handler.runs == {}
     api = get_api()
     trace = api.trace.get(trace_id)

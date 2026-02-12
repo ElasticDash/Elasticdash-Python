@@ -1,8 +1,8 @@
 import pytest
 from langchain_core.prompts import ChatPromptTemplate, PromptTemplate
 
-from langfuse.api.resources.prompts import ChatMessage, Prompt_Chat
-from langfuse.model import (
+from elasticdash.api.resources.prompts import ChatMessage, Prompt_Chat
+from elasticdash.model import (
     ChatPromptClient,
     Prompt_Text,
     TemplateParser,
@@ -735,7 +735,7 @@ Configuration:
 
     def test_chat_prompt_with_placeholders_langchain(self):
         """Test that chat prompts with placeholders work correctly with Langchain."""
-        from langfuse.api.resources.prompts import Prompt_Chat
+        from elasticdash.api.resources.prompts import Prompt_Chat
 
         chat_messages = [
             ChatMessage(
@@ -804,8 +804,8 @@ Configuration:
 
     def test_get_langchain_prompt_with_unresolved_placeholders(self):
         """Test that unresolved placeholders become MessagesPlaceholder objects."""
-        from langfuse.api.resources.prompts import Prompt_Chat
-        from langfuse.model import ChatPromptClient
+        from elasticdash.api.resources.prompts import Prompt_Chat
+        from elasticdash.model import ChatPromptClient
 
         chat_messages = [
             {"role": "system", "content": "You are a {{role}} assistant"},
@@ -854,7 +854,7 @@ Configuration:
 
 def test_tool_calls_preservation_in_message_placeholder():
     """Test that tool calls are preserved when compiling message placeholders."""
-    from langfuse.api.resources.prompts import Prompt_Chat
+    from elasticdash.api.resources.prompts import Prompt_Chat
 
     chat_messages = [
         {"role": "system", "content": "You are a helpful assistant."},

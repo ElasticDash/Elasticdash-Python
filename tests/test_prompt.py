@@ -4,29 +4,29 @@ from unittest.mock import Mock, patch
 import openai
 import pytest
 
-from langfuse._client.client import Langfuse
-from langfuse._utils.prompt_cache import (
+from elasticdash._client.client import ElasticDash
+from elasticdash._utils.prompt_cache import (
     DEFAULT_PROMPT_CACHE_TTL_SECONDS,
     PromptCache,
     PromptCacheItem,
 )
-from langfuse.api.resources.commons.errors.not_found_error import NotFoundError
-from langfuse.api.resources.prompts import Prompt_Chat, Prompt_Text
-from langfuse.model import ChatPromptClient, TextPromptClient
+from elasticdash.api.resources.commons.errors.not_found_error import NotFoundError
+from elasticdash.api.resources.prompts import Prompt_Chat, Prompt_Text
+from elasticdash.model import ChatPromptClient, TextPromptClient
 from tests.utils import create_uuid, get_api
 
 
 def test_create_prompt():
-    langfuse = Langfuse()
+    elasticdash = ElasticDash()
     prompt_name = create_uuid()
-    prompt_client = langfuse.create_prompt(
+    prompt_client = elasticdash.create_prompt(
         name=prompt_name,
         prompt="test prompt",
         labels=["production"],
         commit_message="initial commit",
     )
 
-    second_prompt_client = langfuse.get_prompt(prompt_name)
+    second_prompt_client = elasticdash.get_prompt(prompt_name)
 
     assert prompt_client.name == second_prompt_client.name
     assert prompt_client.version == second_prompt_client.version
@@ -37,16 +37,16 @@ def test_create_prompt():
 
 
 def test_create_prompt_with_special_chars_in_name():
-    langfuse = Langfuse()
+    elasticdash = ElasticDash()
     prompt_name = create_uuid() + "special chars !@#$%^&*() +"
-    prompt_client = langfuse.create_prompt(
+    prompt_client = elasticdash.create_prompt(
         name=prompt_name,
         prompt="test prompt",
         labels=["production"],
         tags=["test"],
     )
 
-    second_prompt_client = langfuse.get_prompt(prompt_name)
+    second_prompt_client = elasticdash.get_prompt(prompt_name)
 
     assert prompt_client.name == second_prompt_client.name
     assert prompt_client.version == second_prompt_client.version
@@ -57,10 +57,10 @@ def test_create_prompt_with_special_chars_in_name():
 
 
 def test_create_chat_prompt():
-    langfuse = Langfuse()
+    elasticdash = ElasticDash()
     prompt_name = create_uuid()
 
-    prompt_client = langfuse.create_prompt(
+    prompt_client = elasticdash.create_prompt(
         name=prompt_name,
         prompt=[
             {"role": "system", "content": "test prompt 1 with {{animal}}"},
@@ -72,7 +72,7 @@ def test_create_chat_prompt():
         commit_message="initial commit",
     )
 
-    second_prompt_client = langfuse.get_prompt(prompt_name, type="chat")
+    second_prompt_client = elasticdash.get_prompt(prompt_name, type="chat")
 
     # Create a test generation
     completion = openai.OpenAI().chat.completions.create(
@@ -93,10 +93,10 @@ def test_create_chat_prompt():
 
 
 def test_create_chat_prompt_with_placeholders():
-    langfuse = Langfuse()
+    elasticdash = ElasticDash()
     prompt_name = create_uuid()
 
-    prompt_client = langfuse.create_prompt(
+    prompt_client = elasticdash.create_prompt(
         name=prompt_name,
         prompt=[
             {"role": "system", "content": "You are a {{role}} assistant"},
@@ -109,7 +109,7 @@ def test_create_chat_prompt_with_placeholders():
         commit_message="initial commit",
     )
 
-    second_prompt_client = langfuse.get_prompt(prompt_name, type="chat")
+    second_prompt_client = elasticdash.get_prompt(prompt_name, type="chat")
     messages = second_prompt_client.compile(
         role="helpful",
         task="coding",
@@ -143,9 +143,9 @@ def test_create_chat_prompt_with_placeholders():
 
 def test_create_prompt_with_placeholders():
     """Test creating a prompt with placeholder messages."""
-    langfuse = Langfuse()
+    elasticdash = ElasticDash()
     prompt_name = create_uuid()
-    prompt_client = langfuse.create_prompt(
+    prompt_client = elasticdash.create_prompt(
         name=prompt_name,
         prompt=[
             {"role": "system", "content": "System message"},
@@ -173,10 +173,10 @@ def test_create_prompt_with_placeholders():
 
 def test_get_prompt_with_placeholders():
     """Test retrieving a prompt with placeholders."""
-    langfuse = Langfuse()
+    elasticdash = ElasticDash()
     prompt_name = create_uuid()
 
-    langfuse.create_prompt(
+    elasticdash.create_prompt(
         name=prompt_name,
         prompt=[
             {"role": "system", "content": "You are {{name}}"},
@@ -186,7 +186,7 @@ def test_get_prompt_with_placeholders():
         type="chat",
     )
 
-    prompt_client = langfuse.get_prompt(prompt_name, type="chat", version=1)
+    prompt_client = elasticdash.get_prompt(prompt_name, type="chat", version=1)
 
     # Verify placeholder structure is preserved
     assert len(prompt_client.prompt) == 3
@@ -312,8 +312,8 @@ def test_compile_with_placeholders(
     variables, placeholders, expected_len, expected_contents
 ) -> None:
     """Test compile_with_placeholders with different variable/placeholder combinations."""
-    from langfuse.api.resources.prompts import Prompt_Chat
-    from langfuse.model import ChatPromptClient
+    from elasticdash.api.resources.prompts import Prompt_Chat
+    from elasticdash.model import ChatPromptClient
 
     mock_prompt = Prompt_Chat(
         name="test_prompt",
@@ -350,10 +350,10 @@ def test_warning_on_unresolved_placeholders():
     """Test that a warning is emitted when compiling with unresolved placeholders."""
     from unittest.mock import patch
 
-    langfuse = Langfuse()
+    elasticdash = ElasticDash()
     prompt_name = create_uuid()
 
-    langfuse.create_prompt(
+    elasticdash.create_prompt(
         name=prompt_name,
         prompt=[
             {"role": "system", "content": "You are {{name}}"},
@@ -363,10 +363,10 @@ def test_warning_on_unresolved_placeholders():
         type="chat",
     )
 
-    prompt_client = langfuse.get_prompt(prompt_name, type="chat", version=1)
+    prompt_client = elasticdash.get_prompt(prompt_name, type="chat", version=1)
 
     # Test that warning is emitted when compiling with unresolved placeholders
-    with patch("langfuse.logger.langfuse_logger.warning") as mock_warning:
+    with patch("elasticdash.logger.elasticdash_logger.warning") as mock_warning:
         # Compile without providing the 'history' placeholder
         result = prompt_client.compile(name="Assistant", question="What is 2+2?")
 
@@ -383,10 +383,10 @@ def test_warning_on_unresolved_placeholders():
 
 
 def test_compiling_chat_prompt():
-    langfuse = Langfuse()
+    elasticdash = ElasticDash()
     prompt_name = create_uuid()
 
-    prompt_client = langfuse.create_prompt(
+    prompt_client = elasticdash.create_prompt(
         name=prompt_name,
         prompt=[
             {
@@ -399,7 +399,7 @@ def test_compiling_chat_prompt():
         type="chat",
     )
 
-    second_prompt_client = langfuse.get_prompt(prompt_name, type="chat")
+    second_prompt_client = elasticdash.get_prompt(prompt_name, type="chat")
 
     assert prompt_client.name == second_prompt_client.name
     assert prompt_client.version == second_prompt_client.version
@@ -413,17 +413,17 @@ def test_compiling_chat_prompt():
 
 
 def test_compiling_prompt():
-    langfuse = Langfuse()
+    elasticdash = ElasticDash()
     prompt_name = "test_compiling_prompt"
 
-    prompt_client = langfuse.create_prompt(
+    prompt_client = elasticdash.create_prompt(
         name=prompt_name,
         prompt='Hello, {{target}}! I hope you are {{state}}. {{undefined_variable}}. And here is some JSON that should not be compiled: {{ "key": "value" }} \
             Here is a custom var for users using str.format instead of the mustache-style double curly braces: {custom_var}',
         labels=["production"],
     )
 
-    second_prompt_client = langfuse.get_prompt(prompt_name)
+    second_prompt_client = elasticdash.get_prompt(prompt_name)
 
     assert prompt_client.name == second_prompt_client.name
     assert prompt_client.version == second_prompt_client.version
@@ -440,14 +440,14 @@ def test_compiling_prompt():
 
 
 def test_compiling_prompt_without_character_escaping():
-    langfuse = Langfuse()
+    elasticdash = ElasticDash()
     prompt_name = "test_compiling_prompt_without_character_escaping"
 
-    prompt_client = langfuse.create_prompt(
+    prompt_client = elasticdash.create_prompt(
         name=prompt_name, prompt="Hello, {{ some_json }}", labels=["production"]
     )
 
-    second_prompt_client = langfuse.get_prompt(prompt_name)
+    second_prompt_client = elasticdash.get_prompt(prompt_name)
 
     assert prompt_client.name == second_prompt_client.name
     assert prompt_client.version == second_prompt_client.version
@@ -461,16 +461,16 @@ def test_compiling_prompt_without_character_escaping():
 
 
 def test_compiling_prompt_with_content_as_variable_name():
-    langfuse = Langfuse()
+    elasticdash = ElasticDash()
     prompt_name = "test_compiling_prompt_with_content_as_variable_name"
 
-    prompt_client = langfuse.create_prompt(
+    prompt_client = elasticdash.create_prompt(
         name=prompt_name,
         prompt="Hello, {{ content }}!",
         labels=["production"],
     )
 
-    second_prompt_client = langfuse.get_prompt(prompt_name)
+    second_prompt_client = elasticdash.get_prompt(prompt_name)
 
     assert prompt_client.name == second_prompt_client.name
     assert prompt_client.version == second_prompt_client.version
@@ -483,187 +483,187 @@ def test_compiling_prompt_with_content_as_variable_name():
 
 
 def test_create_prompt_with_null_config():
-    langfuse = Langfuse(debug=False)
+    elasticdash = ElasticDash(debug=False)
 
-    langfuse.create_prompt(
+    elasticdash.create_prompt(
         name="test_null_config",
         prompt="Hello, world! I hope you are great",
         labels=["production"],
         config=None,
     )
 
-    prompt = langfuse.get_prompt("test_null_config")
+    prompt = elasticdash.get_prompt("test_null_config")
 
     assert prompt.config == {}
 
 
 def test_create_prompt_with_tags():
-    langfuse = Langfuse(debug=False)
+    elasticdash = ElasticDash(debug=False)
     prompt_name = create_uuid()
 
-    langfuse.create_prompt(
+    elasticdash.create_prompt(
         name=prompt_name,
         prompt="Hello, world! I hope you are great",
         tags=["tag1", "tag2"],
     )
 
-    prompt = langfuse.get_prompt(prompt_name, version=1)
+    prompt = elasticdash.get_prompt(prompt_name, version=1)
 
     assert prompt.tags == ["tag1", "tag2"]
 
 
 def test_create_prompt_with_empty_tags():
-    langfuse = Langfuse(debug=False)
+    elasticdash = ElasticDash(debug=False)
     prompt_name = create_uuid()
 
-    langfuse.create_prompt(
+    elasticdash.create_prompt(
         name=prompt_name,
         prompt="Hello, world! I hope you are great",
         tags=[],
     )
 
-    prompt = langfuse.get_prompt(prompt_name, version=1)
+    prompt = elasticdash.get_prompt(prompt_name, version=1)
 
     assert prompt.tags == []
 
 
 def test_create_prompt_with_previous_tags():
-    langfuse = Langfuse(debug=False)
+    elasticdash = ElasticDash(debug=False)
     prompt_name = create_uuid()
 
-    langfuse.create_prompt(
+    elasticdash.create_prompt(
         name=prompt_name,
         prompt="Hello, world! I hope you are great",
     )
 
-    prompt = langfuse.get_prompt(prompt_name, version=1)
+    prompt = elasticdash.get_prompt(prompt_name, version=1)
 
     assert prompt.tags == []
 
-    langfuse.create_prompt(
+    elasticdash.create_prompt(
         name=prompt_name,
         prompt="Hello, world! I hope you are great",
         tags=["tag1", "tag2"],
     )
 
-    prompt_v2 = langfuse.get_prompt(prompt_name, version=2)
+    prompt_v2 = elasticdash.get_prompt(prompt_name, version=2)
 
     assert prompt_v2.tags == ["tag1", "tag2"]
 
-    langfuse.create_prompt(
+    elasticdash.create_prompt(
         name=prompt_name,
         prompt="Hello, world! I hope you are great",
     )
 
-    prompt_v3 = langfuse.get_prompt(prompt_name, version=3)
+    prompt_v3 = elasticdash.get_prompt(prompt_name, version=3)
 
     assert prompt_v3.tags == ["tag1", "tag2"]
 
 
 def test_remove_prompt_tags():
-    langfuse = Langfuse(debug=False)
+    elasticdash = ElasticDash(debug=False)
     prompt_name = create_uuid()
 
-    langfuse.create_prompt(
+    elasticdash.create_prompt(
         name=prompt_name,
         prompt="Hello, world! I hope you are great",
         tags=["tag1", "tag2"],
     )
 
-    langfuse.create_prompt(
+    elasticdash.create_prompt(
         name=prompt_name,
         prompt="Hello, world! I hope you are great",
         tags=[],
     )
 
-    prompt_v1 = langfuse.get_prompt(prompt_name, version=1)
-    prompt_v2 = langfuse.get_prompt(prompt_name, version=2)
+    prompt_v1 = elasticdash.get_prompt(prompt_name, version=1)
+    prompt_v2 = elasticdash.get_prompt(prompt_name, version=2)
 
     assert prompt_v1.tags == []
     assert prompt_v2.tags == []
 
 
 def test_update_prompt_tags():
-    langfuse = Langfuse(debug=False)
+    elasticdash = ElasticDash(debug=False)
     prompt_name = create_uuid()
 
-    langfuse.create_prompt(
+    elasticdash.create_prompt(
         name=prompt_name,
         prompt="Hello, world! I hope you are great",
         tags=["tag1", "tag2"],
     )
 
-    prompt_v1 = langfuse.get_prompt(prompt_name, version=1)
+    prompt_v1 = elasticdash.get_prompt(prompt_name, version=1)
 
     assert prompt_v1.tags == ["tag1", "tag2"]
 
-    langfuse.create_prompt(
+    elasticdash.create_prompt(
         name=prompt_name,
         prompt="Hello, world! I hope you are great",
         tags=["tag3", "tag4"],
     )
 
-    prompt_v2 = langfuse.get_prompt(prompt_name, version=2)
+    prompt_v2 = elasticdash.get_prompt(prompt_name, version=2)
 
     assert prompt_v2.tags == ["tag3", "tag4"]
 
 
 def test_get_prompt_by_version_or_label():
-    langfuse = Langfuse()
+    elasticdash = ElasticDash()
     prompt_name = create_uuid()
 
     for i in range(3):
-        langfuse.create_prompt(
+        elasticdash.create_prompt(
             name=prompt_name,
             prompt="test prompt " + str(i + 1),
             labels=["production"] if i == 1 else [],
         )
 
-    default_prompt_client = langfuse.get_prompt(prompt_name)
+    default_prompt_client = elasticdash.get_prompt(prompt_name)
     assert default_prompt_client.version == 2
     assert default_prompt_client.prompt == "test prompt 2"
     assert default_prompt_client.labels == ["production"]
 
-    first_prompt_client = langfuse.get_prompt(prompt_name, version=1)
+    first_prompt_client = elasticdash.get_prompt(prompt_name, version=1)
     assert first_prompt_client.version == 1
     assert first_prompt_client.prompt == "test prompt 1"
     assert first_prompt_client.labels == []
 
-    second_prompt_client = langfuse.get_prompt(prompt_name, version=2)
+    second_prompt_client = elasticdash.get_prompt(prompt_name, version=2)
     assert second_prompt_client.version == 2
     assert second_prompt_client.prompt == "test prompt 2"
     assert second_prompt_client.labels == ["production"]
 
-    third_prompt_client = langfuse.get_prompt(prompt_name, label="latest")
+    third_prompt_client = elasticdash.get_prompt(prompt_name, label="latest")
     assert third_prompt_client.version == 3
     assert third_prompt_client.prompt == "test prompt 3"
     assert third_prompt_client.labels == ["latest"]
 
 
 def test_prompt_end_to_end():
-    langfuse = Langfuse(debug=False)
+    elasticdash = ElasticDash(debug=False)
 
-    langfuse.create_prompt(
+    elasticdash.create_prompt(
         name="test",
         prompt="Hello, {{target}}! I hope you are {{state}}.",
         labels=["production"],
         config={"temperature": 0.5},
     )
 
-    prompt = langfuse.get_prompt("test")
+    prompt = elasticdash.get_prompt("test")
 
     prompt_str = prompt.compile(target="world", state="great")
     assert prompt_str == "Hello, world! I hope you are great."
     assert prompt.config == {"temperature": 0.5}
 
-    generation = langfuse.start_generation(
+    generation = elasticdash.start_generation(
         name="mygen", input=prompt_str, prompt=prompt
     ).end()
 
     # to check that these do not error
     generation.update(prompt=prompt)
 
-    langfuse.flush()
+    elasticdash.flush()
 
     api = get_api()
 
@@ -680,21 +680,21 @@ def test_prompt_end_to_end():
 
 
 @pytest.fixture
-def langfuse():
-    from langfuse._client.resource_manager import LangfuseResourceManager
+def elasticdash():
+    from elasticdash._client.resource_manager import ElasticDashResourceManager
 
-    langfuse_instance = Langfuse()
-    langfuse_instance.api = Mock()
+    elasticdash_instance = ElasticDash()
+    elasticdash_instance.api = Mock()
 
-    if langfuse_instance._resources is None:
-        langfuse_instance._resources = Mock(spec=LangfuseResourceManager)
-        langfuse_instance._resources.prompt_cache = PromptCache()
+    if elasticdash_instance._resources is None:
+        elasticdash_instance._resources = Mock(spec=ElasticDashResourceManager)
+        elasticdash_instance._resources.prompt_cache = PromptCache()
 
-    return langfuse_instance
+    return elasticdash_instance
 
 
 # Fetching a new prompt when nothing in cache
-def test_get_fresh_prompt(langfuse):
+def test_get_fresh_prompt(elasticdash):
     prompt_name = "test_get_fresh_prompt"
     prompt = Prompt_Text(
         name=prompt_name,
@@ -706,10 +706,10 @@ def test_get_fresh_prompt(langfuse):
         tags=[],
     )
 
-    mock_server_call = langfuse.api.prompts.get
+    mock_server_call = elasticdash.api.prompts.get
     mock_server_call.return_value = prompt
 
-    result = langfuse.get_prompt(prompt_name, fallback="fallback")
+    result = elasticdash.get_prompt(prompt_name, fallback="fallback")
     mock_server_call.assert_called_once_with(
         prompt_name,
         version=None,
@@ -721,29 +721,29 @@ def test_get_fresh_prompt(langfuse):
 
 
 # Should throw an error if prompt name is unspecified
-def test_throw_if_name_unspecified(langfuse):
+def test_throw_if_name_unspecified(elasticdash):
     prompt_name = ""
 
     with pytest.raises(ValueError) as exc_info:
-        langfuse.get_prompt(prompt_name)
+        elasticdash.get_prompt(prompt_name)
 
     assert "Prompt name cannot be empty" in str(exc_info.value)
 
 
 # Should throw an error if nothing in cache and fetch fails
-def test_throw_when_failing_fetch_and_no_cache(langfuse):
+def test_throw_when_failing_fetch_and_no_cache(elasticdash):
     prompt_name = "failing_fetch_and_no_cache"
 
-    mock_server_call = langfuse.api.prompts.get
+    mock_server_call = elasticdash.api.prompts.get
     mock_server_call.side_effect = Exception("Prompt not found")
 
     with pytest.raises(Exception) as exc_info:
-        langfuse.get_prompt(prompt_name)
+        elasticdash.get_prompt(prompt_name)
 
     assert "Prompt not found" in str(exc_info.value)
 
 
-def test_using_custom_prompt_timeouts(langfuse):
+def test_using_custom_prompt_timeouts(elasticdash):
     prompt_name = "test_using_custom_prompt_timeouts"
     prompt = Prompt_Text(
         name=prompt_name,
@@ -755,10 +755,10 @@ def test_using_custom_prompt_timeouts(langfuse):
         tags=[],
     )
 
-    mock_server_call = langfuse.api.prompts.get
+    mock_server_call = elasticdash.api.prompts.get
     mock_server_call.return_value = prompt
 
-    result = langfuse.get_prompt(
+    result = elasticdash.get_prompt(
         prompt_name, fallback="fallback", fetch_timeout_seconds=1000
     )
     mock_server_call.assert_called_once_with(
@@ -772,18 +772,18 @@ def test_using_custom_prompt_timeouts(langfuse):
 
 
 # Should throw an error if cache_ttl_seconds is passed as positional rather than keyword argument
-def test_throw_if_cache_ttl_seconds_positional_argument(langfuse):
+def test_throw_if_cache_ttl_seconds_positional_argument(elasticdash):
     prompt_name = "test ttl seconds in positional arg"
     ttl_seconds = 20
 
     with pytest.raises(TypeError) as exc_info:
-        langfuse.get_prompt(prompt_name, ttl_seconds)
+        elasticdash.get_prompt(prompt_name, ttl_seconds)
 
     assert "positional arguments" in str(exc_info.value)
 
 
 # Should return cached prompt if not expired
-def test_get_valid_cached_prompt(langfuse):
+def test_get_valid_cached_prompt(elasticdash):
     prompt_name = "test_get_valid_cached_prompt"
     prompt = Prompt_Text(
         name=prompt_name,
@@ -796,20 +796,20 @@ def test_get_valid_cached_prompt(langfuse):
     )
     prompt_client = TextPromptClient(prompt)
 
-    mock_server_call = langfuse.api.prompts.get
+    mock_server_call = elasticdash.api.prompts.get
     mock_server_call.return_value = prompt
 
-    result_call_1 = langfuse.get_prompt(prompt_name, fallback="fallback")
+    result_call_1 = elasticdash.get_prompt(prompt_name, fallback="fallback")
     assert mock_server_call.call_count == 1
     assert result_call_1 == prompt_client
 
-    result_call_2 = langfuse.get_prompt(prompt_name)
+    result_call_2 = elasticdash.get_prompt(prompt_name)
     assert mock_server_call.call_count == 1
     assert result_call_2 == prompt_client
 
 
 # Should return cached chat prompt if not expired when fetching by label
-def test_get_valid_cached_chat_prompt_by_label(langfuse):
+def test_get_valid_cached_chat_prompt_by_label(elasticdash):
     prompt_name = "test_get_valid_cached_chat_prompt_by_label"
     prompt = Prompt_Chat(
         name=prompt_name,
@@ -822,20 +822,20 @@ def test_get_valid_cached_chat_prompt_by_label(langfuse):
     )
     prompt_client = ChatPromptClient(prompt)
 
-    mock_server_call = langfuse.api.prompts.get
+    mock_server_call = elasticdash.api.prompts.get
     mock_server_call.return_value = prompt
 
-    result_call_1 = langfuse.get_prompt(prompt_name, label="test")
+    result_call_1 = elasticdash.get_prompt(prompt_name, label="test")
     assert mock_server_call.call_count == 1
     assert result_call_1 == prompt_client
 
-    result_call_2 = langfuse.get_prompt(prompt_name, label="test")
+    result_call_2 = elasticdash.get_prompt(prompt_name, label="test")
     assert mock_server_call.call_count == 1
     assert result_call_2 == prompt_client
 
 
 # Should return cached chat prompt if not expired when fetching by version
-def test_get_valid_cached_chat_prompt_by_version(langfuse):
+def test_get_valid_cached_chat_prompt_by_version(elasticdash):
     prompt_name = "test_get_valid_cached_chat_prompt_by_version"
     prompt = Prompt_Chat(
         name=prompt_name,
@@ -848,20 +848,20 @@ def test_get_valid_cached_chat_prompt_by_version(langfuse):
     )
     prompt_client = ChatPromptClient(prompt)
 
-    mock_server_call = langfuse.api.prompts.get
+    mock_server_call = elasticdash.api.prompts.get
     mock_server_call.return_value = prompt
 
-    result_call_1 = langfuse.get_prompt(prompt_name, version=1)
+    result_call_1 = elasticdash.get_prompt(prompt_name, version=1)
     assert mock_server_call.call_count == 1
     assert result_call_1 == prompt_client
 
-    result_call_2 = langfuse.get_prompt(prompt_name, version=1)
+    result_call_2 = elasticdash.get_prompt(prompt_name, version=1)
     assert mock_server_call.call_count == 1
     assert result_call_2 == prompt_client
 
 
 # Should return cached chat prompt if fetching the default prompt or the 'production' labeled one
-def test_get_valid_cached_production_chat_prompt(langfuse):
+def test_get_valid_cached_production_chat_prompt(elasticdash):
     prompt_name = "test_get_valid_cached_production_chat_prompt"
     prompt = Prompt_Chat(
         name=prompt_name,
@@ -874,20 +874,20 @@ def test_get_valid_cached_production_chat_prompt(langfuse):
     )
     prompt_client = ChatPromptClient(prompt)
 
-    mock_server_call = langfuse.api.prompts.get
+    mock_server_call = elasticdash.api.prompts.get
     mock_server_call.return_value = prompt
 
-    result_call_1 = langfuse.get_prompt(prompt_name)
+    result_call_1 = elasticdash.get_prompt(prompt_name)
     assert mock_server_call.call_count == 1
     assert result_call_1 == prompt_client
 
-    result_call_2 = langfuse.get_prompt(prompt_name, label="production")
+    result_call_2 = elasticdash.get_prompt(prompt_name, label="production")
     assert mock_server_call.call_count == 1
     assert result_call_2 == prompt_client
 
 
 # Should return cached chat prompt if not expired
-def test_get_valid_cached_chat_prompt(langfuse):
+def test_get_valid_cached_chat_prompt(elasticdash):
     prompt_name = "test_get_valid_cached_chat_prompt"
     prompt = Prompt_Chat(
         name=prompt_name,
@@ -900,21 +900,21 @@ def test_get_valid_cached_chat_prompt(langfuse):
     )
     prompt_client = ChatPromptClient(prompt)
 
-    mock_server_call = langfuse.api.prompts.get
+    mock_server_call = elasticdash.api.prompts.get
     mock_server_call.return_value = prompt
 
-    result_call_1 = langfuse.get_prompt(prompt_name)
+    result_call_1 = elasticdash.get_prompt(prompt_name)
     assert mock_server_call.call_count == 1
     assert result_call_1 == prompt_client
 
-    result_call_2 = langfuse.get_prompt(prompt_name)
+    result_call_2 = elasticdash.get_prompt(prompt_name)
     assert mock_server_call.call_count == 1
     assert result_call_2 == prompt_client
 
 
 # Should refetch and return new prompt if cached one is expired according to custom TTL
 @patch.object(PromptCacheItem, "get_epoch_seconds")
-def test_get_fresh_prompt_when_expired_cache_custom_ttl(mock_time, langfuse: Langfuse):
+def test_get_fresh_prompt_when_expired_cache_custom_ttl(mock_time, elasticdash: ElasticDash):
     mock_time.return_value = 0
     ttl_seconds = 20
 
@@ -930,27 +930,27 @@ def test_get_fresh_prompt_when_expired_cache_custom_ttl(mock_time, langfuse: Lan
     )
     prompt_client = TextPromptClient(prompt)
 
-    mock_server_call = langfuse.api.prompts.get
+    mock_server_call = elasticdash.api.prompts.get
     mock_server_call.return_value = prompt
 
-    result_call_1 = langfuse.get_prompt(prompt_name, cache_ttl_seconds=ttl_seconds)
+    result_call_1 = elasticdash.get_prompt(prompt_name, cache_ttl_seconds=ttl_seconds)
     assert mock_server_call.call_count == 1
     assert result_call_1 == prompt_client
 
     # Set time to just BEFORE cache expiry
     mock_time.return_value = ttl_seconds - 1
 
-    result_call_2 = langfuse.get_prompt(prompt_name)
+    result_call_2 = elasticdash.get_prompt(prompt_name)
     assert mock_server_call.call_count == 1  # No new call
     assert result_call_2 == prompt_client
 
     # Set time to just AFTER cache expiry
     mock_time.return_value = ttl_seconds + 1
 
-    result_call_3 = langfuse.get_prompt(prompt_name)
+    result_call_3 = elasticdash.get_prompt(prompt_name)
 
     while True:
-        if langfuse._resources.prompt_cache._task_manager.active_tasks() == 0:
+        if elasticdash._resources.prompt_cache._task_manager.active_tasks() == 0:
             break
         sleep(0.1)
 
@@ -960,7 +960,7 @@ def test_get_fresh_prompt_when_expired_cache_custom_ttl(mock_time, langfuse: Lan
 
 # Should disable caching when cache_ttl_seconds is set to 0
 @patch.object(PromptCacheItem, "get_epoch_seconds")
-def test_disable_caching_when_ttl_zero(mock_time, langfuse: Langfuse):
+def test_disable_caching_when_ttl_zero(mock_time, elasticdash: ElasticDash):
     mock_time.return_value = 0
     prompt_name = "test_disable_caching_when_ttl_zero"
 
@@ -995,21 +995,21 @@ def test_disable_caching_when_ttl_zero(mock_time, langfuse: Langfuse):
         tags=[],
     )
 
-    mock_server_call = langfuse.api.prompts.get
+    mock_server_call = elasticdash.api.prompts.get
     mock_server_call.side_effect = [prompt1, prompt2, prompt3]
 
     # First call
-    result1 = langfuse.get_prompt(prompt_name, cache_ttl_seconds=0)
+    result1 = elasticdash.get_prompt(prompt_name, cache_ttl_seconds=0)
     assert mock_server_call.call_count == 1
     assert result1 == TextPromptClient(prompt1)
 
     # Second call
-    result2 = langfuse.get_prompt(prompt_name, cache_ttl_seconds=0)
+    result2 = elasticdash.get_prompt(prompt_name, cache_ttl_seconds=0)
     assert mock_server_call.call_count == 2
     assert result2 == TextPromptClient(prompt2)
 
     # Third call
-    result3 = langfuse.get_prompt(prompt_name, cache_ttl_seconds=0)
+    result3 = elasticdash.get_prompt(prompt_name, cache_ttl_seconds=0)
     assert mock_server_call.call_count == 3
     assert result3 == TextPromptClient(prompt3)
 
@@ -1019,7 +1019,7 @@ def test_disable_caching_when_ttl_zero(mock_time, langfuse: Langfuse):
 
 # Should return stale prompt immediately if cached one is expired according to default TTL and add to refresh promise map
 @patch.object(PromptCacheItem, "get_epoch_seconds")
-def test_get_stale_prompt_when_expired_cache_default_ttl(mock_time, langfuse: Langfuse):
+def test_get_stale_prompt_when_expired_cache_default_ttl(mock_time, elasticdash: ElasticDash):
     import logging
 
     logging.basicConfig(level=logging.DEBUG)
@@ -1037,10 +1037,10 @@ def test_get_stale_prompt_when_expired_cache_default_ttl(mock_time, langfuse: La
     )
     prompt_client = TextPromptClient(prompt)
 
-    mock_server_call = langfuse.api.prompts.get
+    mock_server_call = elasticdash.api.prompts.get
     mock_server_call.return_value = prompt
 
-    result_call_1 = langfuse.get_prompt(prompt_name)
+    result_call_1 = elasticdash.get_prompt(prompt_name)
     assert mock_server_call.call_count == 1
     assert result_call_1 == prompt_client
 
@@ -1059,32 +1059,32 @@ def test_get_stale_prompt_when_expired_cache_default_ttl(mock_time, langfuse: La
     # Set time to just AFTER cache expiry
     mock_time.return_value = DEFAULT_PROMPT_CACHE_TTL_SECONDS + 1
 
-    stale_result = langfuse.get_prompt(prompt_name)
+    stale_result = elasticdash.get_prompt(prompt_name)
     assert stale_result == prompt_client
 
     # Ensure that only one refresh is triggered despite multiple calls
     # Cannot check for value as the prompt might have already been updated
-    langfuse.get_prompt(prompt_name)
-    langfuse.get_prompt(prompt_name)
-    langfuse.get_prompt(prompt_name)
-    langfuse.get_prompt(prompt_name)
+    elasticdash.get_prompt(prompt_name)
+    elasticdash.get_prompt(prompt_name)
+    elasticdash.get_prompt(prompt_name)
+    elasticdash.get_prompt(prompt_name)
 
     while True:
-        if langfuse._resources.prompt_cache._task_manager.active_tasks() == 0:
+        if elasticdash._resources.prompt_cache._task_manager.active_tasks() == 0:
             break
         sleep(0.1)
 
     assert mock_server_call.call_count == 2  # Only one new call to server
 
     # Check that the prompt has been updated after refresh
-    updated_result = langfuse.get_prompt(prompt_name)
+    updated_result = elasticdash.get_prompt(prompt_name)
     assert updated_result.version == 2
     assert updated_result == TextPromptClient(updated_prompt)
 
 
 # Should refetch and return new prompt if cached one is expired according to default TTL
 @patch.object(PromptCacheItem, "get_epoch_seconds")
-def test_get_fresh_prompt_when_expired_cache_default_ttl(mock_time, langfuse: Langfuse):
+def test_get_fresh_prompt_when_expired_cache_default_ttl(mock_time, elasticdash: ElasticDash):
     mock_time.return_value = 0
 
     prompt_name = "test_get_fresh_prompt_when_expired_cache_default_ttl"
@@ -1099,26 +1099,26 @@ def test_get_fresh_prompt_when_expired_cache_default_ttl(mock_time, langfuse: La
     )
     prompt_client = TextPromptClient(prompt)
 
-    mock_server_call = langfuse.api.prompts.get
+    mock_server_call = elasticdash.api.prompts.get
     mock_server_call.return_value = prompt
 
-    result_call_1 = langfuse.get_prompt(prompt_name)
+    result_call_1 = elasticdash.get_prompt(prompt_name)
     assert mock_server_call.call_count == 1
     assert result_call_1 == prompt_client
 
     # Set time to just BEFORE cache expiry
     mock_time.return_value = DEFAULT_PROMPT_CACHE_TTL_SECONDS - 1
 
-    result_call_2 = langfuse.get_prompt(prompt_name)
+    result_call_2 = elasticdash.get_prompt(prompt_name)
     assert mock_server_call.call_count == 1  # No new call
     assert result_call_2 == prompt_client
 
     # Set time to just AFTER cache expiry
     mock_time.return_value = DEFAULT_PROMPT_CACHE_TTL_SECONDS + 1
 
-    result_call_3 = langfuse.get_prompt(prompt_name)
+    result_call_3 = elasticdash.get_prompt(prompt_name)
     while True:
-        if langfuse._resources.prompt_cache._task_manager.active_tasks() == 0:
+        if elasticdash._resources.prompt_cache._task_manager.active_tasks() == 0:
             break
         sleep(0.1)
 
@@ -1128,7 +1128,7 @@ def test_get_fresh_prompt_when_expired_cache_default_ttl(mock_time, langfuse: La
 
 # Should return expired prompt if refetch fails
 @patch.object(PromptCacheItem, "get_epoch_seconds")
-def test_get_expired_prompt_when_failing_fetch(mock_time, langfuse: Langfuse):
+def test_get_expired_prompt_when_failing_fetch(mock_time, elasticdash: ElasticDash):
     mock_time.return_value = 0
 
     prompt_name = "test_get_expired_prompt_when_failing_fetch"
@@ -1143,10 +1143,10 @@ def test_get_expired_prompt_when_failing_fetch(mock_time, langfuse: Langfuse):
     )
     prompt_client = TextPromptClient(prompt)
 
-    mock_server_call = langfuse.api.prompts.get
+    mock_server_call = elasticdash.api.prompts.get
     mock_server_call.return_value = prompt
 
-    result_call_1 = langfuse.get_prompt(prompt_name)
+    result_call_1 = elasticdash.get_prompt(prompt_name)
     assert mock_server_call.call_count == 1
     assert result_call_1 == prompt_client
 
@@ -1155,9 +1155,9 @@ def test_get_expired_prompt_when_failing_fetch(mock_time, langfuse: Langfuse):
 
     mock_server_call.side_effect = Exception("Server error")
 
-    result_call_2 = langfuse.get_prompt(prompt_name, max_retries=1)
+    result_call_2 = elasticdash.get_prompt(prompt_name, max_retries=1)
     while True:
-        if langfuse._resources.prompt_cache._task_manager.active_tasks() == 0:
+        if elasticdash._resources.prompt_cache._task_manager.active_tasks() == 0:
             break
         sleep(0.1)
 
@@ -1167,7 +1167,7 @@ def test_get_expired_prompt_when_failing_fetch(mock_time, langfuse: Langfuse):
 
 @patch.object(PromptCacheItem, "get_epoch_seconds")
 def test_evict_prompt_cache_entry_when_refresh_returns_not_found(
-    mock_time, langfuse: Langfuse
+    mock_time, elasticdash: ElasticDash
 ) -> None:
     mock_time.return_value = 0
 
@@ -1187,16 +1187,16 @@ def test_evict_prompt_cache_entry_when_refresh_returns_not_found(
     prompt_client = TextPromptClient(prompt)
     cache_key = PromptCache.generate_cache_key(prompt_name, version=None, label=None)
 
-    mock_server_call = langfuse.api.prompts.get
+    mock_server_call = elasticdash.api.prompts.get
     mock_server_call.return_value = prompt
 
-    initial_result = langfuse.get_prompt(
+    initial_result = elasticdash.get_prompt(
         prompt_name,
         cache_ttl_seconds=ttl_seconds,
         max_retries=0,
     )
     assert initial_result == prompt_client
-    assert langfuse._resources.prompt_cache.get(cache_key) is not None
+    assert elasticdash._resources.prompt_cache.get(cache_key) is not None
 
     # Expire cache entry and trigger background refresh
     mock_time.return_value = ttl_seconds + 1
@@ -1206,7 +1206,7 @@ def test_evict_prompt_cache_entry_when_refresh_returns_not_found(
 
     mock_server_call.side_effect = raise_not_found
 
-    stale_result = langfuse.get_prompt(
+    stale_result = elasticdash.get_prompt(
         prompt_name,
         cache_ttl_seconds=ttl_seconds,
         max_retries=0,
@@ -1214,13 +1214,13 @@ def test_evict_prompt_cache_entry_when_refresh_returns_not_found(
     assert stale_result == prompt_client
 
     while True:
-        if langfuse._resources.prompt_cache._task_manager.active_tasks() == 0:
+        if elasticdash._resources.prompt_cache._task_manager.active_tasks() == 0:
             break
         sleep(0.1)
 
-    assert langfuse._resources.prompt_cache.get(cache_key) is None
+    assert elasticdash._resources.prompt_cache.get(cache_key) is None
 
-    fallback_result = langfuse.get_prompt(
+    fallback_result = elasticdash.get_prompt(
         prompt_name,
         cache_ttl_seconds=ttl_seconds,
         fallback=fallback_prompt,
@@ -1231,7 +1231,7 @@ def test_evict_prompt_cache_entry_when_refresh_returns_not_found(
 
 
 # Should fetch new prompt if version changes
-def test_get_fresh_prompt_when_version_changes(langfuse: Langfuse):
+def test_get_fresh_prompt_when_version_changes(elasticdash: ElasticDash):
     prompt_name = "test_get_fresh_prompt_when_version_changes"
     prompt = Prompt_Text(
         name=prompt_name,
@@ -1244,10 +1244,10 @@ def test_get_fresh_prompt_when_version_changes(langfuse: Langfuse):
     )
     prompt_client = TextPromptClient(prompt)
 
-    mock_server_call = langfuse.api.prompts.get
+    mock_server_call = elasticdash.api.prompts.get
     mock_server_call.return_value = prompt
 
-    result_call_1 = langfuse.get_prompt(prompt_name, version=1)
+    result_call_1 = elasticdash.get_prompt(prompt_name, version=1)
     assert mock_server_call.call_count == 1
     assert result_call_1 == prompt_client
 
@@ -1263,21 +1263,21 @@ def test_get_fresh_prompt_when_version_changes(langfuse: Langfuse):
     version_changed_prompt_client = TextPromptClient(version_changed_prompt)
     mock_server_call.return_value = version_changed_prompt
 
-    result_call_2 = langfuse.get_prompt(prompt_name, version=2)
+    result_call_2 = elasticdash.get_prompt(prompt_name, version=2)
     assert mock_server_call.call_count == 2
     assert result_call_2 == version_changed_prompt_client
 
 
 def test_do_not_return_fallback_if_fetch_success():
-    langfuse = Langfuse()
+    elasticdash = ElasticDash()
     prompt_name = create_uuid()
-    prompt_client = langfuse.create_prompt(
+    prompt_client = elasticdash.create_prompt(
         name=prompt_name,
         prompt="test prompt",
         labels=["production"],
     )
 
-    second_prompt_client = langfuse.get_prompt(prompt_name, fallback="fallback")
+    second_prompt_client = elasticdash.get_prompt(prompt_name, fallback="fallback")
 
     assert prompt_client.name == second_prompt_client.name
     assert prompt_client.version == second_prompt_client.version
@@ -1287,15 +1287,15 @@ def test_do_not_return_fallback_if_fetch_success():
 
 
 def test_fallback_text_prompt():
-    langfuse = Langfuse()
+    elasticdash = ElasticDash()
 
     fallback_text_prompt = "this is a fallback text prompt with {{variable}}"
 
     # Should throw an error if prompt not found and no fallback provided
     with pytest.raises(Exception):
-        langfuse.get_prompt("nonexistent_prompt")
+        elasticdash.get_prompt("nonexistent_prompt")
 
-    prompt = langfuse.get_prompt("nonexistent_prompt", fallback=fallback_text_prompt)
+    prompt = elasticdash.get_prompt("nonexistent_prompt", fallback=fallback_text_prompt)
 
     assert prompt.prompt == fallback_text_prompt
     assert (
@@ -1304,7 +1304,7 @@ def test_fallback_text_prompt():
 
 
 def test_fallback_chat_prompt():
-    langfuse = Langfuse()
+    elasticdash = ElasticDash()
     fallback_chat_prompt = [
         {"role": "system", "content": "fallback system"},
         {"role": "user", "content": "fallback user name {{name}}"},
@@ -1312,9 +1312,9 @@ def test_fallback_chat_prompt():
 
     # Should throw an error if prompt not found and no fallback provided
     with pytest.raises(Exception):
-        langfuse.get_prompt("nonexistent_chat_prompt", type="chat")
+        elasticdash.get_prompt("nonexistent_chat_prompt", type="chat")
 
-    prompt = langfuse.get_prompt(
+    prompt = elasticdash.get_prompt(
         "nonexistent_chat_prompt", type="chat", fallback=fallback_chat_prompt
     )
 
@@ -1332,20 +1332,20 @@ def test_fallback_chat_prompt():
 
 
 def test_do_not_link_observation_if_fallback():
-    langfuse = Langfuse()
+    elasticdash = ElasticDash()
 
     fallback_text_prompt = "this is a fallback text prompt with {{variable}}"
 
     # Should throw an error if prompt not found and no fallback provided
     with pytest.raises(Exception):
-        langfuse.get_prompt("nonexistent_prompt")
+        elasticdash.get_prompt("nonexistent_prompt")
 
-    prompt = langfuse.get_prompt("nonexistent_prompt", fallback=fallback_text_prompt)
+    prompt = elasticdash.get_prompt("nonexistent_prompt", fallback=fallback_text_prompt)
 
-    generation = langfuse.start_generation(
+    generation = elasticdash.start_generation(
         name="mygen", prompt=prompt, input="this is a test input"
     ).end()
-    langfuse.flush()
+    elasticdash.flush()
 
     api = get_api()
     trace = api.trace.get(generation.trace_id)
@@ -1355,16 +1355,16 @@ def test_do_not_link_observation_if_fallback():
 
 
 def test_variable_names_on_content_with_variable_names():
-    langfuse = Langfuse()
+    elasticdash = ElasticDash()
 
-    prompt_client = langfuse.create_prompt(
+    prompt_client = elasticdash.create_prompt(
         name="test_variable_names_1",
         prompt="test prompt with var names {{ var1 }} {{ var2 }}",
         labels=["production"],
         type="text",
     )
 
-    second_prompt_client = langfuse.get_prompt("test_variable_names_1")
+    second_prompt_client = elasticdash.get_prompt("test_variable_names_1")
 
     assert prompt_client.name == second_prompt_client.name
     assert prompt_client.version == second_prompt_client.version
@@ -1377,16 +1377,16 @@ def test_variable_names_on_content_with_variable_names():
 
 
 def test_variable_names_on_content_with_no_variable_names():
-    langfuse = Langfuse()
+    elasticdash = ElasticDash()
 
-    prompt_client = langfuse.create_prompt(
+    prompt_client = elasticdash.create_prompt(
         name="test_variable_names_2",
         prompt="test prompt with no var names",
         labels=["production"],
         type="text",
     )
 
-    second_prompt_client = langfuse.get_prompt("test_variable_names_2")
+    second_prompt_client = elasticdash.get_prompt("test_variable_names_2")
 
     assert prompt_client.name == second_prompt_client.name
     assert prompt_client.version == second_prompt_client.version
@@ -1399,9 +1399,9 @@ def test_variable_names_on_content_with_no_variable_names():
 
 
 def test_variable_names_on_content_with_variable_names_chat_messages():
-    langfuse = Langfuse()
+    elasticdash = ElasticDash()
 
-    prompt_client = langfuse.create_prompt(
+    prompt_client = elasticdash.create_prompt(
         name="test_variable_names_3",
         prompt=[
             {
@@ -1414,7 +1414,7 @@ def test_variable_names_on_content_with_variable_names_chat_messages():
         type="chat",
     )
 
-    second_prompt_client = langfuse.get_prompt("test_variable_names_3")
+    second_prompt_client = elasticdash.get_prompt("test_variable_names_3")
 
     assert prompt_client.name == second_prompt_client.name
     assert prompt_client.version == second_prompt_client.version
@@ -1427,10 +1427,10 @@ def test_variable_names_on_content_with_variable_names_chat_messages():
 
 
 def test_variable_names_on_content_with_no_variable_names_chat_messages():
-    langfuse = Langfuse()
+    elasticdash = ElasticDash()
     prompt_name = "test_variable_names_on_content_with_no_variable_names_chat_messages"
 
-    prompt_client = langfuse.create_prompt(
+    prompt_client = elasticdash.create_prompt(
         name=prompt_name,
         prompt=[
             {"role": "system", "content": "test prompt with no template vars"},
@@ -1440,7 +1440,7 @@ def test_variable_names_on_content_with_no_variable_names_chat_messages():
         type="chat",
     )
 
-    second_prompt_client = langfuse.get_prompt(prompt_name)
+    second_prompt_client = elasticdash.get_prompt(prompt_name)
 
     assert prompt_client.name == second_prompt_client.name
     assert prompt_client.version == second_prompt_client.version
@@ -1453,25 +1453,25 @@ def test_variable_names_on_content_with_no_variable_names_chat_messages():
 
 
 def test_update_prompt():
-    langfuse = Langfuse()
+    elasticdash = ElasticDash()
     prompt_name = create_uuid()
 
     # Create initial prompt
-    langfuse.create_prompt(
+    elasticdash.create_prompt(
         name=prompt_name,
         prompt="test prompt",
         labels=["production"],
     )
 
     # Update prompt labels
-    updated_prompt = langfuse.update_prompt(
+    updated_prompt = elasticdash.update_prompt(
         name=prompt_name,
         version=1,
         new_labels=["john", "doe"],
     )
 
     # Fetch prompt after update (should be invalidated)
-    fetched_prompt = langfuse.get_prompt(prompt_name)
+    fetched_prompt = elasticdash.get_prompt(prompt_name)
 
     # Verify the fetched prompt matches the updated values
     assert fetched_prompt.name == prompt_name
@@ -1479,33 +1479,33 @@ def test_update_prompt():
     print(f"Fetched prompt labels: {fetched_prompt.labels}")
     print(f"Updated prompt labels: {updated_prompt.labels}")
 
-    # production was set by the first call, latest is managed and set by Langfuse
+    # production was set by the first call, latest is managed and set by ElasticDash
     expected_labels = sorted(["latest", "doe", "production", "john"])
     assert sorted(fetched_prompt.labels) == expected_labels
     assert sorted(updated_prompt.labels) == expected_labels
 
 
 def test_update_prompt_in_folder():
-    langfuse = Langfuse()
+    elasticdash = ElasticDash()
     prompt_name = f"some-folder/{create_uuid()}"
 
     # Create initial prompt
-    langfuse.create_prompt(
+    elasticdash.create_prompt(
         name=prompt_name,
         prompt="test prompt",
         labels=["production"],
     )
 
-    old_prompt_obj = langfuse.get_prompt(prompt_name)
+    old_prompt_obj = elasticdash.get_prompt(prompt_name)
 
-    updated_prompt = langfuse.update_prompt(
+    updated_prompt = elasticdash.update_prompt(
         name=old_prompt_obj.name,
         version=old_prompt_obj.version,
         new_labels=["john", "doe"],
     )
 
     # Fetch prompt after update (should be invalidated)
-    fetched_prompt = langfuse.get_prompt(prompt_name)
+    fetched_prompt = elasticdash.get_prompt(prompt_name)
 
     # Verify the fetched prompt matches the updated values
     assert fetched_prompt.name == prompt_name
@@ -1513,7 +1513,7 @@ def test_update_prompt_in_folder():
     print(f"Fetched prompt labels: {fetched_prompt.labels}")
     print(f"Updated prompt labels: {updated_prompt.labels}")
 
-    # production was set by the first call, latest is managed and set by Langfuse
+    # production was set by the first call, latest is managed and set by ElasticDash
     expected_labels = sorted(["latest", "doe", "production", "john"])
     assert sorted(fetched_prompt.labels) == expected_labels
     assert sorted(updated_prompt.labels) == expected_labels

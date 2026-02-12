@@ -1,14 +1,14 @@
-"""Test the LangfuseResourceManager and get_client() function."""
+"""Test the ElasticDashResourceManager and get_client() function."""
 
-from langfuse import Langfuse
-from langfuse._client.get_client import get_client
-from langfuse._client.resource_manager import LangfuseResourceManager
+from elasticdash import ElasticDash
+from elasticdash._client.get_client import get_client
+from elasticdash._client.resource_manager import ElasticDashResourceManager
 
 
 def test_get_client_preserves_all_settings():
     """Test that get_client() preserves environment and all client settings."""
-    with LangfuseResourceManager._lock:
-        LangfuseResourceManager._instances.clear()
+    with ElasticDashResourceManager._lock:
+        ElasticDashResourceManager._instances.clear()
 
     settings = {
         "environment": "test-env",
@@ -19,7 +19,7 @@ def test_get_client_preserves_all_settings():
         "additional_headers": {"X-Custom": "value"},
     }
 
-    original_client = Langfuse(**settings)
+    original_client = ElasticDash(**settings)
     retrieved_client = get_client()
 
     assert retrieved_client._environment == settings["environment"]
@@ -56,8 +56,8 @@ def test_get_client_multiple_clients_preserve_different_settings():
         "sample_rate": 0.9,
     }
 
-    client_a = Langfuse(**settings_a)
-    client_b = Langfuse(**settings_b)
+    client_a = ElasticDash(**settings_a)
+    client_b = ElasticDash(**settings_b)
 
     # Get clients via get_client()
     retrieved_a = get_client(public_key="pk-comprehensive-a")

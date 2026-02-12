@@ -52,15 +52,15 @@ jobs:
       - name: Install dependencies
         run: poetry install --only=main,dev
       - name: Run mypy type checking
-        run: poetry run mypy langfuse --no-error-summary
+        run: poetry run mypy elasticdash --no-error-summary
 
   ci:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     env:
-      LANGFUSE_BASE_URL: "http://localhost:3000"
-      LANGFUSE_PUBLIC_KEY: "pk-lf-1234567890"
-      LANGFUSE_SECRET_KEY: "sk-lf-1234567890"
+      ELASTICDASH_BASE_URL: "http://localhost:3000"
+      ELASTICDASH_PUBLIC_KEY: "pk-lf-1234567890"
+      ELASTICDASH_SECRET_KEY: "sk-lf-1234567890"
       OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
       # SERPAPI_API_KEY: ${{ secrets.SERPAPI_API_KEY }}
       HUGGINGFACEHUB_API_TOKEN: ${{ secrets.HUGGINGFACEHUB_API_TOKEN }}
@@ -81,32 +81,32 @@ jobs:
         with:
           version: 9.5.0
 
-      - name: Clone langfuse server
+      - name: Clone elasticdash server
         run: |
-          git clone https://github.com/langfuse/langfuse.git ./langfuse-server && echo $(cd ./langfuse-server && git rev-parse HEAD)
+          git clone https://github.com/elasticdash/elasticdash.git ./elasticdash-server && echo $(cd ./elasticdash-server && git rev-parse HEAD)
 
-      - name: Setup node (for langfuse server)
+      - name: Setup node (for elasticdash server)
         uses: actions/setup-node@v3
         with:
           node-version: 24
 
-      - name: Cache langfuse server dependencies
+      - name: Cache elasticdash server dependencies
         uses: actions/cache@v3
         with:
-          path: ./langfuse-server/node_modules
+          path: ./elasticdash-server/node_modules
           key: |
-            langfuse-server-${{ hashFiles('./langfuse-server/package-lock.json') }}
-            langfuse-server-
+            elasticdash-server-${{ hashFiles('./elasticdash-server/package-lock.json') }}
+            elasticdash-server-
 
-      - name: Run langfuse server
+      - name: Run elasticdash server
         run: |
-          cd ./langfuse-server
+          cd ./elasticdash-server
 
-          echo "::group::Run langfuse server"
+          echo "::group::Run elasticdash server"
           TELEMETRY_ENABLED=false docker compose up -d postgres
           echo "::endgroup::"
 
-          echo "::group::Logs from langfuse server"
+          echo "::group::Logs from elasticdash server"
           TELEMETRY_ENABLED=false docker compose logs
           echo "::endgroup::"
 
@@ -124,17 +124,17 @@ jobs:
           echo "::group::Run server"
 
           TELEMETRY_ENABLED=false \
-          LANGFUSE_S3_MEDIA_UPLOAD_ENDPOINT=http://localhost:9090 \
-          LANGFUSE_INGESTION_QUEUE_DELAY_MS=10 \
-          LANGFUSE_INGESTION_CLICKHOUSE_WRITE_INTERVAL_MS=10 \
+          ELASTICDASH_S3_MEDIA_UPLOAD_ENDPOINT=http://localhost:9090 \
+          ELASTICDASH_INGESTION_QUEUE_DELAY_MS=10 \
+          ELASTICDASH_INGESTION_CLICKHOUSE_WRITE_INTERVAL_MS=10 \
           docker compose up -d
 
           echo "::endgroup::"
 
       # Add this step to check the health of the container
-      - name: Health check for langfuse server
+      - name: Health check for elasticdash server
         run: |
-          echo "Checking if the langfuse server is up..."
+          echo "Checking if the elasticdash server is up..."
           retry_count=0
           max_retries=10
           until curl --output /dev/null --silent --head --fail http://localhost:3000/api/public/health
@@ -142,14 +142,14 @@ jobs:
             retry_count=`expr $retry_count + 1`
             echo "Attempt $retry_count of $max_retries..."
             if [ $retry_count -ge $max_retries ]; then
-              echo "Langfuse server did not respond in time. Printing logs..."
-              docker logs langfuse-server-langfuse-web-1
+              echo "ElasticDash server did not respond in time. Printing logs..."
+              docker logs elasticdash-server-elasticdash-web-1
               echo "Failing the step..."
               exit 1
             fi
             sleep 5
           done
-          echo "Langfuse server is up and running!"
+          echo "ElasticDash server is up and running!"
 
       - name: Install Python
         uses: actions/setup-python@v4

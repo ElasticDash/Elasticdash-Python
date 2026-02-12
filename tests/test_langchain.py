@@ -16,17 +16,17 @@ from langgraph.graph import END, START, MessagesState, StateGraph
 from langgraph.prebuilt import ToolNode
 from pydantic.v1 import BaseModel, Field
 
-from langfuse._client.client import Langfuse
-from langfuse.langchain import CallbackHandler
+from elasticdash._client.client import ElasticDash
+from elasticdash.langchain import CallbackHandler
 from tests.utils import create_uuid, encode_file_to_base64, get_api
 
 
 def test_callback_generated_from_trace_chat():
-    langfuse = Langfuse()
+    elasticdash = ElasticDash()
 
     trace_id = create_uuid()
 
-    with langfuse.start_as_current_span(name="parent") as span:
+    with elasticdash.start_as_current_span(name="parent") as span:
         trace_id = span.trace_id
         handler = CallbackHandler()
         chat = ChatOpenAI(temperature=0)
@@ -42,7 +42,7 @@ def test_callback_generated_from_trace_chat():
 
         chat.invoke(messages, config={"callbacks": [handler]})
 
-    langfuse.flush()
+    elasticdash.flush()
 
     trace = get_api().trace.get(trace_id)
 
@@ -70,9 +70,9 @@ def test_callback_generated_from_trace_chat():
 
 
 def test_callback_generated_from_lcel_chain():
-    langfuse = Langfuse()
+    elasticdash = ElasticDash()
 
-    with langfuse.start_as_current_span(name="parent") as span:
+    with elasticdash.start_as_current_span(name="parent") as span:
         trace_id = span.trace_id
         handler = CallbackHandler()
         prompt = ChatPromptTemplate.from_template("tell me a short joke about {topic}")
@@ -86,7 +86,7 @@ def test_callback_generated_from_lcel_chain():
             },
         )
 
-    langfuse.flush()
+    elasticdash.flush()
 
     trace = get_api().trace.get(trace_id)
 
@@ -157,9 +157,9 @@ def test_basic_chat_openai():
 
 
 def test_callback_simple_openai():
-    langfuse = Langfuse()
+    elasticdash = ElasticDash()
 
-    with langfuse.start_as_current_span(name="simple_openai_test") as span:
+    with elasticdash.start_as_current_span(name="simple_openai_test") as span:
         trace_id = span.trace_id
 
         # Create a unique name for this test
@@ -197,9 +197,9 @@ def test_callback_simple_openai():
 
 
 def test_callback_multiple_invocations_on_different_traces():
-    langfuse = Langfuse()
+    elasticdash = ElasticDash()
 
-    with langfuse.start_as_current_span(name="multiple_invocations_test") as span:
+    with elasticdash.start_as_current_span(name="multiple_invocations_test") as span:
         trace_id = span.trace_id
 
         # Create unique names for each test
@@ -243,9 +243,9 @@ def test_callback_multiple_invocations_on_different_traces():
 
 
 def test_openai_instruct_usage():
-    langfuse = Langfuse()
+    elasticdash = ElasticDash()
 
-    with langfuse.start_as_current_span(name="openai_instruct_usage_test") as span:
+    with elasticdash.start_as_current_span(name="openai_instruct_usage_test") as span:
         trace_id = span.trace_id
         from langchain_core.output_parsers.string import StrOutputParser
         from langchain_core.runnables import Runnable
@@ -297,32 +297,32 @@ def test_openai_instruct_usage():
 
 
 def test_get_langchain_prompt_with_jinja2():
-    langfuse = Langfuse()
+    elasticdash = ElasticDash()
 
     prompt = 'this is a {{ template }} template that should remain unchanged: {{ handle_text(payload["Name"], "Name is") }}'
-    langfuse.create_prompt(
+    elasticdash.create_prompt(
         name="test_jinja2",
         prompt=prompt,
         labels=["production"],
     )
 
-    langfuse_prompt = langfuse.get_prompt(
+    elasticdash_prompt = elasticdash.get_prompt(
         "test_jinja2", fetch_timeout_seconds=1, max_retries=3
     )
 
     assert (
-        langfuse_prompt.get_langchain_prompt()
+        elasticdash_prompt.get_langchain_prompt()
         == 'this is a {template} template that should remain unchanged: {{ handle_text(payload["Name"], "Name is") }}'
     )
 
 
 def test_get_langchain_prompt():
-    langfuse = Langfuse()
+    elasticdash = ElasticDash()
 
     test_prompts = ["This is a {{test}}", "This is a {{test}}. And this is a {{test2}}"]
 
     for i, test_prompt in enumerate(test_prompts):
-        langfuse.create_prompt(
+        elasticdash.create_prompt(
             name=f"test_{i}",
             prompt=test_prompt,
             config={
@@ -332,10 +332,10 @@ def test_get_langchain_prompt():
             labels=["production"],
         )
 
-        langfuse_prompt = langfuse.get_prompt(f"test_{i}")
+        elasticdash_prompt = elasticdash.get_prompt(f"test_{i}")
 
         langchain_prompt = ChatPromptTemplate.from_template(
-            langfuse_prompt.get_langchain_prompt()
+            elasticdash_prompt.get_langchain_prompt()
         )
 
         if i == 0:
@@ -348,7 +348,7 @@ def test_get_langchain_prompt():
 
 
 def test_get_langchain_chat_prompt():
-    langfuse = Langfuse()
+    elasticdash = ElasticDash()
 
     test_prompts = [
         [{"role": "system", "content": "This is a {{test}} with a {{test}}"}],
@@ -359,7 +359,7 @@ def test_get_langchain_chat_prompt():
     ]
 
     for i, test_prompt in enumerate(test_prompts):
-        langfuse.create_prompt(
+        elasticdash.create_prompt(
             name=f"test_chat_{i}",
             prompt=test_prompt,
             type="chat",
@@ -370,9 +370,9 @@ def test_get_langchain_chat_prompt():
             labels=["production"],
         )
 
-        langfuse_prompt = langfuse.get_prompt(f"test_chat_{i}", type="chat")
+        elasticdash_prompt = elasticdash.get_prompt(f"test_chat_{i}", type="chat")
         langchain_prompt = ChatPromptTemplate.from_messages(
-            langfuse_prompt.get_langchain_prompt()
+            elasticdash_prompt.get_langchain_prompt()
         )
 
         if i == 0:
@@ -387,9 +387,9 @@ def test_get_langchain_chat_prompt():
             )
 
 
-def test_link_langfuse_prompts_invoke():
-    langfuse = Langfuse()
-    trace_name = "test_link_langfuse_prompts_invoke"
+def test_link_elasticdash_prompts_invoke():
+    elasticdash = ElasticDash()
+    trace_name = "test_link_elasticdash_prompts_invoke"
 
     # Create prompts
     joke_prompt_name = "joke_prompt_" + create_uuid()[:8]
@@ -398,30 +398,30 @@ def test_link_langfuse_prompts_invoke():
     explain_prompt_name = "explain_prompt_" + create_uuid()[:8]
     explain_prompt_string = "Explain the joke to me like I'm a 5 year old {{joke}}"
 
-    langfuse.create_prompt(
+    elasticdash.create_prompt(
         name=joke_prompt_name,
         prompt=joke_prompt_string,
         labels=["production"],
     )
 
-    langfuse.create_prompt(
+    elasticdash.create_prompt(
         name=explain_prompt_name,
         prompt=explain_prompt_string,
         labels=["production"],
     )
 
     # Get prompts
-    langfuse_joke_prompt = langfuse.get_prompt(joke_prompt_name)
-    langfuse_explain_prompt = langfuse.get_prompt(explain_prompt_name)
+    elasticdash_joke_prompt = elasticdash.get_prompt(joke_prompt_name)
+    elasticdash_explain_prompt = elasticdash.get_prompt(explain_prompt_name)
 
     langchain_joke_prompt = PromptTemplate.from_template(
-        langfuse_joke_prompt.get_langchain_prompt(),
-        metadata={"langfuse_prompt": langfuse_joke_prompt},
+        elasticdash_joke_prompt.get_langchain_prompt(),
+        metadata={"elasticdash_prompt": elasticdash_joke_prompt},
     )
 
     langchain_explain_prompt = PromptTemplate.from_template(
-        langfuse_explain_prompt.get_langchain_prompt(),
-        metadata={"langfuse_prompt": langfuse_explain_prompt},
+        elasticdash_explain_prompt.get_langchain_prompt(),
+        metadata={"elasticdash_prompt": elasticdash_explain_prompt},
     )
 
     # Create chain
@@ -435,19 +435,19 @@ def test_link_langfuse_prompts_invoke():
     )
 
     # Run chain
-    langfuse_handler = CallbackHandler()
+    elasticdash_handler = CallbackHandler()
 
-    with langfuse.start_as_current_span(name=trace_name) as span:
+    with elasticdash.start_as_current_span(name=trace_name) as span:
         trace_id = span.trace_id
         chain.invoke(
             {"animal": "dog"},
             config={
-                "callbacks": [langfuse_handler],
+                "callbacks": [elasticdash_handler],
                 "run_name": trace_name,
             },
         )
 
-    langfuse_handler.client.flush()
+    elasticdash_handler.client.flush()
     sleep(2)
 
     trace = get_api().trace.get(trace_id=trace_id)
@@ -466,13 +466,13 @@ def test_link_langfuse_prompts_invoke():
     assert generations[0].prompt_name == joke_prompt_name
     assert generations[1].prompt_name == explain_prompt_name
 
-    assert generations[0].prompt_version == langfuse_joke_prompt.version
-    assert generations[1].prompt_version == langfuse_explain_prompt.version
+    assert generations[0].prompt_version == elasticdash_joke_prompt.version
+    assert generations[1].prompt_version == elasticdash_explain_prompt.version
 
 
-def test_link_langfuse_prompts_stream():
-    langfuse = Langfuse()
-    trace_name = "test_link_langfuse_prompts_stream"
+def test_link_elasticdash_prompts_stream():
+    elasticdash = ElasticDash()
+    trace_name = "test_link_elasticdash_prompts_stream"
 
     # Create prompts
     joke_prompt_name = "joke_prompt_" + create_uuid()[:8]
@@ -481,30 +481,30 @@ def test_link_langfuse_prompts_stream():
     explain_prompt_name = "explain_prompt_" + create_uuid()[:8]
     explain_prompt_string = "Explain the joke to me like I'm a 5 year old {{joke}}"
 
-    langfuse.create_prompt(
+    elasticdash.create_prompt(
         name=joke_prompt_name,
         prompt=joke_prompt_string,
         labels=["production"],
     )
 
-    langfuse.create_prompt(
+    elasticdash.create_prompt(
         name=explain_prompt_name,
         prompt=explain_prompt_string,
         labels=["production"],
     )
 
     # Get prompts
-    langfuse_joke_prompt = langfuse.get_prompt(joke_prompt_name)
-    langfuse_explain_prompt = langfuse.get_prompt(explain_prompt_name)
+    elasticdash_joke_prompt = elasticdash.get_prompt(joke_prompt_name)
+    elasticdash_explain_prompt = elasticdash.get_prompt(explain_prompt_name)
 
     langchain_joke_prompt = PromptTemplate.from_template(
-        langfuse_joke_prompt.get_langchain_prompt(),
-        metadata={"langfuse_prompt": langfuse_joke_prompt},
+        elasticdash_joke_prompt.get_langchain_prompt(),
+        metadata={"elasticdash_prompt": elasticdash_joke_prompt},
     )
 
     langchain_explain_prompt = PromptTemplate.from_template(
-        langfuse_explain_prompt.get_langchain_prompt(),
-        metadata={"langfuse_prompt": langfuse_explain_prompt},
+        elasticdash_explain_prompt.get_langchain_prompt(),
+        metadata={"elasticdash_prompt": elasticdash_explain_prompt},
     )
 
     # Create chain
@@ -518,14 +518,14 @@ def test_link_langfuse_prompts_stream():
     )
 
     # Run chain
-    langfuse_handler = CallbackHandler()
+    elasticdash_handler = CallbackHandler()
 
-    with langfuse.start_as_current_span(name=trace_name) as span:
+    with elasticdash.start_as_current_span(name=trace_name) as span:
         trace_id = span.trace_id
         stream = chain.stream(
             {"animal": "dog"},
             config={
-                "callbacks": [langfuse_handler],
+                "callbacks": [elasticdash_handler],
                 "run_name": trace_name,
             },
         )
@@ -534,7 +534,7 @@ def test_link_langfuse_prompts_stream():
         for chunk in stream:
             output += chunk
 
-    langfuse_handler.client.flush()
+    elasticdash_handler.client.flush()
     sleep(2)
 
     trace = get_api().trace.get(trace_id=trace_id)
@@ -553,16 +553,16 @@ def test_link_langfuse_prompts_stream():
     assert generations[0].prompt_name == joke_prompt_name
     assert generations[1].prompt_name == explain_prompt_name
 
-    assert generations[0].prompt_version == langfuse_joke_prompt.version
-    assert generations[1].prompt_version == langfuse_explain_prompt.version
+    assert generations[0].prompt_version == elasticdash_joke_prompt.version
+    assert generations[1].prompt_version == elasticdash_explain_prompt.version
 
     assert generations[0].time_to_first_token is not None
     assert generations[1].time_to_first_token is not None
 
 
-def test_link_langfuse_prompts_batch():
-    langfuse = Langfuse()
-    trace_name = "test_link_langfuse_prompts_batch_" + create_uuid()[:8]
+def test_link_elasticdash_prompts_batch():
+    elasticdash = ElasticDash()
+    trace_name = "test_link_elasticdash_prompts_batch_" + create_uuid()[:8]
 
     # Create prompts
     joke_prompt_name = "joke_prompt_" + create_uuid()[:8]
@@ -571,30 +571,30 @@ def test_link_langfuse_prompts_batch():
     explain_prompt_name = "explain_prompt_" + create_uuid()[:8]
     explain_prompt_string = "Explain the joke to me like I'm a 5 year old {{joke}}"
 
-    langfuse.create_prompt(
+    elasticdash.create_prompt(
         name=joke_prompt_name,
         prompt=joke_prompt_string,
         labels=["production"],
     )
 
-    langfuse.create_prompt(
+    elasticdash.create_prompt(
         name=explain_prompt_name,
         prompt=explain_prompt_string,
         labels=["production"],
     )
 
     # Get prompts
-    langfuse_joke_prompt = langfuse.get_prompt(joke_prompt_name)
-    langfuse_explain_prompt = langfuse.get_prompt(explain_prompt_name)
+    elasticdash_joke_prompt = elasticdash.get_prompt(joke_prompt_name)
+    elasticdash_explain_prompt = elasticdash.get_prompt(explain_prompt_name)
 
     langchain_joke_prompt = PromptTemplate.from_template(
-        langfuse_joke_prompt.get_langchain_prompt(),
-        metadata={"langfuse_prompt": langfuse_joke_prompt},
+        elasticdash_joke_prompt.get_langchain_prompt(),
+        metadata={"elasticdash_prompt": elasticdash_joke_prompt},
     )
 
     langchain_explain_prompt = PromptTemplate.from_template(
-        langfuse_explain_prompt.get_langchain_prompt(),
-        metadata={"langfuse_prompt": langfuse_explain_prompt},
+        elasticdash_explain_prompt.get_langchain_prompt(),
+        metadata={"elasticdash_prompt": elasticdash_explain_prompt},
     )
 
     # Create chain
@@ -608,19 +608,19 @@ def test_link_langfuse_prompts_batch():
     )
 
     # Run chain
-    langfuse_handler = CallbackHandler()
+    elasticdash_handler = CallbackHandler()
 
-    with langfuse.start_as_current_span(name=trace_name) as span:
+    with elasticdash.start_as_current_span(name=trace_name) as span:
         trace_id = span.trace_id
         chain.batch(
             [{"animal": "dog"}, {"animal": "cat"}, {"animal": "elephant"}],
             config={
-                "callbacks": [langfuse_handler],
+                "callbacks": [elasticdash_handler],
                 "run_name": trace_name,
             },
         )
 
-    langfuse_handler.client.flush()
+    elasticdash_handler.client.flush()
 
     traces = get_api().trace.list(name=trace_name).data
 
@@ -644,31 +644,31 @@ def test_link_langfuse_prompts_batch():
     assert generations[4].prompt_name == explain_prompt_name
     assert generations[5].prompt_name == explain_prompt_name
 
-    assert generations[0].prompt_version == langfuse_joke_prompt.version
-    assert generations[1].prompt_version == langfuse_joke_prompt.version
-    assert generations[2].prompt_version == langfuse_joke_prompt.version
-    assert generations[3].prompt_version == langfuse_explain_prompt.version
-    assert generations[4].prompt_version == langfuse_explain_prompt.version
-    assert generations[5].prompt_version == langfuse_explain_prompt.version
+    assert generations[0].prompt_version == elasticdash_joke_prompt.version
+    assert generations[1].prompt_version == elasticdash_joke_prompt.version
+    assert generations[2].prompt_version == elasticdash_joke_prompt.version
+    assert generations[3].prompt_version == elasticdash_explain_prompt.version
+    assert generations[4].prompt_version == elasticdash_explain_prompt.version
+    assert generations[5].prompt_version == elasticdash_explain_prompt.version
 
 
 def test_get_langchain_text_prompt_with_precompiled_prompt():
-    langfuse = Langfuse()
+    elasticdash = ElasticDash()
 
     prompt_name = "test_precompiled_langchain_prompt"
     test_prompt = (
         "This is a {{pre_compiled_var}}. This is a langchain {{langchain_var}}"
     )
 
-    langfuse.create_prompt(
+    elasticdash.create_prompt(
         name=prompt_name,
         prompt=test_prompt,
         labels=["production"],
     )
 
-    langfuse_prompt = langfuse.get_prompt(prompt_name)
+    elasticdash_prompt = elasticdash.get_prompt(prompt_name)
     langchain_prompt = PromptTemplate.from_template(
-        langfuse_prompt.get_langchain_prompt(pre_compiled_var="dog")
+        elasticdash_prompt.get_langchain_prompt(pre_compiled_var="dog")
     )
 
     assert (
@@ -678,7 +678,7 @@ def test_get_langchain_text_prompt_with_precompiled_prompt():
 
 
 def test_get_langchain_chat_prompt_with_precompiled_prompt():
-    langfuse = Langfuse()
+    elasticdash = ElasticDash()
 
     prompt_name = "test_precompiled_langchain_chat_prompt"
     test_prompt = [
@@ -686,16 +686,16 @@ def test_get_langchain_chat_prompt_with_precompiled_prompt():
         {"role": "user", "content": "This is a langchain {{langchain_var}}."},
     ]
 
-    langfuse.create_prompt(
+    elasticdash.create_prompt(
         name=prompt_name,
         prompt=test_prompt,
         type="chat",
         labels=["production"],
     )
 
-    langfuse_prompt = langfuse.get_prompt(prompt_name, type="chat")
+    elasticdash_prompt = elasticdash.get_prompt(prompt_name, type="chat")
     langchain_prompt = ChatPromptTemplate.from_messages(
-        langfuse_prompt.get_langchain_prompt(pre_compiled_var="dog")
+        elasticdash_prompt.get_langchain_prompt(pre_compiled_var="dog")
     )
 
     system_message, user_message = langchain_prompt.format_messages(
@@ -772,7 +772,7 @@ def test_callback_openai_functions_with_tools():
 
 
 @pytest.mark.skip(reason="Flaky test")
-def test_langfuse_overhead():
+def test_elasticdash_overhead():
     def _generate_random_dict(n: int, key_length: int = 8) -> Dict[str, Any]:
         result = {}
         value_generators = [
@@ -794,31 +794,31 @@ def test_langfuse_overhead():
             result[key] = value
         return result
 
-    # Test performance overhead of langfuse tracing
+    # Test performance overhead of elasticdash tracing
     inputs = _generate_random_dict(10000, 20000)
     test_chain = RunnableLambda(lambda x: None)
 
     start = time.monotonic()
     test_chain.invoke(inputs)
-    duration_without_langfuse = (time.monotonic() - start) * 1000
+    duration_without_elasticdash = (time.monotonic() - start) * 1000
 
     start = time.monotonic()
     handler = CallbackHandler()
-    langfuse = Langfuse()
+    elasticdash = ElasticDash()
 
-    with langfuse.start_as_current_span(name="test_langfuse_overhead"):
+    with elasticdash.start_as_current_span(name="test_elasticdash_overhead"):
         test_chain.invoke(inputs, config={"callbacks": [handler]})
 
-    duration_with_langfuse = (time.monotonic() - start) * 1000
+    duration_with_elasticdash = (time.monotonic() - start) * 1000
 
-    overhead = duration_with_langfuse - duration_without_langfuse
-    print(f"Langfuse overhead: {overhead}ms")
+    overhead = duration_with_elasticdash - duration_without_elasticdash
+    print(f"ElasticDash overhead: {overhead}ms")
 
     assert overhead < 100, (
-        f"Langfuse tracing overhead of {overhead}ms exceeds threshold"
+        f"ElasticDash tracing overhead of {overhead}ms exceeds threshold"
     )
 
-    langfuse.flush()
+    elasticdash.flush()
 
     duration_full = (time.monotonic() - start) * 1000
     print(f"Full execution took {duration_full}ms")
@@ -859,7 +859,7 @@ def test_multimodal():
     assert generation_observation is not None
 
     assert (
-        "@@@langfuseMedia:type=image/jpeg|id="
+        "@@@elasticdashMedia:type=image/jpeg|id="
         in generation_observation.input[0]["content"][1]["image_url"]["url"]
     )
 

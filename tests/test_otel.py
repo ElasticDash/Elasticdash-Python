@@ -14,10 +14,10 @@ from opentelemetry.sdk.trace.export import (
 )
 from opentelemetry.sdk.trace.id_generator import RandomIdGenerator
 
-from langfuse._client.attributes import LangfuseOtelSpanAttributes
-from langfuse._client.client import Langfuse
-from langfuse._client.resource_manager import LangfuseResourceManager
-from langfuse.media import LangfuseMedia
+from elasticdash._client.attributes import ElasticDashOtelSpanAttributes
+from elasticdash._client.client import ElasticDash
+from elasticdash._client.resource_manager import ElasticDashResourceManager
+from elasticdash.media import ElasticDashMedia
 
 
 class InMemorySpanExporter(SpanExporter):
@@ -56,7 +56,7 @@ class TestOTelBase:
         original_provider = trace_api.get_tracer_provider()
         yield
         trace_api.set_tracer_provider(original_provider)
-        LangfuseResourceManager.reset()
+        ElasticDashResourceManager.reset()
 
     @pytest.fixture
     def memory_exporter(self):
@@ -68,7 +68,7 @@ class TestOTelBase:
     @pytest.fixture
     def tracer_provider(self, memory_exporter):
         """Create a tracer provider with our memory exporter."""
-        resource = Resource.create({"service.name": "langfuse-test"})
+        resource = Resource.create({"service.name": "elasticdash-test"})
         provider = TracerProvider(resource=resource)
         processor = SimpleSpanProcessor(memory_exporter)
         provider.add_span_processor(processor)
@@ -77,7 +77,7 @@ class TestOTelBase:
 
     @pytest.fixture
     def mock_processor_init(self, monkeypatch, memory_exporter):
-        """Mock the LangfuseSpanProcessor initialization to avoid HTTP traffic."""
+        """Mock the ElasticDashSpanProcessor initialization to avoid HTTP traffic."""
 
         def mock_init(self, **kwargs):
             from opentelemetry.sdk.trace.export import BatchSpanProcessor
@@ -95,19 +95,19 @@ class TestOTelBase:
             )
 
         monkeypatch.setattr(
-            "langfuse._client.span_processor.LangfuseSpanProcessor.__init__",
+            "elasticdash._client.span_processor.ElasticDashSpanProcessor.__init__",
             mock_init,
         )
 
     @pytest.fixture
-    def langfuse_client(self, monkeypatch, tracer_provider, mock_processor_init):
-        """Create a mocked Langfuse client for testing."""
+    def elasticdash_client(self, monkeypatch, tracer_provider, mock_processor_init):
+        """Create a mocked ElasticDash client for testing."""
         # Set environment variables
-        monkeypatch.setenv("LANGFUSE_PUBLIC_KEY", "test-public-key")
-        monkeypatch.setenv("LANGFUSE_SECRET_KEY", "test-secret-key")
+        monkeypatch.setenv("ELASTICDASH_PUBLIC_KEY", "test-public-key")
+        monkeypatch.setenv("ELASTICDASH_SECRET_KEY", "test-secret-key")
 
         # Create test client
-        client = Langfuse(
+        client = ElasticDash(
             public_key="test-public-key",
             secret_key="test-secret-key",
             base_url="http://test-host",
@@ -115,23 +115,23 @@ class TestOTelBase:
         )
 
         # Configure client for testing
-        client._otel_tracer = tracer_provider.get_tracer("langfuse-test")
+        client._otel_tracer = tracer_provider.get_tracer("elasticdash-test")
 
         yield client
 
     @pytest.fixture
-    def configurable_langfuse_client(
+    def configurable_elasticdash_client(
         self, monkeypatch, tracer_provider, mock_processor_init
     ):
-        """Create a Langfuse client fixture that allows configuration parameters."""
+        """Create a ElasticDash client fixture that allows configuration parameters."""
 
         def _create_client(**kwargs):
             # Set environment variables
-            monkeypatch.setenv("LANGFUSE_PUBLIC_KEY", "test-public-key")
-            monkeypatch.setenv("LANGFUSE_SECRET_KEY", "test-secret-key")
+            monkeypatch.setenv("ELASTICDASH_PUBLIC_KEY", "test-public-key")
+            monkeypatch.setenv("ELASTICDASH_SECRET_KEY", "test-secret-key")
 
             # Create client with custom parameters
-            client = Langfuse(
+            client = ElasticDash(
                 public_key="test-public-key",
                 secret_key="test-secret-key",
                 base_url="http://test-host",
@@ -140,7 +140,7 @@ class TestOTelBase:
             )
 
             # Configure client
-            client._otel_tracer = tracer_provider.get_tracer("langfuse-test")
+            client._otel_tracer = tracer_provider.get_tracer("elasticdash-test")
 
             return client
 
@@ -245,10 +245,10 @@ class TestOTelBase:
 class TestBasicSpans(TestOTelBase):
     """Tests for basic span operations and attributes."""
 
-    def test_basic_span_creation(self, langfuse_client, memory_exporter):
+    def test_basic_span_creation(self, elasticdash_client, memory_exporter):
         """Test that a basic span can be created with attributes."""
         # Create a span and end it
-        span = langfuse_client.start_span(name="test-span", input={"test": "value"})
+        span = elasticdash_client.start_span(name="test-span", input={"test": "value"})
         span.end()
 
         # Get spans with our name
@@ -263,17 +263,17 @@ class TestBasicSpans(TestOTelBase):
         # Verify the span attributes
         assert span_data["name"] == "test-span"
         self.verify_span_attribute(
-            span_data, LangfuseOtelSpanAttributes.OBSERVATION_TYPE, "span"
+            span_data, ElasticDashOtelSpanAttributes.OBSERVATION_TYPE, "span"
         )
 
         # Verify the span IDs match
         assert span.id == span_data["span_id"]
         assert span.trace_id == span_data["trace_id"]
 
-    def test_span_hierarchy(self, langfuse_client, memory_exporter):
+    def test_span_hierarchy(self, elasticdash_client, memory_exporter):
         """Test creating nested spans and verify their parent-child relationships."""
         # Create parent span
-        with langfuse_client.start_as_current_span(name="parent-span") as parent_span:
+        with elasticdash_client.start_as_current_span(name="parent-span") as parent_span:
             # Create a child span
             child_span = parent_span.start_span(name="child-span")
             child_span.end()
@@ -309,12 +309,12 @@ class TestBasicSpans(TestOTelBase):
         # All spans should have the same trace ID
         assert len(set(s["trace_id"] for s in spans)) == 1
 
-    def test_update_current_span_name(self, langfuse_client, memory_exporter):
+    def test_update_current_span_name(self, elasticdash_client, memory_exporter):
         """Test updating current span name via update_current_span method."""
         # Create a span using context manager
-        with langfuse_client.start_as_current_span(name="original-current-span"):
+        with elasticdash_client.start_as_current_span(name="original-current-span"):
             # Update the current span name
-            langfuse_client.update_current_span(name="updated-current-span")
+            elasticdash_client.update_current_span(name="updated-current-span")
 
         # Verify the span name was updated
         spans = self.get_spans_by_name(memory_exporter, "updated-current-span")
@@ -326,10 +326,10 @@ class TestBasicSpans(TestOTelBase):
         )
         assert len(original_spans) == 0, "Expected no spans with original name"
 
-    def test_span_attributes(self, langfuse_client, memory_exporter):
+    def test_span_attributes(self, elasticdash_client, memory_exporter):
         """Test that span attributes are correctly set and updated."""
         # Create a span with attributes
-        span = langfuse_client.start_span(
+        span = elasticdash_client.start_span(
             name="attribute-span",
             input={"prompt": "Test prompt"},
             output={"response": "Test response"},
@@ -350,37 +350,37 @@ class TestBasicSpans(TestOTelBase):
 
         # Verify attributes are set
         attributes = span_data["attributes"]
-        assert LangfuseOtelSpanAttributes.OBSERVATION_INPUT in attributes
-        assert LangfuseOtelSpanAttributes.OBSERVATION_OUTPUT in attributes
+        assert ElasticDashOtelSpanAttributes.OBSERVATION_INPUT in attributes
+        assert ElasticDashOtelSpanAttributes.OBSERVATION_OUTPUT in attributes
         assert (
-            f"{LangfuseOtelSpanAttributes.OBSERVATION_METADATA}.session" in attributes
+            f"{ElasticDashOtelSpanAttributes.OBSERVATION_METADATA}.session" in attributes
         )
 
         # Parse JSON attributes
         input_data = json.loads(
-            attributes[LangfuseOtelSpanAttributes.OBSERVATION_INPUT]
+            attributes[ElasticDashOtelSpanAttributes.OBSERVATION_INPUT]
         )
         output_data = json.loads(
-            attributes[LangfuseOtelSpanAttributes.OBSERVATION_OUTPUT]
+            attributes[ElasticDashOtelSpanAttributes.OBSERVATION_OUTPUT]
         )
         metadata_data = attributes[
-            f"{LangfuseOtelSpanAttributes.OBSERVATION_METADATA}.session"
+            f"{ElasticDashOtelSpanAttributes.OBSERVATION_METADATA}.session"
         ]
 
         # Verify attribute values
         assert input_data == {"prompt": "Test prompt"}
         assert output_data == {"response": "Updated response"}
         assert metadata_data == "test-session"
-        assert attributes[LangfuseOtelSpanAttributes.OBSERVATION_LEVEL] == "INFO"
+        assert attributes[ElasticDashOtelSpanAttributes.OBSERVATION_LEVEL] == "INFO"
         assert (
-            attributes[LangfuseOtelSpanAttributes.OBSERVATION_STATUS_MESSAGE]
+            attributes[ElasticDashOtelSpanAttributes.OBSERVATION_STATUS_MESSAGE]
             == "Test status"
         )
 
-    def test_span_name_update(self, langfuse_client, memory_exporter):
+    def test_span_name_update(self, elasticdash_client, memory_exporter):
         """Test updating span name via update method."""
         # Create a span with initial name
-        span = langfuse_client.start_span(name="original-span-name")
+        span = elasticdash_client.start_span(name="original-span-name")
 
         # Update the span name
         span.update(name="updated-span-name")
@@ -394,10 +394,10 @@ class TestBasicSpans(TestOTelBase):
         original_spans = self.get_spans_by_name(memory_exporter, "original-span-name")
         assert len(original_spans) == 0, "Expected no spans with original name"
 
-    def test_generation_span(self, langfuse_client, memory_exporter):
+    def test_generation_span(self, elasticdash_client, memory_exporter):
         """Test creating a generation span with model-specific attributes."""
         # Create a generation
-        generation = langfuse_client.start_generation(
+        generation = elasticdash_client.start_generation(
             name="test-generation",
             model="gpt-4",
             model_parameters={"temperature": 0.7, "max_tokens": 100},
@@ -414,24 +414,24 @@ class TestBasicSpans(TestOTelBase):
 
         # Verify generation-specific attributes
         attributes = gen_data["attributes"]
-        assert attributes[LangfuseOtelSpanAttributes.OBSERVATION_TYPE] == "generation"
-        assert attributes[LangfuseOtelSpanAttributes.OBSERVATION_MODEL] == "gpt-4"
+        assert attributes[ElasticDashOtelSpanAttributes.OBSERVATION_TYPE] == "generation"
+        assert attributes[ElasticDashOtelSpanAttributes.OBSERVATION_MODEL] == "gpt-4"
 
         # Parse complex attributes
         model_params = json.loads(
-            attributes[LangfuseOtelSpanAttributes.OBSERVATION_MODEL_PARAMETERS]
+            attributes[ElasticDashOtelSpanAttributes.OBSERVATION_MODEL_PARAMETERS]
         )
         assert model_params == {"temperature": 0.7, "max_tokens": 100}
 
         usage = json.loads(
-            attributes[LangfuseOtelSpanAttributes.OBSERVATION_USAGE_DETAILS]
+            attributes[ElasticDashOtelSpanAttributes.OBSERVATION_USAGE_DETAILS]
         )
         assert usage == {"input": 10, "output": 5, "total": 15}
 
-    def test_generation_name_update(self, langfuse_client, memory_exporter):
+    def test_generation_name_update(self, elasticdash_client, memory_exporter):
         """Test updating generation name via update method."""
         # Create a generation with initial name
-        generation = langfuse_client.start_generation(
+        generation = elasticdash_client.start_generation(
             name="original-generation-name", model="gpt-4"
         )
 
@@ -449,10 +449,10 @@ class TestBasicSpans(TestOTelBase):
         )
         assert len(original_spans) == 0, "Expected no generations with original name"
 
-    def test_trace_update(self, langfuse_client, memory_exporter):
+    def test_trace_update(self, elasticdash_client, memory_exporter):
         """Test updating trace level attributes."""
         # Create a span and update trace attributes
-        with langfuse_client.start_as_current_span(name="trace-span") as span:
+        with elasticdash_client.start_as_current_span(name="trace-span") as span:
             span.update_trace(
                 name="updated-trace-name",
                 user_id="test-user",
@@ -469,28 +469,28 @@ class TestBasicSpans(TestOTelBase):
 
         # Verify trace attributes were set
         attributes = span_data["attributes"]
-        assert attributes[LangfuseOtelSpanAttributes.TRACE_NAME] == "updated-trace-name"
-        assert attributes[LangfuseOtelSpanAttributes.TRACE_USER_ID] == "test-user"
-        assert attributes[LangfuseOtelSpanAttributes.TRACE_SESSION_ID] == "test-session"
+        assert attributes[ElasticDashOtelSpanAttributes.TRACE_NAME] == "updated-trace-name"
+        assert attributes[ElasticDashOtelSpanAttributes.TRACE_USER_ID] == "test-user"
+        assert attributes[ElasticDashOtelSpanAttributes.TRACE_SESSION_ID] == "test-session"
 
         # Handle different serialization formats
-        if isinstance(attributes[LangfuseOtelSpanAttributes.TRACE_TAGS], str):
-            tags = json.loads(attributes[LangfuseOtelSpanAttributes.TRACE_TAGS])
+        if isinstance(attributes[ElasticDashOtelSpanAttributes.TRACE_TAGS], str):
+            tags = json.loads(attributes[ElasticDashOtelSpanAttributes.TRACE_TAGS])
         else:
-            tags = list(attributes[LangfuseOtelSpanAttributes.TRACE_TAGS])
+            tags = list(attributes[ElasticDashOtelSpanAttributes.TRACE_TAGS])
 
-        input_data = json.loads(attributes[LangfuseOtelSpanAttributes.TRACE_INPUT])
-        metadata = attributes[f"{LangfuseOtelSpanAttributes.TRACE_METADATA}.trace-meta"]
+        input_data = json.loads(attributes[ElasticDashOtelSpanAttributes.TRACE_INPUT])
+        metadata = attributes[f"{ElasticDashOtelSpanAttributes.TRACE_METADATA}.trace-meta"]
 
         # Check attribute values
         assert sorted(tags) == sorted(["tag1", "tag2"])
         assert input_data == {"trace-input": "value"}
         assert metadata == "data"
 
-    def test_complex_scenario(self, langfuse_client, memory_exporter):
+    def test_complex_scenario(self, elasticdash_client, memory_exporter):
         """Test a more complex scenario with multiple operations and nesting."""
         # Create a trace with a main span
-        with langfuse_client.start_as_current_span(name="main-flow") as main_span:
+        with elasticdash_client.start_as_current_span(name="main-flow") as main_span:
             # Add trace information
             main_span.update_trace(
                 name="complex-test",
@@ -546,37 +546,37 @@ class TestBasicSpans(TestOTelBase):
 
         # Check specific attributes
         assert (
-            main["attributes"][LangfuseOtelSpanAttributes.TRACE_NAME] == "complex-test"
+            main["attributes"][ElasticDashOtelSpanAttributes.TRACE_NAME] == "complex-test"
         )
         assert (
-            llm["attributes"][LangfuseOtelSpanAttributes.OBSERVATION_TYPE]
+            llm["attributes"][ElasticDashOtelSpanAttributes.OBSERVATION_TYPE]
             == "generation"
         )
 
         # Parse metadata
         proc_metadata = proc["attributes"][
-            f"{LangfuseOtelSpanAttributes.OBSERVATION_METADATA}.step"
+            f"{ElasticDashOtelSpanAttributes.OBSERVATION_METADATA}.step"
         ]
         assert proc_metadata == "processing"
 
         # Parse input/output JSON
         llm_input = json.loads(
-            llm["attributes"][LangfuseOtelSpanAttributes.OBSERVATION_INPUT]
+            llm["attributes"][ElasticDashOtelSpanAttributes.OBSERVATION_INPUT]
         )
         llm_output = json.loads(
-            llm["attributes"][LangfuseOtelSpanAttributes.OBSERVATION_OUTPUT]
+            llm["attributes"][ElasticDashOtelSpanAttributes.OBSERVATION_OUTPUT]
         )
         assert llm_input == {"prompt": "Summarize this text"}
         assert llm_output == {"text": "This is a summary"}
 
-    def test_update_current_generation_name(self, langfuse_client, memory_exporter):
+    def test_update_current_generation_name(self, elasticdash_client, memory_exporter):
         """Test updating current generation name via update_current_generation method."""
         # Create a generation using context manager
-        with langfuse_client.start_as_current_generation(
+        with elasticdash_client.start_as_current_generation(
             name="original-current-generation", model="gpt-4"
         ):
             # Update the current generation name
-            langfuse_client.update_current_generation(name="updated-current-generation")
+            elasticdash_client.update_current_generation(name="updated-current-generation")
 
         # Verify the generation name was updated
         spans = self.get_spans_by_name(memory_exporter, "updated-current-generation")
@@ -588,7 +588,7 @@ class TestBasicSpans(TestOTelBase):
         )
         assert len(original_spans) == 0, "Expected no generations with original name"
 
-    def test_start_as_current_observation_types(self, langfuse_client, memory_exporter):
+    def test_start_as_current_observation_types(self, elasticdash_client, memory_exporter):
         """Test creating different observation types using start_as_current_observation."""
         # Test each observation type from ObservationTypeLiteralNoEvent
         observation_types = [
@@ -604,7 +604,7 @@ class TestBasicSpans(TestOTelBase):
         ]
 
         for obs_type in observation_types:
-            with langfuse_client.start_as_current_observation(
+            with elasticdash_client.start_as_current_observation(
                 name=f"test-{obs_type}", as_type=obs_type
             ) as obs:
                 obs.update_trace(name=f"trace-{obs_type}")
@@ -624,16 +624,16 @@ class TestBasicSpans(TestOTelBase):
             span_data = matching_spans[0]
             expected_otel_type = obs_type  # OTEL attributes use lowercase
             actual_type = span_data["attributes"].get(
-                LangfuseOtelSpanAttributes.OBSERVATION_TYPE
+                ElasticDashOtelSpanAttributes.OBSERVATION_TYPE
             )
 
             assert actual_type == expected_otel_type, (
                 f"Expected observation type {expected_otel_type}, got {actual_type}"
             )
 
-    def test_start_observation(self, langfuse_client, memory_exporter):
+    def test_start_observation(self, elasticdash_client, memory_exporter):
         """Test creating different observation types using start_observation."""
-        from langfuse._client.constants import (
+        from elasticdash._client.constants import (
             ObservationTypeGenerationLike,
             ObservationTypeLiteral,
             get_observation_types_list,
@@ -643,7 +643,7 @@ class TestBasicSpans(TestOTelBase):
         observation_types = get_observation_types_list(ObservationTypeLiteral)
 
         # Create a main span to use for child creation
-        with langfuse_client.start_as_current_span(
+        with elasticdash_client.start_as_current_span(
             name="factory-test-parent"
         ) as parent_span:
             created_observations = []
@@ -696,7 +696,7 @@ class TestBasicSpans(TestOTelBase):
 
             span_data = matching_spans[0]
             actual_type = span_data["attributes"].get(
-                LangfuseOtelSpanAttributes.OBSERVATION_TYPE
+                ElasticDashOtelSpanAttributes.OBSERVATION_TYPE
             )
 
             assert actual_type == obs_type, (
@@ -706,74 +706,74 @@ class TestBasicSpans(TestOTelBase):
         # Ensure returned objects are of correct types
         for obs_type, obs_instance in created_observations:
             if obs_type == "span":
-                from langfuse._client.span import LangfuseSpan
+                from elasticdash._client.span import ElasticDashSpan
 
-                assert isinstance(obs_instance, LangfuseSpan), (
-                    f"Expected LangfuseSpan, got {type(obs_instance)}"
+                assert isinstance(obs_instance, ElasticDashSpan), (
+                    f"Expected ElasticDashSpan, got {type(obs_instance)}"
                 )
             elif obs_type == "generation":
-                from langfuse._client.span import LangfuseGeneration
+                from elasticdash._client.span import ElasticDashGeneration
 
-                assert isinstance(obs_instance, LangfuseGeneration), (
-                    f"Expected LangfuseGeneration, got {type(obs_instance)}"
+                assert isinstance(obs_instance, ElasticDashGeneration), (
+                    f"Expected ElasticDashGeneration, got {type(obs_instance)}"
                 )
             elif obs_type == "agent":
-                from langfuse._client.span import LangfuseAgent
+                from elasticdash._client.span import ElasticDashAgent
 
-                assert isinstance(obs_instance, LangfuseAgent), (
-                    f"Expected LangfuseAgent, got {type(obs_instance)}"
+                assert isinstance(obs_instance, ElasticDashAgent), (
+                    f"Expected ElasticDashAgent, got {type(obs_instance)}"
                 )
             elif obs_type == "tool":
-                from langfuse._client.span import LangfuseTool
+                from elasticdash._client.span import ElasticDashTool
 
-                assert isinstance(obs_instance, LangfuseTool), (
-                    f"Expected LangfuseTool, got {type(obs_instance)}"
+                assert isinstance(obs_instance, ElasticDashTool), (
+                    f"Expected ElasticDashTool, got {type(obs_instance)}"
                 )
             elif obs_type == "chain":
-                from langfuse._client.span import LangfuseChain
+                from elasticdash._client.span import ElasticDashChain
 
-                assert isinstance(obs_instance, LangfuseChain), (
-                    f"Expected LangfuseChain, got {type(obs_instance)}"
+                assert isinstance(obs_instance, ElasticDashChain), (
+                    f"Expected ElasticDashChain, got {type(obs_instance)}"
                 )
             elif obs_type == "retriever":
-                from langfuse._client.span import LangfuseRetriever
+                from elasticdash._client.span import ElasticDashRetriever
 
-                assert isinstance(obs_instance, LangfuseRetriever), (
-                    f"Expected LangfuseRetriever, got {type(obs_instance)}"
+                assert isinstance(obs_instance, ElasticDashRetriever), (
+                    f"Expected ElasticDashRetriever, got {type(obs_instance)}"
                 )
             elif obs_type == "evaluator":
-                from langfuse._client.span import LangfuseEvaluator
+                from elasticdash._client.span import ElasticDashEvaluator
 
-                assert isinstance(obs_instance, LangfuseEvaluator), (
-                    f"Expected LangfuseEvaluator, got {type(obs_instance)}"
+                assert isinstance(obs_instance, ElasticDashEvaluator), (
+                    f"Expected ElasticDashEvaluator, got {type(obs_instance)}"
                 )
             elif obs_type == "embedding":
-                from langfuse._client.span import LangfuseEmbedding
+                from elasticdash._client.span import ElasticDashEmbedding
 
-                assert isinstance(obs_instance, LangfuseEmbedding), (
-                    f"Expected LangfuseEmbedding, got {type(obs_instance)}"
+                assert isinstance(obs_instance, ElasticDashEmbedding), (
+                    f"Expected ElasticDashEmbedding, got {type(obs_instance)}"
                 )
             elif obs_type == "guardrail":
-                from langfuse._client.span import LangfuseGuardrail
+                from elasticdash._client.span import ElasticDashGuardrail
 
-                assert isinstance(obs_instance, LangfuseGuardrail), (
-                    f"Expected LangfuseGuardrail, got {type(obs_instance)}"
+                assert isinstance(obs_instance, ElasticDashGuardrail), (
+                    f"Expected ElasticDashGuardrail, got {type(obs_instance)}"
                 )
             elif obs_type == "event":
-                from langfuse._client.span import LangfuseEvent
+                from elasticdash._client.span import ElasticDashEvent
 
-                assert isinstance(obs_instance, LangfuseEvent), (
-                    f"Expected LangfuseEvent, got {type(obs_instance)}"
+                assert isinstance(obs_instance, ElasticDashEvent), (
+                    f"Expected ElasticDashEvent, got {type(obs_instance)}"
                 )
 
-    def test_custom_trace_id(self, langfuse_client, memory_exporter):
+    def test_custom_trace_id(self, elasticdash_client, memory_exporter):
         """Test setting a custom trace ID."""
         # Create a custom trace ID
         custom_trace_id = "abcdef1234567890abcdef1234567890"
 
         # Create a span with this custom trace ID using trace_context
         trace_context = {"trace_id": custom_trace_id}
-        span = langfuse_client.start_span(
+        span = elasticdash_client.start_span(
             name="custom-trace-span",
             trace_context=trace_context,
             input={"test": "value"},
@@ -788,10 +788,10 @@ class TestBasicSpans(TestOTelBase):
         assert span_data["trace_id"] == custom_trace_id, (
             "Trace ID doesn't match custom ID"
         )
-        assert span_data["attributes"][LangfuseOtelSpanAttributes.AS_ROOT] is True
+        assert span_data["attributes"][ElasticDashOtelSpanAttributes.AS_ROOT] is True
 
         # Test additional spans with the same trace context
-        child_span = langfuse_client.start_span(
+        child_span = elasticdash_client.start_span(
             name="child-span", trace_context=trace_context, input={"child": "data"}
         )
         child_span.end()
@@ -803,7 +803,7 @@ class TestBasicSpans(TestOTelBase):
             "Child span has wrong trace ID"
         )
 
-    def test_custom_parent_span_id(self, langfuse_client, memory_exporter):
+    def test_custom_parent_span_id(self, elasticdash_client, memory_exporter):
         """Test setting a custom parent span ID."""
         # Create a trace and get its ID
         trace_id = "abcdef1234567890abcdef1234567890"
@@ -813,7 +813,7 @@ class TestBasicSpans(TestOTelBase):
         trace_context = {"trace_id": trace_id, "parent_span_id": parent_span_id}
 
         # Create a span with this context
-        span = langfuse_client.start_span(
+        span = elasticdash_client.start_span(
             name="custom-parent-span", trace_context=trace_context
         )
         span.end()
@@ -822,12 +822,12 @@ class TestBasicSpans(TestOTelBase):
         spans = self.get_spans_by_name(memory_exporter, "custom-parent-span")
         assert len(spans) == 1, "Expected one span"
         assert spans[0]["trace_id"] == trace_id
-        assert spans[0]["attributes"][LangfuseOtelSpanAttributes.AS_ROOT] is True
+        assert spans[0]["attributes"][ElasticDashOtelSpanAttributes.AS_ROOT] is True
 
-    def test_multiple_generations_in_trace(self, langfuse_client, memory_exporter):
+    def test_multiple_generations_in_trace(self, elasticdash_client, memory_exporter):
         """Test creating multiple generation spans within the same trace."""
         # Create a trace with multiple generation spans
-        with langfuse_client.start_as_current_span(name="multi-gen-flow") as main_span:
+        with elasticdash_client.start_as_current_span(name="multi-gen-flow") as main_span:
             # First generation
             gen1 = main_span.start_generation(
                 name="generation-1",
@@ -874,42 +874,42 @@ class TestBasicSpans(TestOTelBase):
 
         # Verify generation-specific attributes are correct
         assert (
-            gen1_data["attributes"][LangfuseOtelSpanAttributes.OBSERVATION_TYPE]
+            gen1_data["attributes"][ElasticDashOtelSpanAttributes.OBSERVATION_TYPE]
             == "generation"
         )
         assert (
-            gen1_data["attributes"][LangfuseOtelSpanAttributes.OBSERVATION_MODEL]
+            gen1_data["attributes"][ElasticDashOtelSpanAttributes.OBSERVATION_MODEL]
             == "gpt-3.5-turbo"
         )
 
         assert (
-            gen2_data["attributes"][LangfuseOtelSpanAttributes.OBSERVATION_TYPE]
+            gen2_data["attributes"][ElasticDashOtelSpanAttributes.OBSERVATION_TYPE]
             == "generation"
         )
         assert (
-            gen2_data["attributes"][LangfuseOtelSpanAttributes.OBSERVATION_MODEL]
+            gen2_data["attributes"][ElasticDashOtelSpanAttributes.OBSERVATION_MODEL]
             == "gpt-4"
         )
 
         # Parse usage details
         gen1_usage = json.loads(
             gen1_data["attributes"][
-                LangfuseOtelSpanAttributes.OBSERVATION_USAGE_DETAILS
+                ElasticDashOtelSpanAttributes.OBSERVATION_USAGE_DETAILS
             ]
         )
         gen2_usage = json.loads(
             gen2_data["attributes"][
-                LangfuseOtelSpanAttributes.OBSERVATION_USAGE_DETAILS
+                ElasticDashOtelSpanAttributes.OBSERVATION_USAGE_DETAILS
             ]
         )
 
         assert gen1_usage == {"input": 10, "output": 20, "total": 30}
         assert gen2_usage == {"input": 15, "output": 25, "total": 40}
 
-    def test_error_handling(self, langfuse_client, memory_exporter):
+    def test_error_handling(self, elasticdash_client, memory_exporter):
         """Test error handling in span operations."""
         # Create a span that will have an error
-        span = langfuse_client.start_span(name="error-span")
+        span = elasticdash_client.start_span(name="error-span")
 
         # Set an error status on the span
         import traceback
@@ -938,16 +938,16 @@ class TestBasicSpans(TestOTelBase):
         attributes = span_data["attributes"]
 
         # Verify error attributes were set correctly
-        assert attributes[LangfuseOtelSpanAttributes.OBSERVATION_LEVEL] == "ERROR"
+        assert attributes[ElasticDashOtelSpanAttributes.OBSERVATION_LEVEL] == "ERROR"
         assert (
-            attributes[LangfuseOtelSpanAttributes.OBSERVATION_STATUS_MESSAGE]
+            attributes[ElasticDashOtelSpanAttributes.OBSERVATION_STATUS_MESSAGE]
             == "Test error message"
         )
 
-    def test_error_level_in_span_creation(self, langfuse_client, memory_exporter):
+    def test_error_level_in_span_creation(self, elasticdash_client, memory_exporter):
         """Test that OTEL span status is set to ERROR when creating spans with level='ERROR'."""
         # Create a span with level="ERROR" at creation time
-        span = langfuse_client.start_span(
+        span = elasticdash_client.start_span(
             name="create-error-span",
             level="ERROR",
             status_message="Initial error state",
@@ -969,20 +969,20 @@ class TestBasicSpans(TestOTelBase):
         assert raw_span.status.status_code == StatusCode.ERROR
         assert raw_span.status.description == "Initial error state"
 
-        # Also verify Langfuse attributes
+        # Also verify ElasticDash attributes
         spans = self.get_spans_by_name(memory_exporter, "create-error-span")
         span_data = spans[0]
         attributes = span_data["attributes"]
-        assert attributes[LangfuseOtelSpanAttributes.OBSERVATION_LEVEL] == "ERROR"
+        assert attributes[ElasticDashOtelSpanAttributes.OBSERVATION_LEVEL] == "ERROR"
         assert (
-            attributes[LangfuseOtelSpanAttributes.OBSERVATION_STATUS_MESSAGE]
+            attributes[ElasticDashOtelSpanAttributes.OBSERVATION_STATUS_MESSAGE]
             == "Initial error state"
         )
 
-    def test_error_level_in_span_update(self, langfuse_client, memory_exporter):
+    def test_error_level_in_span_update(self, elasticdash_client, memory_exporter):
         """Test that OTEL span status is set to ERROR when updating spans to level='ERROR'."""
         # Create a normal span
-        span = langfuse_client.start_span(name="update-error-span", level="INFO")
+        span = elasticdash_client.start_span(name="update-error-span", level="INFO")
 
         # Update it to ERROR level
         span.update(level="ERROR", status_message="Updated to error state")
@@ -1003,20 +1003,20 @@ class TestBasicSpans(TestOTelBase):
         assert raw_span.status.status_code == StatusCode.ERROR
         assert raw_span.status.description == "Updated to error state"
 
-        # Also verify Langfuse attributes
+        # Also verify ElasticDash attributes
         spans = self.get_spans_by_name(memory_exporter, "update-error-span")
         span_data = spans[0]
         attributes = span_data["attributes"]
-        assert attributes[LangfuseOtelSpanAttributes.OBSERVATION_LEVEL] == "ERROR"
+        assert attributes[ElasticDashOtelSpanAttributes.OBSERVATION_LEVEL] == "ERROR"
         assert (
-            attributes[LangfuseOtelSpanAttributes.OBSERVATION_STATUS_MESSAGE]
+            attributes[ElasticDashOtelSpanAttributes.OBSERVATION_STATUS_MESSAGE]
             == "Updated to error state"
         )
 
-    def test_generation_error_level_in_creation(self, langfuse_client, memory_exporter):
+    def test_generation_error_level_in_creation(self, elasticdash_client, memory_exporter):
         """Test that OTEL span status is set to ERROR when creating generations with level='ERROR'."""
         # Create a generation with level="ERROR" at creation time
-        generation = langfuse_client.start_generation(
+        generation = elasticdash_client.start_generation(
             name="create-error-generation",
             model="gpt-4",
             level="ERROR",
@@ -1039,20 +1039,20 @@ class TestBasicSpans(TestOTelBase):
         assert raw_span.status.status_code == StatusCode.ERROR
         assert raw_span.status.description == "Generation failed during creation"
 
-        # Also verify Langfuse attributes
+        # Also verify ElasticDash attributes
         spans = self.get_spans_by_name(memory_exporter, "create-error-generation")
         span_data = spans[0]
         attributes = span_data["attributes"]
-        assert attributes[LangfuseOtelSpanAttributes.OBSERVATION_LEVEL] == "ERROR"
+        assert attributes[ElasticDashOtelSpanAttributes.OBSERVATION_LEVEL] == "ERROR"
         assert (
-            attributes[LangfuseOtelSpanAttributes.OBSERVATION_STATUS_MESSAGE]
+            attributes[ElasticDashOtelSpanAttributes.OBSERVATION_STATUS_MESSAGE]
             == "Generation failed during creation"
         )
 
-    def test_generation_error_level_in_update(self, langfuse_client, memory_exporter):
+    def test_generation_error_level_in_update(self, elasticdash_client, memory_exporter):
         """Test that OTEL span status is set to ERROR when updating generations to level='ERROR'."""
         # Create a normal generation
-        generation = langfuse_client.start_generation(
+        generation = elasticdash_client.start_generation(
             name="update-error-generation", model="gpt-4", level="INFO"
         )
 
@@ -1077,18 +1077,18 @@ class TestBasicSpans(TestOTelBase):
         assert raw_span.status.status_code == StatusCode.ERROR
         assert raw_span.status.description == "Generation failed during execution"
 
-        # Also verify Langfuse attributes
+        # Also verify ElasticDash attributes
         spans = self.get_spans_by_name(memory_exporter, "update-error-generation")
         span_data = spans[0]
         attributes = span_data["attributes"]
-        assert attributes[LangfuseOtelSpanAttributes.OBSERVATION_LEVEL] == "ERROR"
+        assert attributes[ElasticDashOtelSpanAttributes.OBSERVATION_LEVEL] == "ERROR"
         assert (
-            attributes[LangfuseOtelSpanAttributes.OBSERVATION_STATUS_MESSAGE]
+            attributes[ElasticDashOtelSpanAttributes.OBSERVATION_STATUS_MESSAGE]
             == "Generation failed during execution"
         )
 
     def test_non_error_levels_dont_set_otel_status(
-        self, langfuse_client, memory_exporter
+        self, elasticdash_client, memory_exporter
     ):
         """Test that non-ERROR levels don't set OTEL span status to ERROR."""
         # Test different non-error levels
@@ -1096,7 +1096,7 @@ class TestBasicSpans(TestOTelBase):
 
         for i, level in enumerate(test_levels):
             span_name = f"non-error-span-{i}"
-            span = langfuse_client.start_span(name=span_name, level=level)
+            span = elasticdash_client.start_span(name=span_name, level=level)
 
             # Update with same level to test update path too
             if level is not None:
@@ -1119,10 +1119,10 @@ class TestBasicSpans(TestOTelBase):
                 f"Level {level} should not set ERROR status"
             )
 
-    def test_multiple_error_updates(self, langfuse_client, memory_exporter):
+    def test_multiple_error_updates(self, elasticdash_client, memory_exporter):
         """Test that multiple ERROR level updates work correctly."""
         # Create a span
-        span = langfuse_client.start_span(name="multi-error-span")
+        span = elasticdash_client.start_span(name="multi-error-span")
 
         # First error update
         span.update(level="ERROR", status_message="First error")
@@ -1147,10 +1147,10 @@ class TestBasicSpans(TestOTelBase):
         assert raw_span.status.status_code == StatusCode.ERROR
         assert raw_span.status.description == "Second error"
 
-    def test_error_without_status_message(self, langfuse_client, memory_exporter):
+    def test_error_without_status_message(self, elasticdash_client, memory_exporter):
         """Test that ERROR level works even without status_message."""
         # Create a span with ERROR level but no status message
-        span = langfuse_client.start_span(name="error-no-message-span", level="ERROR")
+        span = elasticdash_client.start_span(name="error-no-message-span", level="ERROR")
         span.end()
 
         # Get the raw OTEL spans to check the status
@@ -1170,7 +1170,7 @@ class TestBasicSpans(TestOTelBase):
         assert raw_span.status.description is None
 
     def test_different_observation_types_error_handling(
-        self, langfuse_client, memory_exporter
+        self, elasticdash_client, memory_exporter
     ):
         """Test that ERROR level setting works for different observation types."""
         # Test different observation types
@@ -1185,7 +1185,7 @@ class TestBasicSpans(TestOTelBase):
         ]
 
         # Create a parent span for child observations
-        with langfuse_client.start_as_current_span(name="error-test-parent") as parent:
+        with elasticdash_client.start_as_current_span(name="error-test-parent") as parent:
             for obs_type in observation_types:
                 # Create observation with ERROR level
                 obs = parent.start_observation(
@@ -1217,7 +1217,7 @@ class TestBasicSpans(TestOTelBase):
 class TestAdvancedSpans(TestOTelBase):
     """Tests for advanced span functionality including generations, timing, and usage metrics."""
 
-    def test_complex_model_parameters(self, langfuse_client, memory_exporter):
+    def test_complex_model_parameters(self, elasticdash_client, memory_exporter):
         """Test handling of complex model parameters in generation spans."""
         # Create a complex model parameters dictionary with nested structures
         complex_params = {
@@ -1252,7 +1252,7 @@ class TestAdvancedSpans(TestOTelBase):
         }
 
         # Create a generation with these complex parameters
-        generation = langfuse_client.start_generation(
+        generation = elasticdash_client.start_generation(
             name="complex-params-test",
             model="gpt-4",
             model_parameters=complex_params,
@@ -1267,14 +1267,14 @@ class TestAdvancedSpans(TestOTelBase):
 
         # Skip further assertions if model parameters attribute isn't present
         if (
-            LangfuseOtelSpanAttributes.OBSERVATION_MODEL_PARAMETERS
+            ElasticDashOtelSpanAttributes.OBSERVATION_MODEL_PARAMETERS
             not in span_data["attributes"]
         ):
             pytest.skip("Model parameters attribute not implemented yet")
 
         # Verify model parameters were properly serialized
         model_params = self.verify_json_attribute(
-            span_data, LangfuseOtelSpanAttributes.OBSERVATION_MODEL_PARAMETERS
+            span_data, ElasticDashOtelSpanAttributes.OBSERVATION_MODEL_PARAMETERS
         )
 
         # Verify all parameters were preserved correctly
@@ -1288,10 +1288,10 @@ class TestAdvancedSpans(TestOTelBase):
         assert "parameters" in model_params["tools"][0]["function"]
         assert model_params["response_format"]["type"] == "json_object"
 
-    def test_updating_current_generation(self, langfuse_client, memory_exporter):
+    def test_updating_current_generation(self, elasticdash_client, memory_exporter):
         """Test that an in-progress generation can be updated multiple times."""
         # Create a generation
-        generation = langfuse_client.start_generation(
+        generation = elasticdash_client.start_generation(
             name="updating-generation",
             model="gpt-4",
             input={"prompt": "Write a story about a robot"},
@@ -1333,7 +1333,7 @@ class TestAdvancedSpans(TestOTelBase):
 
         # Verify final attributes
         output = self.verify_json_attribute(
-            span_data, LangfuseOtelSpanAttributes.OBSERVATION_OUTPUT
+            span_data, ElasticDashOtelSpanAttributes.OBSERVATION_OUTPUT
         )
 
         # Verify final output contains the complete text (key name may vary)
@@ -1343,11 +1343,11 @@ class TestAdvancedSpans(TestOTelBase):
 
         # Skip usage check if the attribute isn't present
         if (
-            LangfuseOtelSpanAttributes.OBSERVATION_USAGE_DETAILS
+            ElasticDashOtelSpanAttributes.OBSERVATION_USAGE_DETAILS
             in span_data["attributes"]
         ):
             usage = self.verify_json_attribute(
-                span_data, LangfuseOtelSpanAttributes.OBSERVATION_USAGE_DETAILS
+                span_data, ElasticDashOtelSpanAttributes.OBSERVATION_USAGE_DETAILS
             )
             assert usage["input"] == 10
             assert usage["output"] == 50
@@ -1373,7 +1373,7 @@ class TestAdvancedSpans(TestOTelBase):
         trace_api.set_tracer_provider(sampled_provider)
 
         # Create a client with the sampled provider
-        client = Langfuse(
+        client = ElasticDash(
             public_key="test-public-key",
             secret_key="test-secret-key",
             base_url="http://test-host",
@@ -1395,13 +1395,13 @@ class TestAdvancedSpans(TestOTelBase):
         trace_api.set_tracer_provider(original_provider)
 
     @pytest.mark.skip("Calling shutdown will pollute the global context")
-    def test_shutdown_and_flush(self, langfuse_client, memory_exporter):
+    def test_shutdown_and_flush(self, elasticdash_client, memory_exporter):
         """Test shutdown and flush operations."""
         # Create a span without ending it
-        span = langfuse_client.start_span(name="flush-test-span")
+        span = elasticdash_client.start_span(name="flush-test-span")
 
         # Explicitly flush
-        langfuse_client.flush()
+        elasticdash_client.flush()
 
         # The span is still active, so it shouldn't be in the exporter yet
         spans = self.get_spans_by_name(memory_exporter, "flush-test-span")
@@ -1415,15 +1415,15 @@ class TestAdvancedSpans(TestOTelBase):
         assert len(spans) == 1, "Span should be exported after ending"
 
         # Create another span for shutdown testing
-        langfuse_client.start_span(name="shutdown-test-span")
+        elasticdash_client.start_span(name="shutdown-test-span")
 
         # Call shutdown (should flush any pending spans)
-        langfuse_client.shutdown()
+        elasticdash_client.shutdown()
 
     def test_disabled_tracing(self, monkeypatch, tracer_provider, mock_processor_init):
         """Test behavior when tracing is disabled."""
         # Create a client with tracing disabled
-        client = Langfuse(
+        client = ElasticDash(
             public_key="test-public-key",
             secret_key="test-secret-key",
             base_url="http://test-host",
@@ -1449,11 +1449,11 @@ class TestAdvancedSpans(TestOTelBase):
             f"Expected no spans when tracing is disabled, got {len(spans)}"
         )
 
-    def test_trace_id_generation(self, langfuse_client):
+    def test_trace_id_generation(self, elasticdash_client):
         """Test trace ID generation follows expected format."""
         # Generate trace IDs
-        trace_id1 = langfuse_client.create_trace_id()
-        trace_id2 = langfuse_client.create_trace_id()
+        trace_id1 = elasticdash_client.create_trace_id()
+        trace_id2 = elasticdash_client.create_trace_id()
 
         # Verify format: 32 hex characters
         assert len(trace_id1) == 32, (
@@ -1476,33 +1476,33 @@ class TestMetadataHandling(TestOTelBase):
 
     def test_complex_metadata_serialization(self):
         """Test the _flatten_and_serialize_metadata function directly."""
-        from langfuse._client.attributes import (
+        from elasticdash._client.attributes import (
             _flatten_and_serialize_metadata,
             _serialize,
         )
 
         # Test case 1: Non-dict metadata
         non_dict_result = _flatten_and_serialize_metadata("string-value", "observation")
-        assert LangfuseOtelSpanAttributes.OBSERVATION_METADATA in non_dict_result
+        assert ElasticDashOtelSpanAttributes.OBSERVATION_METADATA in non_dict_result
         assert non_dict_result[
-            LangfuseOtelSpanAttributes.OBSERVATION_METADATA
+            ElasticDashOtelSpanAttributes.OBSERVATION_METADATA
         ] == _serialize("string-value")
 
         # Test case 2: Simple dict
         simple_dict = {"key1": "value1", "key2": 123}
         simple_result = _flatten_and_serialize_metadata(simple_dict, "observation")
         assert (
-            f"{LangfuseOtelSpanAttributes.OBSERVATION_METADATA}.key1" in simple_result
+            f"{ElasticDashOtelSpanAttributes.OBSERVATION_METADATA}.key1" in simple_result
         )
         assert (
-            f"{LangfuseOtelSpanAttributes.OBSERVATION_METADATA}.key2" in simple_result
+            f"{ElasticDashOtelSpanAttributes.OBSERVATION_METADATA}.key2" in simple_result
         )
         assert (
-            simple_result[f"{LangfuseOtelSpanAttributes.OBSERVATION_METADATA}.key1"]
+            simple_result[f"{ElasticDashOtelSpanAttributes.OBSERVATION_METADATA}.key1"]
             == "value1"
         )
         assert (
-            simple_result[f"{LangfuseOtelSpanAttributes.OBSERVATION_METADATA}.key2"]
+            simple_result[f"{ElasticDashOtelSpanAttributes.OBSERVATION_METADATA}.key2"]
             == 123
         )
 
@@ -1514,8 +1514,8 @@ class TestMetadataHandling(TestOTelBase):
         nested_result = _flatten_and_serialize_metadata(nested_dict, "trace")
 
         # Verify the keys are flattened properly
-        outer_key = f"{LangfuseOtelSpanAttributes.TRACE_METADATA}.outer"
-        list_key = f"{LangfuseOtelSpanAttributes.TRACE_METADATA}.list_key"
+        outer_key = f"{ElasticDashOtelSpanAttributes.TRACE_METADATA}.outer"
+        list_key = f"{ElasticDashOtelSpanAttributes.TRACE_METADATA}.list_key"
 
         assert outer_key in nested_result
         assert list_key in nested_result
@@ -1534,8 +1534,8 @@ class TestMetadataHandling(TestOTelBase):
         # Test case 5: None
         none_result = _flatten_and_serialize_metadata(None, "observation")
         # The implementation returns a dictionary with a None value
-        assert LangfuseOtelSpanAttributes.OBSERVATION_METADATA in none_result
-        assert none_result[LangfuseOtelSpanAttributes.OBSERVATION_METADATA] is None
+        assert ElasticDashOtelSpanAttributes.OBSERVATION_METADATA in none_result
+        assert none_result[ElasticDashOtelSpanAttributes.OBSERVATION_METADATA] is None
 
         # Test case 6: Complex nested structure
         complex_dict = {
@@ -1548,8 +1548,8 @@ class TestMetadataHandling(TestOTelBase):
         complex_result = _flatten_and_serialize_metadata(complex_dict, "observation")
 
         # Check first-level keys only (current implementation)
-        level1_key = f"{LangfuseOtelSpanAttributes.OBSERVATION_METADATA}.level1"
-        sibling_key = f"{LangfuseOtelSpanAttributes.OBSERVATION_METADATA}.sibling"
+        level1_key = f"{ElasticDashOtelSpanAttributes.OBSERVATION_METADATA}.level1"
+        sibling_key = f"{ElasticDashOtelSpanAttributes.OBSERVATION_METADATA}.sibling"
 
         assert level1_key in complex_result
         assert sibling_key in complex_result
@@ -1560,7 +1560,7 @@ class TestMetadataHandling(TestOTelBase):
 
     def test_nested_metadata_updates(self):
         """Test that nested metadata updates don't overwrite unrelated keys."""
-        from langfuse._client.attributes import _flatten_and_serialize_metadata
+        from elasticdash._client.attributes import _flatten_and_serialize_metadata
 
         # Test how updates to metadata should behave in sequential calls
         # Initial metadata
@@ -1593,8 +1593,8 @@ class TestMetadataHandling(TestOTelBase):
         # telemetry.session_id: kept from first_result
 
         # Get the expected keys
-        config_key = f"{LangfuseOtelSpanAttributes.OBSERVATION_METADATA}.config"
-        telemetry_key = f"{LangfuseOtelSpanAttributes.OBSERVATION_METADATA}.telemetry"
+        config_key = f"{ElasticDashOtelSpanAttributes.OBSERVATION_METADATA}.config"
+        telemetry_key = f"{ElasticDashOtelSpanAttributes.OBSERVATION_METADATA}.telemetry"
 
         # Verify the structure of the results
         assert config_key in first_result
@@ -1632,10 +1632,10 @@ class TestMetadataHandling(TestOTelBase):
 
         # Get expected keys
         first_section_key = (
-            f"{LangfuseOtelSpanAttributes.OBSERVATION_METADATA}.first_section"
+            f"{ElasticDashOtelSpanAttributes.OBSERVATION_METADATA}.first_section"
         )
         second_section_key = (
-            f"{LangfuseOtelSpanAttributes.OBSERVATION_METADATA}.second_section"
+            f"{ElasticDashOtelSpanAttributes.OBSERVATION_METADATA}.second_section"
         )
 
         # Verify each section is properly serialized
@@ -1659,7 +1659,7 @@ class TestMetadataHandling(TestOTelBase):
         """Test that metadata nesting integrity is preserved in async contexts."""
         import asyncio
 
-        from langfuse._client.attributes import _flatten_and_serialize_metadata
+        from elasticdash._client.attributes import _flatten_and_serialize_metadata
 
         # Initial metadata with complex nested structure
         initial_metadata = {
@@ -1730,8 +1730,8 @@ class TestMetadataHandling(TestOTelBase):
             loop.close()
 
         # Define expected keys
-        config_key = f"{LangfuseOtelSpanAttributes.OBSERVATION_METADATA}.config"
-        telemetry_key = f"{LangfuseOtelSpanAttributes.OBSERVATION_METADATA}.telemetry"
+        config_key = f"{ElasticDashOtelSpanAttributes.OBSERVATION_METADATA}.config"
+        telemetry_key = f"{ElasticDashOtelSpanAttributes.OBSERVATION_METADATA}.telemetry"
 
         # Verify base result has all expected data
         assert config_key in base_result
@@ -1786,7 +1786,7 @@ class TestMetadataHandling(TestOTelBase):
         import threading
         import time
 
-        from langfuse._client.attributes import _flatten_and_serialize_metadata
+        from elasticdash._client.attributes import _flatten_and_serialize_metadata
 
         # Create a shared metadata dictionary we'll update from multiple threads
         shared_metadata = {
@@ -1896,8 +1896,8 @@ class TestMetadataHandling(TestOTelBase):
             current_metadata, "observation"
         )
 
-        user_key = f"{LangfuseOtelSpanAttributes.OBSERVATION_METADATA}.user"
-        system_key = f"{LangfuseOtelSpanAttributes.OBSERVATION_METADATA}.system"
+        user_key = f"{ElasticDashOtelSpanAttributes.OBSERVATION_METADATA}.user"
+        system_key = f"{ElasticDashOtelSpanAttributes.OBSERVATION_METADATA}.system"
 
         assert user_key in final_flattened
         assert system_key in final_flattened
@@ -1915,14 +1915,14 @@ class TestMetadataHandling(TestOTelBase):
 class TestMultiProjectSetup(TestOTelBase):
     """Tests for multi-project setup within the same process.
 
-    These tests verify that multiple Langfuse clients initialized with different
+    These tests verify that multiple ElasticDash clients initialized with different
     public keys in the same process correctly export spans to their respective
     exporters without cross-contamination.
     """
 
     @pytest.fixture(scope="function")
     def multi_project_setup(self, monkeypatch):
-        """Create two separate Langfuse clients with different projects."""
+        """Create two separate ElasticDash clients with different projects."""
         # Reset any previous trace providers
         from opentelemetry import trace as trace_api_reset
 
@@ -1940,7 +1940,7 @@ class TestMultiProjectSetup(TestOTelBase):
         project2_key = f"proj2_{unique_suffix}"
 
         # Clear singleton instances to avoid cross-test contamination
-        monkeypatch.setattr(LangfuseResourceManager, "_instances", {})
+        monkeypatch.setattr(ElasticDashResourceManager, "_instances", {})
 
         # Setup tracers with appropriate project-specific span exporting
         def mock_processor_init(self, **kwargs):
@@ -1961,7 +1961,7 @@ class TestMultiProjectSetup(TestOTelBase):
             )
 
         monkeypatch.setattr(
-            "langfuse._client.span_processor.LangfuseSpanProcessor.__init__",
+            "elasticdash._client.span_processor.ElasticDashSpanProcessor.__init__",
             mock_processor_init,
         )
 
@@ -1978,30 +1978,30 @@ class TestMultiProjectSetup(TestOTelBase):
 
         # Instead of global mocking, directly patch the _initialize_instance method
         # to provide appropriate tracer providers
-        original_initialize = LangfuseResourceManager._initialize_instance
+        original_initialize = ElasticDashResourceManager._initialize_instance
 
         def mock_initialize(self, **kwargs):
             original_initialize(self, **kwargs)
             # Override the tracer with our test tracers
             if kwargs.get("public_key") == project1_key:
                 self._otel_tracer = tracer_provider_project1.get_tracer(
-                    f"langfuse:{project1_key}", "test"
+                    f"elasticdash:{project1_key}", "test"
                 )
             elif kwargs.get("public_key") == project2_key:
                 self._otel_tracer = tracer_provider_project2.get_tracer(
-                    f"langfuse:{project2_key}", "test"
+                    f"elasticdash:{project2_key}", "test"
                 )
 
         monkeypatch.setattr(
-            LangfuseResourceManager, "_initialize_instance", mock_initialize
+            ElasticDashResourceManager, "_initialize_instance", mock_initialize
         )
 
         # Initialize the two clients
-        langfuse_project1 = Langfuse(
+        elasticdash_project1 = ElasticDash(
             public_key=project1_key, secret_key="secret1", base_url="http://test-host"
         )
 
-        langfuse_project2 = Langfuse(
+        elasticdash_project2 = ElasticDash(
             public_key=project2_key, secret_key="secret2", base_url="http://test-host"
         )
 
@@ -2009,8 +2009,8 @@ class TestMultiProjectSetup(TestOTelBase):
         setup = {
             "project1_key": project1_key,
             "project2_key": project2_key,
-            "langfuse_project1": langfuse_project1,
-            "langfuse_project2": langfuse_project2,
+            "elasticdash_project1": elasticdash_project1,
+            "elasticdash_project2": elasticdash_project2,
             "exporter_project1": exporter_project1,
             "exporter_project2": exporter_project2,
             "tracer_provider_project1": tracer_provider_project1,
@@ -2022,7 +2022,7 @@ class TestMultiProjectSetup(TestOTelBase):
         # Clean up and restore
         trace_api_reset.set_tracer_provider(original_provider)
         monkeypatch.setattr(
-            LangfuseResourceManager, "_initialize_instance", original_initialize
+            ElasticDashResourceManager, "_initialize_instance", original_initialize
         )
 
         exporter_project1.shutdown()
@@ -2031,12 +2031,12 @@ class TestMultiProjectSetup(TestOTelBase):
     def test_spans_routed_to_correct_exporters(self, multi_project_setup):
         """Test that spans are routed to the correct exporters based on public key."""
         # Create spans in both projects
-        span1 = multi_project_setup["langfuse_project1"].start_span(
+        span1 = multi_project_setup["elasticdash_project1"].start_span(
             name="trace-project1", metadata={"project": "project1"}
         )
         span1.end()
 
-        span2 = multi_project_setup["langfuse_project2"].start_span(
+        span2 = multi_project_setup["elasticdash_project2"].start_span(
             name="trace-project2", metadata={"project": "project2"}
         )
         span2.end()
@@ -2069,7 +2069,7 @@ class TestMultiProjectSetup(TestOTelBase):
         # Create simple non-nested spans in separate threads
         def create_spans_project1():
             for i in range(5):
-                span = multi_project_setup["langfuse_project1"].start_span(
+                span = multi_project_setup["elasticdash_project1"].start_span(
                     name=f"project1-span-{i}",
                     metadata={"project": "project1", "index": i},
                 )
@@ -2079,7 +2079,7 @@ class TestMultiProjectSetup(TestOTelBase):
 
         def create_spans_project2():
             for i in range(5):
-                span = multi_project_setup["langfuse_project2"].start_span(
+                span = multi_project_setup["elasticdash_project2"].start_span(
                     name=f"project2-span-{i}",
                     metadata={"project": "project2", "index": i},
                 )
@@ -2123,12 +2123,12 @@ class TestMultiProjectSetup(TestOTelBase):
     def test_span_processor_filtering(self, multi_project_setup):
         """Test that spans are correctly filtered to the right exporters."""
         # Create spans with identical attributes in both projects
-        span1 = multi_project_setup["langfuse_project1"].start_span(
+        span1 = multi_project_setup["elasticdash_project1"].start_span(
             name="test-filter-span", metadata={"project": "shared-value"}
         )
         span1.end()
 
-        span2 = multi_project_setup["langfuse_project2"].start_span(
+        span2 = multi_project_setup["elasticdash_project2"].start_span(
             name="test-filter-span", metadata={"project": "shared-value"}
         )
         span2.end()
@@ -2168,12 +2168,12 @@ class TestMultiProjectSetup(TestOTelBase):
         # Simplified version that just tests separate span routing
 
         # Start spans in both projects with the same name
-        span1 = multi_project_setup["langfuse_project1"].start_span(
+        span1 = multi_project_setup["elasticdash_project1"].start_span(
             name="identical-span-name"
         )
         span1.end()
 
-        span2 = multi_project_setup["langfuse_project2"].start_span(
+        span2 = multi_project_setup["elasticdash_project2"].start_span(
             name="identical-span-name"
         )
         span2.end()
@@ -2199,13 +2199,13 @@ class TestMultiProjectSetup(TestOTelBase):
         # Create a cross-project sequence that should not share context
 
         # Start a span in project1
-        span1 = multi_project_setup["langfuse_project1"].start_span(
+        span1 = multi_project_setup["elasticdash_project1"].start_span(
             name="cross-project-parent"
         )
 
         # Without ending span1, create a span in project2
         # This should NOT inherit context from span1 even though it's active
-        span2 = multi_project_setup["langfuse_project2"].start_span(
+        span2 = multi_project_setup["elasticdash_project2"].start_span(
             name="independent-project2-span"
         )
 
@@ -2247,12 +2247,12 @@ class TestMultiProjectSetup(TestOTelBase):
         # Each client should have different trace IDs
 
         # Create two spans with identical attributes in both projects
-        span1 = multi_project_setup["langfuse_project1"].start_span(
+        span1 = multi_project_setup["elasticdash_project1"].start_span(
             name="isolation-test-span"
         )
         span1.end()
 
-        span2 = multi_project_setup["langfuse_project2"].start_span(
+        span2 = multi_project_setup["elasticdash_project2"].start_span(
             name="isolation-test-span"
         )
         span2.end()
@@ -2310,9 +2310,9 @@ class TestInstrumentationScopeFiltering(TestOTelBase):
         test_key = f"test_key_{unique_suffix}"
 
         # Clear singleton instances to avoid cross-test contamination
-        monkeypatch.setattr(LangfuseResourceManager, "_instances", {})
+        monkeypatch.setattr(ElasticDashResourceManager, "_instances", {})
 
-        # Mock the LangfuseSpanProcessor to use our test exporters
+        # Mock the ElasticDashSpanProcessor to use our test exporters
         def mock_processor_init(self, **kwargs):
             from opentelemetry.sdk.trace.export import BatchSpanProcessor
 
@@ -2333,27 +2333,27 @@ class TestInstrumentationScopeFiltering(TestOTelBase):
             )
 
         monkeypatch.setattr(
-            "langfuse._client.span_processor.LangfuseSpanProcessor.__init__",
+            "elasticdash._client.span_processor.ElasticDashSpanProcessor.__init__",
             mock_processor_init,
         )
 
         # Create test tracer provider that will be used for all spans
         test_tracer_provider = TracerProvider()
 
-        # We'll add the LangfuseSpanProcessor to this provider after it's created
+        # We'll add the ElasticDashSpanProcessor to this provider after it's created
         # in the mock_initialize function below
 
         # Mock resource manager initialization to use our test setup
-        original_initialize = LangfuseResourceManager._initialize_instance
+        original_initialize = ElasticDashResourceManager._initialize_instance
 
         def mock_initialize(self, **kwargs):
             # Call original_initialize to set up all the necessary attributes
             original_initialize(self, **kwargs)
 
-            # Now create our custom LangfuseSpanProcessor with the actual blocked_instrumentation_scopes
-            from langfuse._client.span_processor import LangfuseSpanProcessor
+            # Now create our custom ElasticDashSpanProcessor with the actual blocked_instrumentation_scopes
+            from elasticdash._client.span_processor import ElasticDashSpanProcessor
 
-            processor = LangfuseSpanProcessor(
+            processor = ElasticDashSpanProcessor(
                 public_key=self.public_key,
                 secret_key=self.secret_key,
                 base_url=self.base_url,
@@ -2369,11 +2369,11 @@ class TestInstrumentationScopeFiltering(TestOTelBase):
 
             # Override the tracer to use our test tracer provider
             self._otel_tracer = test_tracer_provider.get_tracer(
-                "langfuse-sdk", "test", attributes={"public_key": self.public_key}
+                "elasticdash-sdk", "test", attributes={"public_key": self.public_key}
             )
 
         monkeypatch.setattr(
-            LangfuseResourceManager, "_initialize_instance", mock_initialize
+            ElasticDashResourceManager, "_initialize_instance", mock_initialize
         )
 
         setup = {
@@ -2389,7 +2389,7 @@ class TestInstrumentationScopeFiltering(TestOTelBase):
         # Clean up
         trace_api_reset.set_tracer_provider(original_provider)
         monkeypatch.setattr(
-            LangfuseResourceManager, "_initialize_instance", original_initialize
+            ElasticDashResourceManager, "_initialize_instance", original_initialize
         )
         blocked_exporter.shutdown()
 
@@ -2397,8 +2397,8 @@ class TestInstrumentationScopeFiltering(TestOTelBase):
         self, instrumentation_filtering_setup
     ):
         """Test that spans from blocked instrumentation scopes are not exported."""
-        # Create Langfuse client with blocked scopes
-        Langfuse(
+        # Create ElasticDash client with blocked scopes
+        ElasticDash(
             public_key=instrumentation_filtering_setup["test_key"],
             secret_key="test-secret-key",
             base_url="http://localhost:3000",
@@ -2408,9 +2408,9 @@ class TestInstrumentationScopeFiltering(TestOTelBase):
         # Get the tracer provider and create different instrumentation scope tracers
         tracer_provider = instrumentation_filtering_setup["test_tracer_provider"]
 
-        # Create langfuse tracer with proper attributes for project validation
-        langfuse_tracer = tracer_provider.get_tracer(
-            "langfuse-sdk",
+        # Create elasticdash tracer with proper attributes for project validation
+        elasticdash_tracer = tracer_provider.get_tracer(
+            "elasticdash-sdk",
             attributes={"public_key": instrumentation_filtering_setup["test_key"]},
         )
         openai_tracer = tracer_provider.get_tracer("openai")
@@ -2418,8 +2418,8 @@ class TestInstrumentationScopeFiltering(TestOTelBase):
         allowed_tracer = tracer_provider.get_tracer("allowed-library")
 
         # Create spans from each tracer
-        langfuse_span = langfuse_tracer.start_span("langfuse-span")
-        langfuse_span.end()
+        elasticdash_span = elasticdash_tracer.start_span("elasticdash-span")
+        elasticdash_span.end()
 
         openai_span = openai_tracer.start_span("openai-span")
         openai_span.end()
@@ -2444,9 +2444,9 @@ class TestInstrumentationScopeFiltering(TestOTelBase):
             if span.instrumentation_scope
         ]
 
-        # Langfuse spans should be exported (not blocked)
-        assert "langfuse-span" in exported_span_names
-        assert "langfuse-sdk" in exported_scope_names
+        # ElasticDash spans should be exported (not blocked)
+        assert "elasticdash-span" in exported_span_names
+        assert "elasticdash-sdk" in exported_scope_names
 
         # Blocked scopes should NOT be exported
         assert "openai-span" not in exported_span_names
@@ -2462,8 +2462,8 @@ class TestInstrumentationScopeFiltering(TestOTelBase):
         self, instrumentation_filtering_setup
     ):
         """Test that when no scopes are blocked, all spans are exported."""
-        # Create Langfuse client with NO blocked scopes
-        Langfuse(
+        # Create ElasticDash client with NO blocked scopes
+        ElasticDash(
             public_key=instrumentation_filtering_setup["test_key"],
             secret_key="test-secret-key",
             base_url="http://localhost:3000",
@@ -2473,16 +2473,16 @@ class TestInstrumentationScopeFiltering(TestOTelBase):
         # Get the tracer provider and create different instrumentation scope tracers
         tracer_provider = instrumentation_filtering_setup["test_tracer_provider"]
 
-        langfuse_tracer = tracer_provider.get_tracer(
-            "langfuse-sdk",
+        elasticdash_tracer = tracer_provider.get_tracer(
+            "elasticdash-sdk",
             attributes={"public_key": instrumentation_filtering_setup["test_key"]},
         )
         openai_tracer = tracer_provider.get_tracer("openai")
         anthropic_tracer = tracer_provider.get_tracer("anthropic")
 
         # Create spans from each tracer
-        langfuse_span = langfuse_tracer.start_span("langfuse-span")
-        langfuse_span.end()
+        elasticdash_span = elasticdash_tracer.start_span("elasticdash-span")
+        elasticdash_span.end()
 
         openai_span = openai_tracer.start_span("openai-span")
         openai_span.end()
@@ -2499,7 +2499,7 @@ class TestInstrumentationScopeFiltering(TestOTelBase):
         ].get_finished_spans()
         exported_span_names = [span.name for span in exported_spans]
 
-        assert "langfuse-span" in exported_span_names
+        assert "elasticdash-span" in exported_span_names
         assert "openai-span" in exported_span_names
         assert "anthropic-span" in exported_span_names
 
@@ -2507,8 +2507,8 @@ class TestInstrumentationScopeFiltering(TestOTelBase):
         self, instrumentation_filtering_setup
     ):
         """Test that when blocked_scopes is None (default), all spans are exported."""
-        # Create Langfuse client with None blocked scopes (default behavior)
-        Langfuse(
+        # Create ElasticDash client with None blocked scopes (default behavior)
+        ElasticDash(
             public_key=instrumentation_filtering_setup["test_key"],
             secret_key="test-secret-key",
             base_url="http://localhost:3000",
@@ -2518,15 +2518,15 @@ class TestInstrumentationScopeFiltering(TestOTelBase):
         # Get the tracer provider and create different instrumentation scope tracers
         tracer_provider = instrumentation_filtering_setup["test_tracer_provider"]
 
-        langfuse_tracer = tracer_provider.get_tracer(
-            "langfuse-sdk",
+        elasticdash_tracer = tracer_provider.get_tracer(
+            "elasticdash-sdk",
             attributes={"public_key": instrumentation_filtering_setup["test_key"]},
         )
         openai_tracer = tracer_provider.get_tracer("openai")
 
         # Create spans from each tracer
-        langfuse_span = langfuse_tracer.start_span("langfuse-span")
-        langfuse_span.end()
+        elasticdash_span = elasticdash_tracer.start_span("elasticdash-span")
+        elasticdash_span.end()
 
         openai_span = openai_tracer.start_span("openai-span")
         openai_span.end()
@@ -2540,31 +2540,31 @@ class TestInstrumentationScopeFiltering(TestOTelBase):
         ].get_finished_spans()
         exported_span_names = [span.name for span in exported_spans]
 
-        assert "langfuse-span" in exported_span_names
+        assert "elasticdash-span" in exported_span_names
         assert "openai-span" in exported_span_names
 
-    def test_blocking_langfuse_sdk_scope_export(self, instrumentation_filtering_setup):
-        """Test that even Langfuse's own spans are blocked if explicitly specified."""
-        # Create Langfuse client that blocks its own instrumentation scope
-        Langfuse(
+    def test_blocking_elasticdash_sdk_scope_export(self, instrumentation_filtering_setup):
+        """Test that even ElasticDash's own spans are blocked if explicitly specified."""
+        # Create ElasticDash client that blocks its own instrumentation scope
+        ElasticDash(
             public_key=instrumentation_filtering_setup["test_key"],
             secret_key="test-secret-key",
             base_url="http://localhost:3000",
-            blocked_instrumentation_scopes=["langfuse-sdk"],
+            blocked_instrumentation_scopes=["elasticdash-sdk"],
         )
 
         # Get the tracer provider and create tracers
         tracer_provider = instrumentation_filtering_setup["test_tracer_provider"]
 
-        langfuse_tracer = tracer_provider.get_tracer(
-            "langfuse-sdk",
+        elasticdash_tracer = tracer_provider.get_tracer(
+            "elasticdash-sdk",
             attributes={"public_key": instrumentation_filtering_setup["test_key"]},
         )
         other_tracer = tracer_provider.get_tracer("other-library")
 
         # Create spans
-        langfuse_span = langfuse_tracer.start_span("langfuse-span")
-        langfuse_span.end()
+        elasticdash_span = elasticdash_tracer.start_span("elasticdash-span")
+        elasticdash_span.end()
 
         other_span = other_tracer.start_span("other-span")
         other_span.end()
@@ -2572,13 +2572,13 @@ class TestInstrumentationScopeFiltering(TestOTelBase):
         # Force flush
         tracer_provider.force_flush()
 
-        # Check exports - Langfuse spans should be blocked, others allowed
+        # Check exports - ElasticDash spans should be blocked, others allowed
         exported_spans = instrumentation_filtering_setup[
             "blocked_exporter"
         ].get_finished_spans()
         exported_span_names = [span.name for span in exported_spans]
 
-        assert "langfuse-span" not in exported_span_names
+        assert "elasticdash-span" not in exported_span_names
         assert "other-span" in exported_span_names
 
 
@@ -2586,12 +2586,12 @@ class TestConcurrencyAndAsync(TestOTelBase):
     """Tests for asynchronous and concurrent span operations."""
 
     @pytest.mark.asyncio
-    async def test_async_span_operations(self, langfuse_client, memory_exporter):
+    async def test_async_span_operations(self, elasticdash_client, memory_exporter):
         """Test async operations with spans."""
         import asyncio
 
         # Start a main span
-        main_span = langfuse_client.start_span(name="async-main-span")
+        main_span = elasticdash_client.start_span(name="async-main-span")
 
         # Define an async function that creates and updates spans
         async def async_task(parent_span, task_id):
@@ -2645,17 +2645,17 @@ class TestConcurrencyAndAsync(TestOTelBase):
 
             # Parse output and metadata
             output = self.verify_json_attribute(
-                task_span, LangfuseOtelSpanAttributes.OBSERVATION_OUTPUT
+                task_span, ElasticDashOtelSpanAttributes.OBSERVATION_OUTPUT
             )
             assert output["result"] == f"Task {i} completed"
 
         # Verify main span output
         main_output = self.verify_json_attribute(
-            main, LangfuseOtelSpanAttributes.OBSERVATION_OUTPUT
+            main, ElasticDashOtelSpanAttributes.OBSERVATION_OUTPUT
         )
         assert main_output["completed_tasks"] == [0, 1, 2]
 
-    def test_context_propagation_async(self, langfuse_client, memory_exporter):
+    def test_context_propagation_async(self, elasticdash_client, memory_exporter):
         """Test context propagation across async operations using OTEL context."""
         import threading
 
@@ -2664,7 +2664,7 @@ class TestConcurrencyAndAsync(TestOTelBase):
 
         # Create a main span in thread 1
         trace_context = {"trace_id": trace_id}
-        main_span = langfuse_client.start_span(
+        main_span = elasticdash_client.start_span(
             name="main-async-span", trace_context=trace_context
         )
 
@@ -2685,7 +2685,7 @@ class TestConcurrencyAndAsync(TestOTelBase):
             nonlocal thread2_span_id, thread2_trace_id
 
             # Access the same trace via trace_id in a different thread
-            thread2_span = langfuse_client.start_span(
+            thread2_span = elasticdash_client.start_span(
                 name="thread2-span", trace_context={"trace_id": trace_id}
             )
 
@@ -2704,7 +2704,7 @@ class TestConcurrencyAndAsync(TestOTelBase):
             nonlocal thread3_span_id, thread3_trace_id
 
             # Create a child of the main span by providing parent_span_id
-            thread3_span = langfuse_client.start_span(
+            thread3_span = elasticdash_client.start_span(
                 name="thread3-span",
                 trace_context={"trace_id": trace_id, "parent_span_id": main_span_id},
             )
@@ -2752,7 +2752,7 @@ class TestConcurrencyAndAsync(TestOTelBase):
         assert thread3_span["trace_id"] == trace_id
 
         # Verify thread2 span is at the root level (no parent within our trace)
-        assert thread2_span["attributes"][LangfuseOtelSpanAttributes.AS_ROOT] is True, (
+        assert thread2_span["attributes"][ElasticDashOtelSpanAttributes.AS_ROOT] is True, (
             "Thread 2 span should not have a parent"
         )
 
@@ -2763,17 +2763,17 @@ class TestConcurrencyAndAsync(TestOTelBase):
 
     @pytest.mark.asyncio
     async def test_span_metadata_updates_in_async_context(
-        self, langfuse_client, memory_exporter
+        self, elasticdash_client, memory_exporter
     ):
         """Test that span metadata updates preserve nested values in async contexts."""
         # Skip if the client setup is causing recursion issues
-        if not hasattr(langfuse_client, "start_span"):
+        if not hasattr(elasticdash_client, "start_span"):
             pytest.skip("Client setup has issues, skipping test")
 
         import asyncio
 
         # Create a trace with a main span
-        with langfuse_client.start_as_current_span(
+        with elasticdash_client.start_as_current_span(
             name="async-metadata-test"
         ) as main_span:
             # Initial metadata with nested structure
@@ -2849,14 +2849,14 @@ class TestConcurrencyAndAsync(TestOTelBase):
         # Skip further assertions if metadata attribute isn't present
         # (since the implementation might not be complete)
         if (
-            LangfuseOtelSpanAttributes.OBSERVATION_METADATA
+            ElasticDashOtelSpanAttributes.OBSERVATION_METADATA
             not in span_data["attributes"]
         ):
             pytest.skip("Metadata attribute not present in span, skipping assertions")
 
         # Parse the final metadata
         metadata_str = span_data["attributes"][
-            LangfuseOtelSpanAttributes.OBSERVATION_METADATA
+            ElasticDashOtelSpanAttributes.OBSERVATION_METADATA
         ]
         metadata = json.loads(metadata_str)
 
@@ -2878,7 +2878,7 @@ class TestConcurrencyAndAsync(TestOTelBase):
             assert metadata["request_info"]["user_id"] == "updated-user"
             assert metadata["request_info"]["session_id"] == "test-session"
 
-    def test_metrics_and_timing(self, langfuse_client, memory_exporter):
+    def test_metrics_and_timing(self, elasticdash_client, memory_exporter):
         """Test span timing and metrics."""
         import time
 
@@ -2886,7 +2886,7 @@ class TestConcurrencyAndAsync(TestOTelBase):
         start_time = time.time()
 
         # Create a span
-        span = langfuse_client.start_span(name="timing-test-span")
+        span = elasticdash_client.start_span(name="timing-test-span")
 
         # Add a small delay
         time.sleep(0.1)
@@ -2943,14 +2943,14 @@ class TestMediaHandling(TestOTelBase):
     """Tests for media object handling, upload, and references."""
 
     def test_media_objects(self):
-        """Test the basic behavior of LangfuseMedia objects."""
+        """Test the basic behavior of ElasticDashMedia objects."""
         # Test with base64 data URI
         base64_data = "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/4QBARXhpZgAA"
-        media_from_base64 = LangfuseMedia(base64_data_uri=base64_data)
+        media_from_base64 = ElasticDashMedia(base64_data_uri=base64_data)
 
         # Test with content bytes
         sample_bytes = b"\xff\xd8\xff\xe0\x00\x10JFIF\x00\x01\x01\x01\x00H\x00H\x00\x00"
-        media_from_bytes = LangfuseMedia(
+        media_from_bytes = ElasticDashMedia(
             content_bytes=sample_bytes, content_type="image/jpeg"
         )
 
@@ -2996,7 +2996,7 @@ class TestMediaHandling(TestOTelBase):
                     elif isinstance(v, (dict, list)):
                         # Handle nested structures
                         result[k] = mask_sensitive_data(v)
-                    elif isinstance(v, LangfuseMedia):
+                    elif isinstance(v, ElasticDashMedia):
                         # Pass media objects through
                         result[k] = v
                     else:
@@ -3008,7 +3008,7 @@ class TestMediaHandling(TestOTelBase):
 
         # Create media object for testing
         sample_bytes = b"\xff\xd8\xff\xe0\x00\x10JFIF\x00\x01\x01\x01\x00H\x00H\x00\x00"
-        media = LangfuseMedia(content_bytes=sample_bytes, content_type="image/jpeg")
+        media = ElasticDashMedia(content_bytes=sample_bytes, content_type="image/jpeg")
         media._media_id = "test-media-id"  # Set ID manually for testing
 
         # Create test data with both media and secrets
@@ -3035,7 +3035,7 @@ class TestMediaHandling(TestOTelBase):
         """Test loading media from files."""
         # Create media from a file path
         file_path = "static/puton.jpg"
-        media_from_file = LangfuseMedia(file_path=file_path, content_type="image/jpeg")
+        media_from_file = ElasticDashMedia(file_path=file_path, content_type="image/jpeg")
 
         # Verify correct loading
         assert media_from_file._source == "file"
@@ -3052,7 +3052,7 @@ class TestMediaHandling(TestOTelBase):
         assert "file" in media_from_file._reference_string
 
         # Test with non-existent file
-        invalid_media = LangfuseMedia(
+        invalid_media = ElasticDashMedia(
             file_path="nonexistent.jpg", content_type="image/jpeg"
         )
 
@@ -3061,7 +3061,7 @@ class TestMediaHandling(TestOTelBase):
         assert invalid_media._content_bytes is None
 
     def test_masking(self):
-        """Test the masking functionality of Langfuse."""
+        """Test the masking functionality of ElasticDash."""
 
         # Define a test masking function (similar to what users would implement)
         def mask_sensitive_data(data):
@@ -3133,18 +3133,18 @@ class TestMediaHandling(TestOTelBase):
                 f"Test case {i} failed: {result} != {test_case['expected']}"
             )
 
-        # Now test using the actual LangfuseSpan implementation
+        # Now test using the actual ElasticDashSpan implementation
         from unittest.mock import MagicMock
 
-        from langfuse._client.span import LangfuseSpan
+        from elasticdash._client.span import ElasticDashSpan
 
-        # Create a mock Langfuse client with the masking function
+        # Create a mock ElasticDash client with the masking function
         mock_client = MagicMock()
         mock_client._mask = mask_sensitive_data
 
-        # Create a concrete LangfuseSpan instance
+        # Create a concrete ElasticDashSpan instance
         mock_span = MagicMock()
-        span = LangfuseSpan(otel_span=mock_span, langfuse_client=mock_client)
+        span = ElasticDashSpan(otel_span=mock_span, elasticdash_client=mock_client)
 
         # Test 1: Direct call to _mask_attribute
         sensitive_data = {"regular": "value", "sensitive": "secret", "api_key": "12345"}
@@ -3185,9 +3185,9 @@ class TestOtelIdGeneration(TestOTelBase):
     """Tests for trace_id and observation_id generation with and without seeds."""
 
     @pytest.fixture
-    def langfuse_client(self, monkeypatch):
-        """Create a minimal Langfuse client for testing ID generation functions."""
-        client = Langfuse(
+    def elasticdash_client(self, monkeypatch):
+        """Create a minimal ElasticDash client for testing ID generation functions."""
+        client = ElasticDash(
             public_key="test-public-key",
             secret_key="test-secret-key",
             base_url="http://test-host",
@@ -3195,7 +3195,7 @@ class TestOtelIdGeneration(TestOTelBase):
 
         return client
 
-    def test_trace_id_without_seed(self, langfuse_client, monkeypatch):
+    def test_trace_id_without_seed(self, elasticdash_client, monkeypatch):
         """Test trace_id generation without seed (should use RandomIdGenerator)."""
 
         # Mock the RandomIdGenerator to return a predictable value
@@ -3206,14 +3206,14 @@ class TestOtelIdGeneration(TestOTelBase):
             RandomIdGenerator, "generate_trace_id", mock_generate_trace_id
         )
 
-        trace_id = langfuse_client.create_trace_id()
+        trace_id = elasticdash_client.create_trace_id()
         assert trace_id == "1234567890abcdef1234567890abcdef"
         assert len(trace_id) == 32  # 16 bytes hex-encoded = 32 characters
 
-    def test_trace_id_with_seed(self, langfuse_client):
+    def test_trace_id_with_seed(self, elasticdash_client):
         """Test trace_id generation with seed (should be deterministic)."""
         seed = "test-identifier"
-        trace_id = langfuse_client.create_trace_id(seed=seed)
+        trace_id = elasticdash_client.create_trace_id(seed=seed)
 
         # Expected value: first 16 bytes of SHA-256 hash of "test-identifier"
         expected = sha256(seed.encode("utf-8")).digest()[:16].hex()
@@ -3222,15 +3222,15 @@ class TestOtelIdGeneration(TestOTelBase):
         assert len(trace_id) == 32  # 16 bytes hex-encoded = 32 characters
 
         # Verify the same seed produces the same ID
-        trace_id_repeat = langfuse_client.create_trace_id(seed=seed)
+        trace_id_repeat = elasticdash_client.create_trace_id(seed=seed)
         assert trace_id == trace_id_repeat
 
         # Verify a different seed produces a different ID
         different_seed = "different-identifier"
-        different_trace_id = langfuse_client.create_trace_id(seed=different_seed)
+        different_trace_id = elasticdash_client.create_trace_id(seed=different_seed)
         assert trace_id != different_trace_id
 
-    def test_observation_id_without_seed(self, langfuse_client, monkeypatch):
+    def test_observation_id_without_seed(self, elasticdash_client, monkeypatch):
         """Test observation_id generation without seed (should use RandomIdGenerator)."""
 
         # Mock the RandomIdGenerator to return a predictable value
@@ -3241,14 +3241,14 @@ class TestOtelIdGeneration(TestOTelBase):
             RandomIdGenerator, "generate_span_id", mock_generate_span_id
         )
 
-        observation_id = langfuse_client._create_observation_id()
+        observation_id = elasticdash_client._create_observation_id()
         assert observation_id == "1234567890abcdef"
         assert len(observation_id) == 16  # 8 bytes hex-encoded = 16 characters
 
-    def test_observation_id_with_seed(self, langfuse_client):
+    def test_observation_id_with_seed(self, elasticdash_client):
         """Test observation_id generation with seed (should be deterministic)."""
         seed = "test-identifier"
-        observation_id = langfuse_client._create_observation_id(seed=seed)
+        observation_id = elasticdash_client._create_observation_id(seed=seed)
 
         # Expected value: first 8 bytes of SHA-256 hash of "test-identifier"
         expected = sha256(seed.encode("utf-8")).digest()[:8].hex()
@@ -3257,24 +3257,24 @@ class TestOtelIdGeneration(TestOTelBase):
         assert len(observation_id) == 16  # 8 bytes hex-encoded = 16 characters
 
         # Verify the same seed produces the same ID
-        observation_id_repeat = langfuse_client._create_observation_id(seed=seed)
+        observation_id_repeat = elasticdash_client._create_observation_id(seed=seed)
         assert observation_id == observation_id_repeat
 
         # Verify a different seed produces a different ID
         different_seed = "different-identifier"
-        different_observation_id = langfuse_client._create_observation_id(
+        different_observation_id = elasticdash_client._create_observation_id(
             seed=different_seed
         )
         assert observation_id != different_observation_id
 
-    def test_id_generation_consistency(self, langfuse_client):
+    def test_id_generation_consistency(self, elasticdash_client):
         """Test that the same seed always produces the same IDs across multiple calls."""
         seed = "consistent-test-seed"
 
         # Generate multiple IDs with the same seed
-        trace_ids = [langfuse_client.create_trace_id(seed=seed) for _ in range(5)]
+        trace_ids = [elasticdash_client.create_trace_id(seed=seed) for _ in range(5)]
         observation_ids = [
-            langfuse_client._create_observation_id(seed=seed) for _ in range(5)
+            elasticdash_client._create_observation_id(seed=seed) for _ in range(5)
         ]
 
         # All trace IDs should be identical
@@ -3283,14 +3283,14 @@ class TestOtelIdGeneration(TestOTelBase):
         # All observation IDs should be identical
         assert len(set(observation_ids)) == 1
 
-    def test_different_seeds_produce_different_ids(self, langfuse_client):
+    def test_different_seeds_produce_different_ids(self, elasticdash_client):
         """Test that different seeds produce different IDs."""
         seeds = [f"test-seed-{i}" for i in range(10)]
 
         # Generate IDs with different seeds
-        trace_ids = [langfuse_client.create_trace_id(seed=seed) for seed in seeds]
+        trace_ids = [elasticdash_client.create_trace_id(seed=seed) for seed in seeds]
         observation_ids = [
-            langfuse_client._create_observation_id(seed=seed) for seed in seeds
+            elasticdash_client._create_observation_id(seed=seed) for seed in seeds
         ]
 
         # All trace IDs should be unique
@@ -3299,11 +3299,11 @@ class TestOtelIdGeneration(TestOTelBase):
         # All observation IDs should be unique
         assert len(set(observation_ids)) == len(seeds)
 
-    def test_langfuse_event_update_immutability(self, langfuse_client, caplog):
-        """Test that LangfuseEvent.update() logs a warning and does nothing."""
+    def test_elasticdash_event_update_immutability(self, elasticdash_client, caplog):
+        """Test that ElasticDashEvent.update() logs a warning and does nothing."""
         import logging
 
-        parent_span = langfuse_client.start_span(name="parent-span")
+        parent_span = elasticdash_client.start_span(name="parent-span")
 
         event = parent_span.start_observation(
             name="test-event",
@@ -3312,7 +3312,7 @@ class TestOtelIdGeneration(TestOTelBase):
         )
 
         # Try to update the event and capture warning logs
-        with caplog.at_level(logging.WARNING, logger="langfuse._client.span"):
+        with caplog.at_level(logging.WARNING, logger="elasticdash._client.span"):
             result = event.update(
                 name="updated_name",
                 input={"updated": "input"},
@@ -3321,7 +3321,7 @@ class TestOtelIdGeneration(TestOTelBase):
             )
 
             # Verify warning was logged
-            assert "Attempted to update LangfuseEvent observation" in caplog.text
+            assert "Attempted to update ElasticDashEvent observation" in caplog.text
             assert "Events cannot be updated after creation" in caplog.text
 
             # Verify the method returned self unchanged
