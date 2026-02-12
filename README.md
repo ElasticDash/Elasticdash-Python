@@ -23,7 +23,7 @@ At the moment, the Secret Key and Public Key will be provided by ElasticDash dir
 
 ### OpenAI SDK
 
-Swap the regular OpenAI import to Langfuse’s OpenAI drop-in. It behaves like the regular OpenAI client while also recording each call for you.
+Swap the regular OpenAI import to ElasticDash’s OpenAI drop-in. It behaves like the regular OpenAI client while also recording each call for you.
 
 ```
 from elasticdash.openai import openai
