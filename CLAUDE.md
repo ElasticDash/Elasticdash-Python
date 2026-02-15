@@ -53,7 +53,7 @@ poetry run pre-commit run --all-files
 poetry build
 
 # Generate documentation
-poetry run pdoc -o docs/ --docformat google --logo "https://elasticdash.com/elasticdash_logo.svg" elasticdash
+poetry run pdoc -o docs/ --docformat google --logo "https://logger.elasticdash.com/icon.svg" elasticdash
 ```
 
 Releases are automated via GitHub Actions. To release:
@@ -99,7 +99,7 @@ The client follows an async-first design with automatic batching of events and b
 
 Environment variables (defined in `_client/environment_variables.py`):
 - `ELASTICDASH_PUBLIC_KEY` / `ELASTICDASH_SECRET_KEY`: API credentials
-- `ELASTICDASH_HOST`: API endpoint (defaults to https://cloud.elasticdash.com)
+- `ELASTICDASH_HOST`: API endpoint (defaults to https://logger.elasticdash.com)
 - `ELASTICDASH_DEBUG`: Enable debug logging
 - `ELASTICDASH_TRACING_ENABLED`: Enable/disable tracing
 - `ELASTICDASH_SAMPLE_RATE`: Sampling rate for traces

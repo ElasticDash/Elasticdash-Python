@@ -14,7 +14,7 @@ ElasticDash automatically tracks:
 
 The integration is fully interoperable with the `observe()` decorator and the low-level tracing SDK.
 
-See docs for more details: https://elasticdash.com/docs/integrations/openai
+See docs for more details: https://github.com/ElasticDash-Official/elasticdash-python
 """
 
 import logging

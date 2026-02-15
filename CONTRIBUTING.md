@@ -1,22 +1,45 @@
 # Contributing
 
+Thank you for your interest in contributing to ElasticDash Python SDK!
+
+## Attribution & Licensing
+
+ElasticDash Python SDK is a fork of [Langfuse Python SDK](https://github.com/langfuse/langfuse-python). By contributing to this project, you agree that:
+
+1. Your contributions will be licensed under the MIT License (same as the original project)
+2. Your contributions become part of the ElasticDash project
+3. Original Langfuse copyright and attribution are preserved in accordance with the MIT License
+4. You have the right to contribute the code you're submitting
+
+All new contributions are automatically copyrighted by ElasticDash while respecting the original Langfuse copyright. See the [LICENSE](LICENSE) and [NOTICE](NOTICE) files for complete attribution details.
+
+## Upstream Contributions
+
+If your contribution would benefit the original Langfuse project and doesn't depend on ElasticDash-specific features:
+
+- Consider contributing to [Langfuse](https://github.com/langfuse/langfuse-python) first
+- Then port the change to ElasticDash
+- This benefits the entire LLM observability ecosystem
+
+We encourage maintaining a positive relationship with the upstream Langfuse project.
+
 ## Development
 
 ### Add Poetry plugins
 
-```
+```bash
 poetry self add poetry-dotenv-plugin
 ```
 
 ### Install dependencies
 
-```
+```bash
 poetry install --all-extras
 ```
 
 ### Add Pre-commit
 
-```
+```bash
 poetry run pre-commit install
 ```
 
@@ -37,13 +60,13 @@ poetry run mypy elasticdash --no-error-summary
 
 - Run all
 
-  ```
+  ```bash
   poetry run pytest -s -v --log-cli-level=INFO
   ```
 
 - Run a specific test
 
-  ```
+  ```bash
   poetry run pytest -s -v --log-cli-level=INFO tests/test_core_sdk.py::test_flush
   ```
 
@@ -90,13 +113,13 @@ poetry install --all-extras
 To update the reference, run the following command:
 
 ```sh
-poetry run pdoc -o docs/ --docformat google --logo "https://elasticdash.com/elasticdash_logo.svg" elasticdash
+poetry run pdoc -o docs/ --docformat google --logo "https://logger.elasticdash.com/icon.svg" elasticdash
 ```
 
 To run the reference locally, you can use the following command:
 
 ```sh
-poetry run pdoc --docformat google --logo "https://elasticdash.com/elasticdash_logo.svg" elasticdash
+poetry run pdoc --docformat google --logo "https://logger.elasticdash.com/icon.svg" elasticdash
 ```
 
 ## Credits

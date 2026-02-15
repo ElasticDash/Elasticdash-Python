@@ -1,0 +1,40 @@
+# Attribution Notice
+
+## Original Work
+
+This project is based on the Langfuse Python SDK, originally developed by Langfuse GmbH.
+
+- Original Project: https://github.com/langfuse/langfuse-python
+- License: MIT License
+- Original Copyright: Copyright (c) 2022-2023 Langfuse GmbH
+
+## Modifications
+
+This fork has been modified and extended by the ElasticDash team.
+
+- Fork Repository: https://github.com/[your-org]/elasticdash-python
+- Modifications Copyright: Copyright (c) 2024-2026 ElasticDash
+- License: MIT License (same as original)
+
+## Key Differences from Langfuse
+
+ElasticDash extends the original Langfuse SDK with:
+
+- Custom observability features for the ElasticDash platform
+- Integration with ElasticDash Logger (https://logger.elasticdash.com)
+- Additional instrumentation and monitoring capabilities
+- Enhanced OpenTelemetry integration
+- Support for additional LLM providers and frameworks
+
+## Trademark Notice
+
+"Langfuse" is a trademark of Langfuse GmbH. This project is not affiliated with,
+endorsed by, or sponsored by Langfuse GmbH.
+
+"ElasticDash" is a trademark of ElasticDash.
+
+## Acknowledgments
+
+We are grateful to the Langfuse team and contributors for creating the excellent
+foundation upon which ElasticDash is built. Their work has been instrumental in
+advancing LLM observability and tracing.
