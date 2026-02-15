@@ -16,10 +16,7 @@ from elasticdash.api.resources.commons.errors import (
 from elasticdash.api.resources.health.errors import ServiceUnavailableError
 
 SUPPORT_URL = "contact@elasticdash.com"
-API_DOCS_URL = "https://api.reference.elasticdash.com"
-RBAC_DOCS_URL = "https://elasticdash.com/docs/rbac"
-INSTALLATION_DOCS_URL = "https://elasticdash.com/docs/sdk/typescript/guide"
-RATE_LIMITS_URL = "https://elasticdash.com/faq/all/api-limits"
+INSTALLATION_DOCS_URL = "https://github.com/ElasticDash/ElasticDash-Logger"
 PYPI_PACKAGE_URL = "https://pypi.org/project/elasticdash/"
 
 # Error messages
@@ -37,10 +34,10 @@ errorResponseByCode = {
     503: f"Service unavailable. {defaultServerErrorPrompt}",
     504: f"Gateway timeout. {defaultServerErrorPrompt}",
     404: f"Internal error occurred. {defaultServerErrorPrompt}",
-    400: f"Bad request. Please check your request for any missing or incorrect parameters. Refer to our API docs: {API_DOCS_URL} for details.",
+    400: f"Bad request. Please check your request for any missing or incorrect parameters. Contact support for help: {SUPPORT_URL}.",
     401: f"Unauthorized. Please check your public/private host settings. Refer to our installation and setup guide: {INSTALLATION_DOCS_URL} for details on SDK configuration.",
-    403: f"Forbidden. Please check your access control settings. Refer to our RBAC docs: {RBAC_DOCS_URL} for details.",
-    429: f"Rate limit exceeded. For more information on rate limits please see: {RATE_LIMITS_URL}",
+    403: f"Forbidden. Please check your access control settings.",
+    429: f"Rate limit exceeded. Please try to reduce your rate of requests.",
 }
 
 

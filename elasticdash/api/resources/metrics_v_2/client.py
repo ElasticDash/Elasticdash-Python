@@ -31,8 +31,6 @@ class MetricsV2Client:
         - Backwards-compatible: traceName, traceRelease, traceVersion dimensions are still available on observations view
         - High cardinality dimensions are not supported and will return a 400 error (see below)
 
-        For more details, see the [Metrics API documentation](https://elasticdash.com/docs/metrics/features/metrics-api).
-
         ## Available Views
 
         ### observations
@@ -249,8 +247,6 @@ class AsyncMetricsV2Client:
         - Direct access to tags and release fields on observations
         - Backwards-compatible: traceName, traceRelease, traceVersion dimensions are still available on observations view
         - High cardinality dimensions are not supported and will return a 400 error (see below)
-
-        For more details, see the [Metrics API documentation](https://elasticdash.com/docs/metrics/features/metrics-api).
 
         ## Available Views
 

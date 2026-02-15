@@ -27,8 +27,6 @@ class MetricsClient:
 
         Consider using the [v2 metrics endpoint](/api-reference#tag/metricsv2/GET/api/public/v2/metrics) for better performance.
 
-        For more details, see the [Metrics API documentation](https://elasticdash.com/docs/metrics/features/metrics-api).
-
         Parameters
         ----------
         query : str
@@ -141,8 +139,6 @@ class AsyncMetricsClient:
         Get metrics from the ElasticDash project using a query object.
 
         Consider using the [v2 metrics endpoint](/api-reference#tag/metricsv2/GET/api/public/v2/metrics) for better performance.
-
-        For more details, see the [Metrics API documentation](https://elasticdash.com/docs/metrics/features/metrics-api).
 
         Parameters
         ----------
