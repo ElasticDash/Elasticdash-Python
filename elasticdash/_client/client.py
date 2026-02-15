@@ -152,8 +152,8 @@ class ElasticDash:
     Parameters:
         public_key (Optional[str]): Your ElasticDash public API key. Can also be set via ELASTICDASH_PUBLIC_KEY environment variable.
         secret_key (Optional[str]): Your ElasticDash secret API key. Can also be set via ELASTICDASH_SECRET_KEY environment variable.
-        base_url (Optional[str]): The ElasticDash API base URL. Defaults to "https://cloud.elasticdash.com". Can also be set via ELASTICDASH_BASE_URL environment variable.
-        host (Optional[str]): Deprecated. Use base_url instead. The ElasticDash API host URL. Defaults to "https://cloud.elasticdash.com".
+        base_url (Optional[str]): The ElasticDash API base URL. Defaults to "https://logger.elasticdash.com". Can also be set via ELASTICDASH_BASE_URL environment variable.
+        host (Optional[str]): Deprecated. Use base_url instead. The ElasticDash API host URL. Defaults to "https://logger.elasticdash.com".
         timeout (Optional[int]): Timeout in seconds for API requests. Defaults to 5 seconds.
         httpx_client (Optional[httpx.Client]): Custom httpx client for making non-tracing HTTP requests. If not provided, a default client will be created.
         debug (bool): Enable debug logging. Defaults to False. Can also be set via ELASTICDASH_DEBUG environment variable.
@@ -177,7 +177,7 @@ class ElasticDash:
         elasticdash = ElasticDash(
             public_key="your-public-key",
             secret_key="your-secret-key",
-            host="https://cloud.elasticdash.com",  # Optional, default shown
+            host="https://logger.elasticdash.com",  # Optional, default shown
         )
 
         # Create a trace span
@@ -235,7 +235,7 @@ class ElasticDash:
             base_url
             or os.environ.get(ELASTICDASH_BASE_URL)
             or host
-            or os.environ.get(ELASTICDASH_HOST, "https://cloud.elasticdash.com")
+            or os.environ.get(ELASTICDASH_HOST, "https://logger.elasticdash.com")
         )
         self._environment = environment or cast(
             str, os.environ.get(ELASTICDASH_TRACING_ENVIRONMENT)

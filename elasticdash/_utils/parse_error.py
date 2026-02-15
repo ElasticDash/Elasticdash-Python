@@ -15,7 +15,7 @@ from elasticdash.api.resources.commons.errors import (
 )
 from elasticdash.api.resources.health.errors import ServiceUnavailableError
 
-SUPPORT_URL = "https://elasticdash.com/support"
+SUPPORT_URL = "contact@elasticdash.com"
 API_DOCS_URL = "https://api.reference.elasticdash.com"
 RBAC_DOCS_URL = "https://elasticdash.com/docs/rbac"
 INSTALLATION_DOCS_URL = "https://elasticdash.com/docs/sdk/typescript/guide"

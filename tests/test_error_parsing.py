@@ -17,7 +17,7 @@ from elasticdash.api.resources.health.errors import ServiceUnavailableError
 
 def test_generate_error_message_api_error():
     exception = APIError(message="Test API error", status="500")
-    expected_message = "API error occurred: Internal server error occurred. For help, please contact support: https://elasticdash.com/support"
+    expected_message = "API error occurred: Internal server error occurred. For help, please contact support: contact@elasticdash.com"
     assert expected_message in generate_error_message(exception)
 
 
@@ -29,49 +29,49 @@ def test_generate_error_message_api_errors():
     exception = APIErrors(errors)
     expected_message = (
         "API errors occurred: "
-        "Bad request. Please check your request for any missing or incorrect parameters. Refer to our API docs: https://api.reference.elasticdash.com for details.\n"
-        "Unauthorized. Please check your public/private host settings. Refer to our installation and setup guide: https://elasticdash.com/docs/sdk/typescript/guide for details on SDK configuration."
+        "Bad request. Please check your request for any missing or incorrect parameters. For help, please contact support: contact@elasticdash.com.\n"
+        "Unauthorized. Please check your public/private host settings. For help, please contact support: contact@elasticdash.com."
     )
     assert expected_message in generate_error_message(exception)
 
 
 def test_generate_error_message_generic_exception():
     exception = Exception("Generic error")
-    expected_message = "Unexpected error occurred. Please check your request and contact support: https://elasticdash.com/support."
+    expected_message = "Unexpected error occurred. Please check your request and contact support: contact@elasticdash.com."
     assert generate_error_message(exception) == expected_message
 
 
 def test_generate_error_message_access_denied_error():
     exception = AccessDeniedError(body={})
-    expected_message = "Forbidden. Please check your access control settings. Refer to our RBAC docs: https://elasticdash.com/docs/rbac for details."
+    expected_message = "Forbidden. Please check your access control settings. For help, please contact support: contact@elasticdash.com."
     assert generate_error_message_fern(exception) == expected_message
 
 
 def test_generate_error_message_method_not_allowed_error():
     exception = MethodNotAllowedError(body={})
-    expected_message = "Unexpected error occurred. Please check your request and contact support: https://elasticdash.com/support."
+    expected_message = "Unexpected error occurred. Please check your request and contact support: contact@elasticdash.com."
     assert generate_error_message_fern(exception) == expected_message
 
 
 def test_generate_error_message_not_found_error():
     exception = NotFoundError(body={})
-    expected_message = "Internal error occurred. This is an unusual occurrence and we are monitoring it closely. For help, please contact support: https://elasticdash.com/support."
+    expected_message = "Internal error occurred. This is an unusual occurrence and we are monitoring it closely. For help, please contact support: contact@elasticdash.com."
     assert generate_error_message_fern(exception) == expected_message
 
 
 def test_generate_error_message_unauthorized_error():
     exception = UnauthorizedError(body={})
-    expected_message = "Unauthorized. Please check your public/private host settings. Refer to our installation and setup guide: https://elasticdash.com/docs/sdk/typescript/guide for details on SDK configuration."
+    expected_message = "Unauthorized. Please check your public/private host settings. For help, please contact support: contact@elasticdash.com."
     assert generate_error_message_fern(exception) == expected_message
 
 
 def test_generate_error_message_service_unavailable_error():
     exception = ServiceUnavailableError()
-    expected_message = "Service unavailable. This is an unusual occurrence and we are monitoring it closely. For help, please contact support: https://elasticdash.com/support."
+    expected_message = "Service unavailable. This is an unusual occurrence and we are monitoring it closely. For help, please contact support: contact@elasticdash.com."
     assert generate_error_message_fern(exception) == expected_message
 
 
 def test_generate_error_message_generic():
     exception = ApiError(status_code=503)
-    expected_message = "Service unavailable. This is an unusual occurrence and we are monitoring it closely. For help, please contact support: https://elasticdash.com/support."
+    expected_message = "Service unavailable. This is an unusual occurrence and we are monitoring it closely. For help, please contact support: contact@elasticdash.com."
     assert generate_error_message_fern(exception) == expected_message

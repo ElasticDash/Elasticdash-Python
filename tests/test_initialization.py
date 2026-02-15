@@ -107,7 +107,7 @@ class TestClientInitialization:
             secret_key="test_sk",
         )
 
-        assert client._base_url == "https://cloud.elasticdash.com"
+        assert client._base_url == "https://logger.elasticdash.com"
 
     def test_base_url_env_var(self, cleanup_env_vars):
         """Test that ELASTICDASH_BASE_URL environment variable is used correctly."""
