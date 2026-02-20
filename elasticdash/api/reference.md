@@ -2442,7 +2442,7 @@ client.health.health()
 
 **Legacy endpoint for batch ingestion for ElasticDash Observability.**
 
--> Please use the OpenTelemetry endpoint (`/api/public/otel/v1/traces`). Learn more: https://elasticdash.com/integrations/native/opentelemetry
+-> Please use the OpenTelemetry endpoint (`/api/public/otel/v1/traces`). Learn more: https://github.com/ElasticDash/ElasticDash-Doc/blob/main/docs/sdk-overview.md
 
 Within each batch, there can be multiple events.
 Each event has a type, an id, a timestamp, metadata and a body.
@@ -2452,7 +2452,7 @@ The event.body.id is the ID of the actual trace and will be used for updates and
 I.e. if you want to update a trace, you'd use the same body id, but separate event IDs.
 
 Notes:
-- Introduction to data model: https://elasticdash.com/docs/observability/data-model
+- Introduction to data model: https://github.com/ElasticDash/ElasticDash-Doc/blob/main/docs/data-model.md
 - Batch sizes are limited to 3.5 MB in total. You need to adjust the number of events per batch accordingly.
 - The API does not return a 4xx status code for input errors. Instead, it responds with a 207 status code, which includes a list of the encountered errors.
 </dd>
@@ -2971,8 +2971,6 @@ Get metrics from the ElasticDash project using a query object. V2 endpoint with 
 - Backwards-compatible: traceName, traceRelease, traceVersion dimensions are still available on observations view
 - High cardinality dimensions are not supported and will return a 400 error (see below)
 
-For more details, see the [Metrics API documentation](https://elasticdash.com/docs/metrics/features/metrics-api).
-
 ## Available Views
 
 ### observations
@@ -3193,7 +3191,6 @@ Get metrics from the ElasticDash project using a query object.
 
 Consider using the [v2 metrics endpoint](/api-reference#tag/metricsv2/GET/api/public/v2/metrics) for better performance.
 
-For more details, see the [Metrics API documentation](https://elasticdash.com/docs/metrics/features/metrics-api).
 </dd>
 </dl>
 </dd>
@@ -4302,8 +4299,8 @@ This endpoint implements the OTLP/HTTP specification for trace ingestion, provid
 - Implements `ExportTraceServiceRequest` message format
 
 **Documentation:**
-- Integration guide: https://elasticdash.com/integrations/native/opentelemetry
-- Data model: https://elasticdash.com/docs/observability/data-model
+- Integration guide: https://github.com/ElasticDash/ElasticDash-Doc/blob/main/docs/sdk-overview.md
+- Data model: https://github.com/ElasticDash/ElasticDash-Doc/blob/main/docs/data-model.md
 </dd>
 </dl>
 </dd>

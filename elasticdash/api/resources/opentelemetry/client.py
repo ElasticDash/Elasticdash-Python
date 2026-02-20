@@ -44,8 +44,8 @@ class OpentelemetryClient:
         - Implements `ExportTraceServiceRequest` message format
 
         **Documentation:**
-        - Integration guide: https://elasticdash.com/integrations/native/opentelemetry
-        - Data model: https://elasticdash.com/docs/observability/data-model
+        - Integration guide: https://github.com/ElasticDash/ElasticDash-Doc/blob/main/docs/sdk-overview.md
+        - Data model: https://github.com/ElasticDash/ElasticDash-Doc/blob/main/docs/data-model.md
 
         Parameters
         ----------
@@ -189,8 +189,8 @@ class AsyncOpentelemetryClient:
         - Implements `ExportTraceServiceRequest` message format
 
         **Documentation:**
-        - Integration guide: https://elasticdash.com/integrations/native/opentelemetry
-        - Data model: https://elasticdash.com/docs/observability/data-model
+        - Integration guide: https://github.com/ElasticDash/ElasticDash-Doc/blob/main/docs/sdk-overview.md
+        - Data model: https://github.com/ElasticDash/ElasticDash-Doc/blob/main/docs/data-model.md
 
         Parameters
         ----------

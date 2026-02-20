@@ -3,7 +3,7 @@ name = "elasticdash"
 
 version = "0.0.4"
 description = "A client library for accessing elasticdash"
-authors = ["elasticdash <developers@elasticdash.com>"]
+authors = ["elasticdash <contact@elasticdash.com>"]
 license = "MIT"
 readme = "README.md"
 
